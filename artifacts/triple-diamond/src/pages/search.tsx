@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import ListingCard from "@/components/ListingCard";
 import { listings, type Listing } from "@/data/listings";
 import SearchFiltersSheet, { defaultFilters, type FilterState } from "@/components/SearchFiltersSheet";
+import QuickFilters from "@/components/QuickFilters";
 import { motion } from "framer-motion";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
@@ -199,7 +200,7 @@ export default function Search() {
       <div className="bg-white border-b border-border sticky top-[73px] z-40 shadow-sm px-4 py-3">
         <div className="container mx-auto">
           <div className="flex flex-wrap gap-3 items-center">
-            <div className="relative w-full md:w-72 shrink-0">
+            <div className="relative w-full md:w-64 shrink-0">
               <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 value={query}
@@ -208,6 +209,8 @@ export default function Search() {
                 className="pl-9 bg-muted/50"
               />
             </div>
+
+            <QuickFilters filters={filters} setFilters={setFilters} />
 
             <div className="relative">
               <SearchFiltersSheet
