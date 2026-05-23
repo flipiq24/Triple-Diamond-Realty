@@ -14,7 +14,7 @@ export default function SiteFooter() {
             </div>
             <p className="text-accent font-bold text-lg mb-3">Diamonds in the Rough. Delivered Daily.</p>
             <p className="text-primary-foreground/80 text-sm max-w-md leading-relaxed">
-              California's off-market real estate brokerage. 30 years sourcing handyman specials, fixer-uppers, foreclosures, BRRRR rentals, 1031 replacements, and wholesale assignments — powered by the most advanced deal-finding technology in the market today.
+              The off-market real estate brokerage. 30 years sourcing handyman specials, fixer-uppers, foreclosures, BRRRR rentals, 1031 replacements, and wholesale assignments — powered by the most advanced deal-finding technology in the market today.
             </p>
           </div>
 

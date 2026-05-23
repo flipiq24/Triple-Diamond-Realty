@@ -65,7 +65,7 @@ export default function VariantHome({ config, cityName }: { config: VariantConfi
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
-              { icon: Building2, title: "Off-Market Inventory", body: "Exclusive access to handyman specials, fixer-uppers and distressed properties across California — before they ever touch the MLS." },
+              { icon: Building2, title: "Off-Market Inventory", body: "Exclusive access to handyman specials, fixer-uppers and distressed properties — before they ever touch the MLS." },
               { icon: Cpu, title: "Powered by Smart Tech", body: "The most powerful property-sourcing technology on the market scans, scores and surfaces opportunities 24/7 so you see the deal first." },
               { icon: TrendingUp, title: "Vetted ARV & Comps", body: "Every deal comes with realistic After-Repair-Value estimates, rehab budgets and comparable sales — underwriting you can trust." },
             ].map((prop, i) => (
@@ -132,7 +132,7 @@ export default function VariantHome({ config, cityName }: { config: VariantConfi
         <div className="absolute inset-0 opacity-5" style={{ backgroundImage: "radial-gradient(circle at 2px 2px, white 1px, transparent 0)", backgroundSize: "32px 32px" }} />
         <div className="container mx-auto relative z-10">
           <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-6">Ready to find your next diamond in the rough?</h2>
-          <p className="text-primary-foreground/80 text-lg mb-10 max-w-xl mx-auto">Join thousands of California investors who rely on Triple Diamond Realty for off-market inventory you can't find anywhere else.</p>
+          <p className="text-primary-foreground/80 text-lg mb-10 max-w-xl mx-auto">Join thousands of investors who rely on Triple Diamond Realty for off-market inventory you can't find anywhere else.</p>
           <Button className="bg-accent hover:bg-accent/90 text-white rounded-full font-bold px-10 h-14 text-lg shadow-[0_0_20px_rgba(245,158,11,0.5)]" onClick={() => setLocation("/search")}>Start Searching Now</Button>
           {config.disclaimer && <p className="text-xs text-primary-foreground/60 max-w-2xl mx-auto mt-8">{config.disclaimer}</p>}
         </div>

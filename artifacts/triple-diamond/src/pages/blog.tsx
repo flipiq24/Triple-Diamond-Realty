@@ -14,7 +14,7 @@ export default function Blog() {
       <section className="bg-primary py-16 px-4">
         <div className="container mx-auto max-w-4xl">
           <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-3">The Triple Diamond Blog</h1>
-          <p className="text-primary-foreground/80 text-lg max-w-2xl">Field-tested guides for California real estate investors — straight from 30 years of off-market deal-finding.</p>
+          <p className="text-primary-foreground/80 text-lg max-w-2xl">Field-tested guides for real estate investors — straight from 30 years of off-market deal-finding.</p>
         </div>
       </section>
 

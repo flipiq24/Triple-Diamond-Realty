@@ -105,7 +105,7 @@ export default function Search() {
           <div>
             <h1 className="text-3xl font-extrabold text-primary mb-1">Handyman Specials</h1>
             <p className="text-muted-foreground">
-              <strong className="text-primary">{filteredListings.length}</strong> deals available across California
+              <strong className="text-primary">{filteredListings.length}</strong> deals available now
             </p>
           </div>
           

@@ -11,16 +11,16 @@ import team4 from "@/data/images/team_4.jpg";
 
 export default function About() {
   useEffect(() => {
-    document.title = "About Triple Diamond Realty | 30 Years of California Off-Market Real Estate";
+    document.title = "About Triple Diamond Realty | 30 Years of Off-Market Real Estate";
     const desc = document.querySelector('meta[name="description"]');
-    if (desc) desc.setAttribute("content", "Three decades. Thousands of California properties. The most powerful off-market real estate technology on the market. Meet the team behind Triple Diamond Realty.");
+    if (desc) desc.setAttribute("content", "Three decades. Thousands of properties. The most powerful off-market real estate technology on the market. Meet the team behind Triple Diamond Realty.");
   }, []);
 
   const team = [
     {
       name: "Marcus Chen",
       title: "Founder & Principal Broker",
-      bio: "Three decades sourcing off-market California real estate. Specializes in distressed multi-family and BRRRR-ready single-family deals.",
+      bio: "Three decades sourcing off-market real estate. Specializes in distressed multi-family and BRRRR-ready single-family deals.",
       image: team1,
     },
     {
@@ -38,7 +38,7 @@ export default function About() {
     {
       name: "Aisha Williams",
       title: "Investor Relations",
-      bio: "Matches our investor buy-boxes with the right California inventory. Your go-to for everything from first flip to portfolio scale.",
+      bio: "Matches our investor buy-boxes with the right inventory. Your go-to for everything from first flip to portfolio scale.",
       image: team4,
     },
   ];
@@ -60,7 +60,7 @@ export default function About() {
               30 Years of Finding <br /><span className="text-accent">Diamonds in the Rough</span>
             </h1>
             <p className="text-lg md:text-xl text-primary-foreground/85 max-w-2xl mx-auto leading-relaxed">
-              Triple Diamond Realty isn't a traditional retail brokerage. We are California's specialized off-market acquisitions team — three decades deep, thousands of properties closed, and powered by the most advanced deal-finding technology on the market today.
+              Triple Diamond Realty isn't a traditional retail brokerage. We are a specialized off-market acquisitions team — three decades deep, thousands of properties closed, and powered by the most advanced deal-finding technology on the market today.
             </p>
           </motion.div>
         </div>
@@ -83,10 +83,10 @@ export default function About() {
             >
               <h2 className="text-3xl md:text-4xl font-bold text-primary">Built by Investors, for Investors</h2>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                For 30 years, our team has worked one corner of California real estate that retail agents won't touch: the off-market world of fixer-uppers, handyman specials, wholesale assignments, distressed sales and cash-only opportunities. Thousands of properties later, we've turned that hunt into a system.
+                For 30 years, our team has worked one corner of real estate that retail agents won't touch: the off-market world of fixer-uppers, handyman specials, wholesale assignments, distressed sales and cash-only opportunities. Thousands of properties later, we've turned that hunt into a system.
               </p>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                Every property we list is a <strong className="text-primary">diamond in the rough</strong> — a real opportunity with real margin. Our proprietary deal-finding technology scans the entire California market 24/7, scoring opportunities for ARV, rehab cost and buyer demand before our acquisitions team ever picks up the phone. By the time a deal hits our feed, the work is done. All you do is decide.
+                Every property we list is a <strong className="text-primary">diamond in the rough</strong> — a real opportunity with real margin. Our proprietary deal-finding technology scans the entire market 24/7, scoring opportunities for ARV, rehab cost and buyer demand before our acquisitions team ever picks up the phone. By the time a deal hits our feed, the work is done. All you do is decide.
               </p>
               <p className="text-lg text-muted-foreground leading-relaxed">
                 Whether you're closing your first flip in Riverside, scaling a rental portfolio in the Inland Empire, or hunting your next value-add multi-family in Oakland — we've already found it. We supply the inventory. You build the wealth.
@@ -98,7 +98,7 @@ export default function About() {
               viewport={{ once: true }}
               className="relative rounded-2xl overflow-hidden shadow-2xl"
             >
-              <img src={aboutImg} alt="Triple Diamond Realty California acquisitions team" className="w-full h-auto aspect-[4/3] object-cover" />
+              <img src={aboutImg} alt="Triple Diamond Realty acquisitions team" className="w-full h-auto aspect-[4/3] object-cover" />
             </motion.div>
           </div>
         </div>

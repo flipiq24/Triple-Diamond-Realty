@@ -22,13 +22,13 @@ export default function SearchBarBlock() {
         transition={{ duration: 0.5, delay: 0.2 }}
         className="w-full max-w-2xl mx-auto mb-8"
       >
-        <form onSubmit={submit} className="relative" role="search" aria-label="Search California real estate deals">
+        <form onSubmit={submit} className="relative" role="search" aria-label="Search real estate deals">
           <label htmlFor="hero-search" className="sr-only">Search by city, ZIP, or address</label>
           <Input
             id="hero-search"
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Enter a California city, ZIP, or address"
+            placeholder="Enter a city, ZIP, or address"
             className="w-full h-16 pl-6 pr-16 rounded-full text-lg shadow-xl border-0 focus-visible:ring-2 focus-visible:ring-accent"
           />
           <Button type="submit" size="icon" aria-label="Search deals" className="absolute right-2 top-2 h-12 w-12 rounded-full bg-primary hover:bg-primary/90 text-white">
@@ -77,7 +77,7 @@ export default function SearchBarBlock() {
           ))}
         </div>
         <div className="text-sm font-medium text-primary-foreground/70">
-          Trusted by <strong className="text-white">thousands</strong> of California investors
+          Trusted by <strong className="text-white">thousands</strong> of investors
         </div>
       </motion.div>
     </>

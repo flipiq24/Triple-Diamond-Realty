@@ -31,7 +31,7 @@ export default function SiteHeader() {
       {/* Main Navigation */}
       <div className="bg-white border-b border-border py-3 px-4 md:px-8 flex justify-between items-center">
         <Link href="/" className="flex items-center gap-2 shrink-0">
-          <img src={logoUrl} alt="Triple Diamond Realty — California off-market real estate" className="h-10 w-auto object-contain" />
+          <img src={logoUrl} alt="Triple Diamond Realty — off-market real estate" className="h-10 w-auto object-contain" />
         </Link>
 
         <nav className="hidden md:flex items-center gap-8" aria-label="Main">
