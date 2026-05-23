@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo, useRef } from "react";
 import { Link, useLocation } from "wouter";
-import { Search as SearchIcon, X, Map as MapIcon, List as ListIcon } from "lucide-react";
+import { Search as SearchIcon, X, Map as MapIcon, List as ListIcon, Heart } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import ListingCard from "@/components/ListingCard";
@@ -9,6 +9,7 @@ import SearchFiltersSheet, { defaultFilters, type FilterState } from "@/componen
 import QuickFilters from "@/components/QuickFilters";
 import RegisterDialog from "@/components/RegisterDialog";
 import { useBuyerVerified } from "@/hooks/useBuyerVerified";
+import { useFavorites } from "@/hooks/useFavorites";
 import { motion } from "framer-motion";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
@@ -50,6 +51,8 @@ export default function Search() {
   const [selectedCenter, setSelectedCenter] = useState<[number, number] | null>(null);
   const markerRefs = useRef<Record<string, LeafletMarker | null>>({});
   const { verified } = useBuyerVerified();
+  const { favorites } = useFavorites();
+  const [favoritesOnly, setFavoritesOnly] = useState(false);
   const [, setLocation] = useLocation();
   const [registerOpen, setRegisterOpen] = useState(false);
   const [pendingNavId, setPendingNavId] = useState<string | null>(null);
@@ -124,6 +127,9 @@ export default function Search() {
 
   const filteredListings = useMemo(() => {
     return listings.filter((l) => {
+      // favorites only
+      if (favoritesOnly && !favorites.includes(l.id)) return false;
+
       // text search
       if (query) {
         const q = query.toLowerCase();
@@ -279,6 +285,20 @@ export default function Search() {
                 </span>
               )}
             </div>
+
+            <Button
+              variant={favoritesOnly ? "default" : "outline"}
+              onClick={() => setFavoritesOnly((v) => !v)}
+              className={`relative gap-2 rounded-full font-bold ${favoritesOnly ? "bg-accent hover:bg-accent/90 text-white border-accent" : ""}`}
+            >
+              <Heart className={`w-4 h-4 ${favoritesOnly ? "fill-white" : "fill-accent text-accent"}`} />
+              My Favorites
+              {favorites.length > 0 && (
+                <span className={`text-xs font-bold rounded-full h-5 min-w-5 px-1 flex items-center justify-center ${favoritesOnly ? "bg-white text-accent" : "bg-accent text-white"}`}>
+                  {favorites.length}
+                </span>
+              )}
+            </Button>
 
             {(activeCount > 0 || query) && (
               <Button variant="ghost" onClick={resetAll} className="text-muted-foreground ml-auto">

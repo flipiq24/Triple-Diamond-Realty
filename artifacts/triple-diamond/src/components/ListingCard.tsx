@@ -5,10 +5,12 @@ import { type Listing } from "@/data/listings";
 import { Button } from "@/components/ui/button";
 import RegisterDialog from "@/components/RegisterDialog";
 import { useBuyerVerified } from "@/hooks/useBuyerVerified";
+import { useFavorites } from "@/hooks/useFavorites";
 import { toast } from "sonner";
 
 export default function ListingCard({ listing }: { listing: Listing }) {
-  const [saved, setSaved] = useState(false);
+  const { isFavorite, toggleFavorite } = useFavorites();
+  const saved = isFavorite(listing.id);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("en-US", {
@@ -75,8 +77,8 @@ export default function ListingCard({ listing }: { listing: Listing }) {
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            setSaved(!saved);
-            toast(saved ? "Removed from saved" : "Property saved");
+            const nowSaved = toggleFavorite(listing.id);
+            toast(nowSaved ? "Added to My Favorites" : "Removed from My Favorites");
           }}
           className="absolute top-3 right-3 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-sm hover:scale-110 transition-transform z-10"
         >
