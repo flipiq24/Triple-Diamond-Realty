@@ -48,6 +48,54 @@ export default function Search() {
   const [selectedCenter, setSelectedCenter] = useState<[number, number] | null>(null);
   const markerRefs = useRef<Record<string, LeafletMarker | null>>({});
 
+  // Adjustable map: column ratio (0.2 - 0.85) and height in px (420 - 1100)
+  const [mapFraction, setMapFraction] = useState(0.6);
+  const [mapHeight, setMapHeight] = useState(720);
+  const splitRef = useRef<HTMLDivElement | null>(null);
+
+  const onColDragStart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const onMove = (ev: MouseEvent) => {
+      const el = splitRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const frac = (ev.clientX - rect.left) / rect.width;
+      // left panel = list, right panel = map; mapFraction is the map's share
+      const mapFrac = 1 - Math.min(0.8, Math.max(0.2, frac));
+      setMapFraction(mapFrac);
+    };
+    const onUp = () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+    };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+  };
+
+  const onRowDragStart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const startY = e.clientY;
+    const startH = mapHeight;
+    const onMove = (ev: MouseEvent) => {
+      const next = Math.min(1100, Math.max(420, startH + (ev.clientY - startY)));
+      setMapHeight(next);
+    };
+    const onUp = () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+    };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+    document.body.style.cursor = "row-resize";
+    document.body.style.userSelect = "none";
+  };
+
   useEffect(() => {
     document.title = "Search Deals — Triple Diamond Realty";
   }, []);
@@ -263,8 +311,23 @@ export default function Search() {
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-[2fr_3fr] gap-0 lg:h-[720px]">
-          <div className="order-1 lg:order-2 relative z-0 h-[420px] lg:h-full touch-none">
+        <div
+          ref={splitRef}
+          className="grid grid-cols-1 gap-0 relative lg:grid-cols-[var(--list-col)_6px_var(--map-col)]"
+          style={{
+            height: `${mapHeight}px`,
+            ['--list-col' as string]: `${(1 - mapFraction) * 100}%`,
+            ['--map-col' as string]: `${mapFraction * 100}%`,
+          }}
+        >
+          <div
+            onMouseDown={onColDragStart}
+            className="hidden lg:flex order-2 cursor-col-resize bg-border hover:bg-accent transition-colors items-center justify-center group"
+            title="Drag to resize map"
+          >
+            <div className="w-1 h-10 rounded-full bg-white/70 group-hover:bg-white" />
+          </div>
+          <div className="order-1 lg:order-3 relative z-0 h-[420px] lg:h-full touch-none">
             <MapContainer
               center={[37.3, -119.5]}
               zoom={6}
@@ -316,7 +379,15 @@ export default function Search() {
             </MapContainer>
           </div>
 
-          <div className="order-2 lg:order-1 lg:overflow-y-auto bg-muted/10 p-4 pb-12 border-r border-border lg:h-full">
+          {/* Bottom edge drag handle to adjust map height (desktop only) */}
+          <div
+            onMouseDown={onRowDragStart}
+            className="hidden lg:flex absolute -bottom-1.5 left-0 right-0 h-3 cursor-row-resize items-center justify-center group z-10"
+            title="Drag to resize map height"
+          >
+            <div className="w-16 h-1 rounded-full bg-border group-hover:bg-accent transition-colors" />
+          </div>
+          <div className="order-2 lg:order-1 lg:overflow-y-auto bg-muted/10 p-4 pb-12 lg:h-full">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-8">
               {filteredListings.map(listing => (
                 <div
