@@ -65,9 +65,9 @@ export default function VariantHome({ config, cityName }: { config: VariantConfi
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
-              { icon: Building2, title: "Off-Market Inventory", body: "Exclusive access to handyman specials, fixer-uppers and distressed properties — before they ever touch the MLS." },
-              { icon: Cpu, title: "Powered by Smart Tech", body: "The most powerful property-sourcing technology on the market scans, scores and surfaces opportunities 24/7 so you see the deal first." },
-              { icon: TrendingUp, title: "Vetted ARV & Comps", body: "Every deal comes with realistic After-Repair-Value estimates, rehab budgets and comparable sales — underwriting you can trust." },
+              { icon: Building2, title: "Off-Market & On-Market Inventory", body: "Browse residential listings including off-market, pre-market, and active MLS properties. Listing status is disclosed on every property." },
+              { icon: Cpu, title: "Proprietary Sourcing Tools", body: "Our team uses public records, direct outreach, and proprietary software to identify potential opportunities. Inventory availability is not guaranteed at any given time." },
+              { icon: TrendingUp, title: "Reference Comps & ARV Data", body: "Where available, listings include seller-provided or public-record figures for comparable sales, ARV estimates, and rehab scope — provided for your independent review and verification." },
             ].map((prop, i) => (
               <motion.article key={i} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }} className="p-6 rounded-2xl bg-muted/30 border border-border">
                 <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-6">
@@ -132,9 +132,9 @@ export default function VariantHome({ config, cityName }: { config: VariantConfi
         <div className="absolute inset-0 opacity-5" style={{ backgroundImage: "radial-gradient(circle at 2px 2px, white 1px, transparent 0)", backgroundSize: "32px 32px" }} />
         <div className="container mx-auto relative z-10">
           <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-6">Ready to find your next diamond in the rough?</h2>
-          <p className="text-primary-foreground/80 text-lg mb-10 max-w-xl mx-auto">Join thousands of investors who rely on Triple Diamond Realty for off-market inventory you can't find anywhere else.</p>
+          <p className="text-primary-foreground/80 text-lg mb-10 max-w-xl mx-auto">Browse current on-market and off-market listings. Listing status, condition notes, and seller-provided figures disclosed on every property.</p>
           <Button className="bg-accent hover:bg-accent/90 text-white rounded-full font-bold px-10 h-14 text-lg shadow-[0_0_20px_rgba(245,158,11,0.5)]" onClick={() => setLocation("/search")}>Start Searching Now</Button>
-          {config.disclaimer && <p className="text-xs text-primary-foreground/60 max-w-2xl mx-auto mt-8">{config.disclaimer}</p>}
+          {config.disclaimer && <p className="text-xs text-primary-foreground/60 max-w-3xl mx-auto mt-8 leading-relaxed">{config.disclaimer}</p>}
         </div>
       </section>
     </div>

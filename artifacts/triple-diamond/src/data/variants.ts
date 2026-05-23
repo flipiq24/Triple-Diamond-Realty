@@ -11,126 +11,133 @@ export type VariantConfig = {
   disclaimer?: string;
 };
 
+const baseDisclaimer =
+  "All property information provided by sellers, public records, or third parties and deemed reliable but not guaranteed. Properties offered AS-IS, WHERE-IS. No representation is made regarding investment performance, profit, ARV, rent, cap rate, or appreciation. Buyers should independently verify all information and consult their own legal, tax, and financial advisors.";
+
 export const variants: Record<"a" | "b" | "c" | "d" | "e", VariantConfig> = {
   a: {
     slug: "a",
     path: "/a",
-    h1Lead: "Find Your Next",
-    h1Accent: "Handyman Special",
-    subHeadline: "Diamonds in the Rough. Delivered Daily Across California.",
+    h1Lead: "Fixer-Upper &",
+    h1Accent: "Handyman Special Listings",
+    subHeadline: "Residential properties sold as-is.",
     subCopy:
-      "Hand-picked fixers, wholesale deals, and cash-only opportunities across California. Every property is a diamond in the rough — we just found it first. New deals added daily, before they hit the MLS.",
+      "Browse residential properties marketed as fixer-uppers or handyman specials — homes sold AS-IS that may need cosmetic, mechanical, or structural repair. Each listing discloses the seller's condition notes, asking price, and listing status (MLS, off-market, or held by Triple Diamond or an affiliate).",
     meta: {
       title: "Handyman Specials & Fixer Upper Homes in California | Triple Diamond Realty",
       description:
-        "Find your next handyman special or fixer upper in California. Hand-picked diamonds in the rough delivered daily — before they hit the MLS. 30 years of deal-finding experience.",
+        "Browse handyman special and fixer-upper home listings in California. Each property is offered as-is with seller-disclosed condition notes and listing status.",
       keywords:
-        "handyman special, fixer upper, fixer upper homes for sale, california fixer upper, rehab properties, as-is homes, value-add properties, cheap houses california, diamond in the rough",
+        "handyman special, fixer upper, fixer upper homes for sale, california fixer upper, rehab properties, as-is homes, value-add properties",
     },
+    disclaimer: baseDisclaimer,
     faq: [
-      { q: "What is a handyman special?", a: "A handyman special is a residential property sold below market value because it needs cosmetic or structural repair work. They're typically priced for investors, cash buyers, or owner-occupants willing to put in sweat equity." },
-      { q: "How do I finance a fixer upper in California?", a: "Common options include hard-money loans (fast, asset-based), FHA 203(k) renovation loans (for owner-occupants), Fannie Mae HomeStyle loans, conventional loans with a separate construction line, and all-cash. Triple Diamond Realty can introduce you to vetted California lenders." },
-      { q: "What's the difference between a fixer upper and a handyman special?", a: "A fixer upper usually needs moderate updating (paint, flooring, kitchen, bath). A handyman special is more distressed — often requiring foundation, roof, plumbing, or major systems work. Pricing and financing options differ accordingly." },
-      { q: "Can I buy a fixer upper with an FHA 203k loan?", a: "Yes, if you intend to occupy the property. The FHA 203(k) loan rolls the purchase price and the renovation budget into a single mortgage. Investors typically use hard money or HomeStyle loans instead." },
-      { q: "How do you find fixer uppers before they hit the MLS?", a: "We combine 30 years of direct-seller relationships, wholesaler networks, probate and distressed-property data feeds, and AI-driven off-market sourcing technology to identify properties weeks or months before they would ever list on the MLS." },
+      { q: "What is a handyman special?", a: "A handyman special is a residential property sold as-is, typically priced below comparable updated homes because it needs cosmetic, mechanical, or structural repair work." },
+      { q: "What financing options exist for a fixer upper in California?", a: "Common options include hard-money loans, FHA 203(k) renovation loans for owner-occupants, Fannie Mae HomeStyle loans, conventional financing with a separate construction line, and all-cash. Eligibility, rates, and terms vary by lender and borrower. Consult a licensed mortgage professional." },
+      { q: "What's the difference between a fixer upper and a handyman special?", a: "Terminology varies by seller and listing agent. Generally, a fixer upper needs primarily cosmetic updating, while a handyman special often involves more substantial repairs to systems or structure. Review each individual listing's condition disclosures." },
+      { q: "Can I buy a fixer upper with an FHA 203(k) loan?", a: "The FHA 203(k) program is generally available to owner-occupant borrowers for eligible properties. Loan approval and property eligibility are determined by the lender and FHA underwriting guidelines." },
+      { q: "How are properties sourced before public listing?", a: "We source through direct-seller outreach, wholesaler relationships, public records (probate, distressed-property filings), and proprietary off-market sourcing tools. Availability of pre-listing inventory is not guaranteed at any given time." },
     ],
   },
   b: {
     slug: "b",
     path: "/b",
-    pill: "Off-Market Deals • Investor-Friendly Agents",
-    h1Lead: "Off-Market Deals",
-    h1Accent: "Before They Hit Zillow",
-    subHeadline: "The Diamonds in the Rough Nobody Else Sees.",
+    pill: "Off-Market & Pre-Market Listings",
+    h1Lead: "Off-Market &",
+    h1Accent: "Pre-Market Listings",
+    subHeadline: "Properties not currently advertised on the MLS or major portals.",
     subCopy:
-      "Connect with investor-friendly agents who source off-market and pre-market opportunities across California. Pre-screened deals, real numbers, no bidding wars. We disclose property status on every listing — off-market or active MLS.",
+      "Browse properties marketed off-market, pre-market, or via assignment. Each listing clearly discloses its status — off-market, pre-market, active MLS, or held by Triple Diamond or an affiliate via equitable interest. Publicly marketed listings are submitted to the MLS within one business day per the NAR Clear Cooperation Policy.",
     meta: {
-      title: "Off-Market Investment Properties in California | Investor-Friendly Agents | Triple Diamond Realty",
+      title: "Off-Market Investment Properties in California | Triple Diamond Realty",
       description:
-        "Get off-market deals in California before they hit Zillow. Investor-friendly agents, pre-market listings, exclusive investor inventory. 30 years finding diamonds in the rough.",
+        "Browse off-market and pre-market property listings in California. Listing status, seller disclosures, and pricing shown on every property.",
       keywords:
-        "off market properties, off market deals california, investor friendly agent, pre-market listings, off MLS properties, wholesale real estate, exclusive investment properties",
+        "off market properties, off market deals california, investor friendly agent, pre-market listings, off MLS properties, wholesale real estate",
     },
+    disclaimer: baseDisclaimer,
     faq: [
-      { q: "What does \"off-market\" really mean?", a: "An off-market property is one that's for sale but not publicly listed on the MLS or major portals like Zillow or Redfin. Sellers may want privacy, speed, or a guaranteed cash close — and they're often willing to accept a lower price to get it." },
-      { q: "How do you find off-market properties in California?", a: "We use a combination of direct mail, cold outreach, probate and divorce records, wholesaler partnerships, agent referral networks, and proprietary AI-driven distressed-property scoring to surface opportunities at scale across every California county." },
-      { q: "What is an investor-friendly agent?", a: "An investor-friendly agent understands ARV, cap rate, cash-on-cash return, BRRRR strategy, and rehab budgets — and writes contracts that protect investor buyers. Most retail agents do not." },
-      { q: "Are off-market deals always better than MLS deals?", a: "Not always. Off-market deals usually have less competition and more negotiation room, but MLS deals can still offer value when motivated sellers list with the wrong agent or in a slow window. We surface both." },
-      { q: "Why do off-market sellers accept less than market value?", a: "Speed, certainty, and privacy. A cash buyer who can close in 7–14 days, take the property as-is, and skip the showings is often worth a 10–25% discount to a seller dealing with distress, probate, divorce, or a tired-landlord situation." },
+      { q: "What does \"off-market\" mean?", a: "An off-market property is one offered for sale but not actively listed on the MLS or public portals such as Zillow or Redfin at the time of marketing." },
+      { q: "How are off-market properties sourced?", a: "We source through direct-seller outreach, wholesaler relationships, public records, agent referrals, and proprietary sourcing tools. Inventory availability changes daily." },
+      { q: "What is an investor-friendly agent?", a: "A general industry term for an agent experienced working with real estate investor clients. The agent's actual experience, license status, and scope of services should be verified directly." },
+      { q: "Are off-market deals always priced below MLS deals?", a: "No. Pricing depends on seller motivation, property condition, and market conditions. Off-market does not by itself imply a discount." },
+      { q: "Are off-market listings published to the MLS?", a: "Publicly marketed listings are submitted to the MLS within one business day in compliance with the NAR Clear Cooperation Policy. Some listings are exempt from publication (for example, certain office-exclusive or seller-restricted arrangements) and are disclosed individually." },
     ],
   },
   c: {
     slug: "c",
     path: "/c",
-    pill: "Cash Flow Rentals • BRRRR Ready",
-    h1Lead: "Cash-Flowing Rentals",
-    h1Accent: "With Day-One Income",
-    subHeadline: "Rental Diamonds in the Rough — Underwritten and Ready.",
+    pill: "Rental & Buy-and-Hold Listings",
+    h1Lead: "Rental &",
+    h1Accent: "Buy-and-Hold Listings",
+    subHeadline: "Residential properties marketed for long-term hold.",
     subCopy:
-      "Underwritten rental properties with rent, taxes, insurance, vacancy, and cap rate already calculated. Turnkey with tenant in place, or BRRRR-ready value-add. Stop guessing pro formas. Start collecting rent.",
+      "Browse single-family and small multifamily listings marketed for buy-and-hold investors. Where available, listings include seller-provided rent figures, lease status, and operating information. All financial information is provided by the seller or public records and must be independently verified. No representation is made regarding future rent, occupancy, cash flow, or appreciation.",
     meta: {
-      title: "Cash Flow Rentals & BRRRR Properties California | Turnkey Investment | Triple Diamond Realty",
+      title: "Rental & BRRRR Property Listings California | Triple Diamond Realty",
       description:
-        "Day-one income rentals and BRRRR-ready properties in California. Underwritten cap rates, tenant-in-place options, real numbers. 30 years finding rental diamonds in the rough.",
+        "Browse residential rental and buy-and-hold property listings in California. Seller-disclosed rent and lease status shown where available.",
       keywords:
-        "cash flow rental property, BRRRR property, turnkey rental california, buy and hold investment, positive cash flow real estate, single family rental, rental property with tenant",
+        "rental property california, BRRRR property, buy and hold investment, single family rental, rental property with tenant",
     },
+    disclaimer: baseDisclaimer,
     faq: [
-      { q: "What is the BRRRR method?", a: "BRRRR stands for Buy, Rehab, Rent, Refinance, Repeat. You buy a distressed property under market, renovate to force appreciation, rent it to a qualified tenant, refinance into long-term debt at the new higher value, and repeat with the recycled capital." },
-      { q: "How do you calculate cash flow on a rental property?", a: "Cash flow = monthly rent − (PITI + property management + vacancy reserve + maintenance reserve + capex reserve + HOA + utilities you cover). Our listings show this math up front." },
-      { q: "What's a good cap rate in California?", a: "California cap rates vary widely by submarket. In coastal metros, 4–5% is typical. In the Inland Empire and Central Valley, 6–8% is achievable on value-add deals. We focus on the higher-cap submarkets for cash-flow buyers." },
-      { q: "Can I buy a turnkey rental with a tenant already in place?", a: "Yes. Many of our rental listings come with paying tenants, signed leases, and rent rolls — so you collect rent the day you close. We disclose lease terms, deposits, and rent history on every tenant-occupied listing." },
-      { q: "How do you underwrite a rental property?", a: "Our team pulls live rent comps, verifies operating expenses against tax records and HOA documents, applies realistic vacancy and capex reserves, and stress-tests financing scenarios. You get an underwriting sheet with every deal." },
+      { q: "What is the BRRRR method?", a: "BRRRR is an industry term describing a strategy of Buy, Rehab, Rent, Refinance, Repeat. It is a strategy framework, not a guarantee of results. Outcomes depend on market conditions, financing, execution, and other factors." },
+      { q: "How is cash flow calculated on a rental property?", a: "A standard calculation is gross monthly rent minus principal, interest, taxes, insurance, HOA, management, vacancy, maintenance, capex reserves, and any owner-paid utilities. Figures shown on any listing are estimates based on seller or public data and should be independently verified." },
+      { q: "What are typical cap rates in California?", a: "Cap rates vary widely by submarket, asset class, and condition. Any cap-rate figure shown on a listing is calculated from seller-provided income and expense information and is not a projection of future returns." },
+      { q: "Can I purchase a rental with a tenant already in place?", a: "Some listings are tenant-occupied. Where applicable, lease terms, deposits, and rent history are disclosed in the listing materials. Buyers are responsible for reviewing lease documents and complying with all applicable landlord-tenant laws." },
+      { q: "How is rental property information underwritten?", a: "Listing data is compiled from seller disclosures, public records, and market comparables. Triple Diamond Realty does not warrant the accuracy of seller-supplied figures and recommends independent verification by the buyer's professionals." },
     ],
   },
   d: {
     slug: "d",
     path: "/d",
-    pill: "Foreclosures • REO • Pre-Foreclosure • Short Sale",
-    h1Lead: "Verified Foreclosure Deals",
-    h1Accent: "Not the Same Stale Lists",
-    subHeadline: "Distressed Diamonds in the Rough, Verified Weekly.",
+    pill: "Foreclosure • REO • Pre-Foreclosure • Short Sale",
+    h1Lead: "Foreclosure, REO &",
+    h1Accent: "Distressed Property Listings",
+    subHeadline: "Bank-owned, short-sale, pre-foreclosure, and trustee-sale inventory.",
     subCopy:
-      "REO bank-owned, court-step auction, short sale, and pre-foreclosure inventory updated weekly. Real properties, verified status, current pricing. Cash buyers and hard-money pre-approved investors get first look.",
+      "Browse distressed residential listings including REO (bank-owned), short sales, pre-foreclosures, and trustee-sale properties. Status and source data are pulled from public records and seller channels and refreshed regularly. Buyers are responsible for verifying status, title condition, and occupancy.",
     meta: {
       title: "Foreclosures, REO & Pre-Foreclosure Homes California | Triple Diamond Realty",
       description:
-        "Verified California foreclosures, REO bank-owned homes, short sales, and pre-foreclosure deals updated weekly. Cash buyers get first look. 30 years finding distressed diamonds.",
+        "Browse foreclosure, REO, short-sale, and pre-foreclosure property listings in California. Status and source data shown on every listing.",
       keywords:
-        "foreclosure homes california, foreclosures near me, pre-foreclosure, bank owned homes, REO properties, short sale homes, distressed properties california, auction homes",
+        "foreclosure homes california, pre-foreclosure, bank owned homes, REO properties, short sale homes, distressed properties california, auction homes",
     },
+    disclaimer: baseDisclaimer,
     faq: [
-      { q: "What's the difference between REO, pre-foreclosure, and short sale?", a: "Pre-foreclosure means the owner is behind on payments but still owns the home. A short sale is when the lender agrees to accept less than is owed. REO (Real Estate Owned) means the bank has already foreclosed and now owns the property outright." },
-      { q: "Can I buy a foreclosure with financing or only cash?", a: "REO bank-owned properties typically accept conventional, FHA, or VA financing. Court-step auction purchases almost always require cash or hard money — there's no inspection or financing contingency." },
-      { q: "How do California foreclosure auctions work?", a: "California uses non-judicial trustee sales held on courthouse steps. Properties are sold to the highest bidder for cashier's check, as-is, with no warranty. We help investors prep due diligence and bid strategy before the sale date." },
-      { q: "Are foreclosure homes a good deal?", a: "They can be — but condition, title issues, and occupancy can erase the discount fast. Our team verifies every distressed listing for occupancy status, title clouds, and rehab scope before it hits your inbox." },
-      { q: "How often is your foreclosure list updated?", a: "Weekly at minimum. Pre-foreclosure notices are pulled from county records as they're filed, and REO inventory refreshes as banks list and re-price. You'll never see a 6-month-old stale listing on our feed." },
+      { q: "What is the difference between REO, pre-foreclosure, and short sale?", a: "Pre-foreclosure: the owner is in default but has not yet been foreclosed upon. Short sale: the lender agrees to accept less than the outstanding loan balance. REO (Real Estate Owned): the lender has foreclosed and holds title." },
+      { q: "Can foreclosure properties be purchased with financing?", a: "REO properties may be purchased with conventional, FHA, or VA financing subject to lender and property approval. Trustee-sale (courthouse-step) purchases in California generally require cashier's check at the time of sale and offer no inspection or financing contingency." },
+      { q: "How do California foreclosure auctions work?", a: "California primarily uses non-judicial trustee sales. Properties are sold to the highest qualified bidder, as-is and without warranty. Buyers should review the trustee's notice, complete independent title and lien research, and consult counsel prior to bidding." },
+      { q: "Are foreclosure properties always a discount?", a: "No. Condition, title issues, occupancy status, junior liens, and post-sale eviction costs can materially affect total cost. Each property must be evaluated independently." },
+      { q: "How often is distressed inventory updated?", a: "Public-record notices are monitored continuously, and our internal list is refreshed at least weekly. We make no representation that any specific listing is currently available, accurately priced, or free of title or occupancy issues." },
     ],
   },
   e: {
     slug: "e",
     path: "/e",
-    pill: "1031 Exchange • Identification Ready",
-    h1Lead: "The Clock Is Ticking.",
-    h1Accent: "We Have Your Replacement Property.",
-    subHeadline: "1031-Ready Diamonds in the Rough — Identification Cleared.",
+    pill: "1031 Exchange — Replacement Property Listings",
+    h1Lead: "1031 Exchange",
+    h1Accent: "Replacement Property Listings",
+    subHeadline: "Real property listings that may be eligible as like-kind replacement under IRC §1031.",
     subCopy:
-      "45 days to identify. 180 days to close. We maintain a live inventory of 1031-eligible single-family rentals, small multifamily, and NNN commercial properties — pre-vetted for cash flow and clean title. We coordinate directly with your Qualified Intermediary.",
+      "Browse residential, multifamily, and commercial listings that may be considered as replacement property in a 1031 exchange. Eligibility, identification, and exchange compliance must be determined by your CPA and Qualified Intermediary. Triple Diamond Realty does not provide tax or legal advice.",
     meta: {
-      title: "1031 Exchange Replacement Properties California | Identification Ready | Triple Diamond Realty",
+      title: "1031 Exchange Replacement Properties California | Triple Diamond Realty",
       description:
-        "Live 1031-eligible inventory in California. Close inside your 45/180 day windows. SFR, small multifamily, and NNN — pre-vetted and ready. 30 years of deal-finding power.",
+        "Browse California property listings that may qualify as 1031 exchange replacement property. Verify eligibility with your CPA and Qualified Intermediary.",
       keywords:
-        "1031 exchange property, 1031 replacement property california, like-kind exchange, 1031 eligible, NNN 1031, DST 1031 alternatives",
+        "1031 exchange property, 1031 replacement property california, like-kind exchange, 1031 eligible",
     },
     disclaimer:
-      "Triple Diamond Realty is not a tax advisor. Consult your CPA and Qualified Intermediary for 1031 guidance.",
+      "Triple Diamond Realty is a licensed real estate brokerage and does not provide tax, legal, or accounting advice. Section 1031 eligibility, identification deadlines, and exchange procedures must be confirmed with your CPA, attorney, and Qualified Intermediary. " + baseDisclaimer,
     faq: [
-      { q: "What is a 1031 exchange?", a: "A 1031 exchange (named after IRC Section 1031) lets investors defer capital gains tax by exchanging one investment property for another \"like-kind\" investment property within strict deadlines." },
-      { q: "How does the 45-day identification rule work?", a: "From the day you close on the sale of your relinquished property, you have 45 calendar days to formally identify up to three replacement properties (or more under the 200% or 95% rules). The list goes to your Qualified Intermediary in writing." },
-      { q: "What properties qualify as 1031 replacement property?", a: "Any real property held for investment or productive use in a trade or business — single-family rentals, multifamily, commercial, NNN, land, and DST interests can all qualify. Primary residences and flips do not." },
-      { q: "Can I do a 1031 into a single-family rental?", a: "Yes. SFR rentals are one of the most common 1031 replacement choices. We maintain a live shortlist of California SFRs with leases in place, ready to clear identification." },
-      { q: "Do I need a Qualified Intermediary?", a: "Yes. You cannot touch the sale proceeds at any point — they must flow through a Qualified Intermediary (QI). We work with established California QIs and can refer one if you need one." },
+      { q: "What is a 1031 exchange?", a: "A 1031 exchange (Internal Revenue Code §1031) is a tax provision that may allow an investor to defer capital gains tax when exchanging certain investment or business-use real property for like-kind investment or business-use real property, subject to IRS rules and timelines. Consult a qualified tax advisor." },
+      { q: "How does the 45-day identification rule work?", a: "Under current IRS rules, the taxpayer generally has 45 calendar days from the sale of the relinquished property to identify potential replacement property in writing to the Qualified Intermediary, and 180 days to close. Specific rules and exceptions should be reviewed with your tax advisor and QI." },
+      { q: "What property types may qualify as 1031 replacement property?", a: "Real property held for productive use in a trade or business or for investment may qualify. Primary residences and property held primarily for resale generally do not. Eligibility for any specific property must be determined by your tax advisor." },
+      { q: "Can I exchange into a single-family rental?", a: "Single-family residential rentals held for investment are commonly used as replacement property. Specific facts and intent matter; consult your CPA." },
+      { q: "Is a Qualified Intermediary required?", a: "A 1031 exchange generally requires use of a Qualified Intermediary (QI). The taxpayer cannot take actual or constructive receipt of the sale proceeds. Triple Diamond Realty does not act as a QI." },
     ],
   },
 };
