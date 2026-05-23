@@ -1,17 +1,15 @@
 import { useEffect, useState, useMemo, useRef } from "react";
-import { useLocation } from "wouter";
-import { Search as SearchIcon, SlidersHorizontal, X, Map as MapIcon, List as ListIcon } from "lucide-react";
+import { Search as SearchIcon, X, Map as MapIcon, List as ListIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ListingCard from "@/components/ListingCard";
 import { listings, type Listing } from "@/data/listings";
+import SearchFiltersSheet, { defaultFilters, type FilterState } from "@/components/SearchFiltersSheet";
 import { motion } from "framer-motion";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import type { Marker as LeafletMarker } from "leaflet";
 
-// Create custom pin icon
 const createCustomIcon = (isSelected: boolean) => L.divIcon({
   className: "custom-pin",
   html: `<div class="w-4 h-4 rounded-full bg-accent border-2 border-white shadow-sm ${isSelected ? 'ring-4 ring-primary scale-125' : ''} transition-all duration-300"></div>`,
@@ -20,7 +18,6 @@ const createCustomIcon = (isSelected: boolean) => L.divIcon({
   popupAnchor: [0, -8]
 });
 
-// Component to handle map scrolling when a card is clicked
 function MapController({ center }: { center: [number, number] | null }) {
   const map = useMap();
   useEffect(() => {
@@ -36,18 +33,14 @@ function MapController({ center }: { center: [number, number] | null }) {
 }
 
 export default function Search() {
-  const [location, setLocation] = useLocation();
   const searchParams = new URLSearchParams(window.location.search);
   const initialQuery = searchParams.get("q") || "";
   const initialView = searchParams.get("view") === "map" ? "map" : "list";
 
   const [view, setView] = useState<"list" | "map">(initialView);
   const [query, setQuery] = useState(initialQuery);
-  const [priceMax, setPriceMax] = useState<string>("any");
-  const [beds, setBeds] = useState<string>("any");
-  const [baths, setBaths] = useState<string>("any");
-  const [dealType, setDealType] = useState<string>("any");
-  const [propertyType, setPropertyType] = useState<string>("any");
+  const [filters, setFilters] = useState<FilterState>(defaultFilters);
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [selectedCenter, setSelectedCenter] = useState<[number, number] | null>(null);
@@ -64,50 +57,122 @@ export default function Search() {
     window.history.replaceState(null, "", `?${params.toString()}`);
   };
 
-  const resetFilters = () => {
+  const resetAll = () => {
     setQuery("");
-    setPriceMax("any");
-    setBeds("any");
-    setBaths("any");
-    setDealType("any");
-    setPropertyType("any");
+    setFilters(defaultFilters);
   };
 
   const filteredListings = useMemo(() => {
-    return listings.filter((listing) => {
+    return listings.filter((l) => {
+      // text search
       if (query) {
         const q = query.toLowerCase();
-        const addressStr = `${listing.street} ${listing.city} ${listing.zip}`.toLowerCase();
+        const addressStr = `${l.street} ${l.city} ${l.zip}`.toLowerCase();
         if (!addressStr.includes(q)) return false;
       }
-      if (priceMax !== "any" && listing.price > parseInt(priceMax)) return false;
-      if (beds !== "any" && listing.beds < parseInt(beds)) return false;
-      if (baths !== "any" && listing.baths < parseInt(baths)) return false;
-      if (dealType !== "any" && listing.dealType !== dealType) return false;
-      if (propertyType !== "any" && listing.propertyType !== propertyType) return false;
+
+      // price
+      const min = filters.priceMin ? parseInt(filters.priceMin) : 0;
+      const max = filters.priceMax ? parseInt(filters.priceMax) : Infinity;
+      if (l.price < min || l.price > max) return false;
+      if (filters.priceReduced && !l.priceReduced) return false;
+
+      // beds / baths
+      if (filters.beds !== "any") {
+        const b = parseInt(filters.beds);
+        if (b === 0 ? l.beds !== 0 : l.beds < b) return false;
+      }
+      if (filters.baths !== "any" && l.baths < parseInt(filters.baths)) return false;
+
+      // home types (multi)
+      if (filters.homeTypes.length > 0 && !filters.homeTypes.includes(l.propertyType)) return false;
+
+      // sale status (for-sale = Active/Pending, just-sold = Just Sold)
+      if (filters.saleStatus === "for-sale" && l.status === "Just Sold") return false;
+      if (filters.saleStatus === "just-sold" && l.status !== "Just Sold") return false;
+
+      // listing status filters (only apply if any checked and on for-sale tab)
+      if (filters.saleStatus === "for-sale" && filters.listingStatus.length > 0) {
+        if (!filters.listingStatus.includes(l.status as "Active" | "Pending")) return false;
+      }
+
+      // sale types (multi)
+      if (filters.saleTypes.length > 0 && !filters.saleTypes.includes(l.saleType)) return false;
+
+      // tours
+      if (filters.openHouse && !l.hasOpenHouse) return false;
+      if (filters.threeDTour && !l.has3DTour) return false;
+      if (filters.virtualTour && !l.hasVirtualTour) return false;
+
+      // days on market
+      if (filters.daysOnMarket !== "any" && l.daysOnMarket > parseInt(filters.daysOnMarket)) return false;
+
+      // sqft / lot
+      const sqftMin = filters.sqftMin ? parseInt(filters.sqftMin) : 0;
+      const sqftMax = filters.sqftMax ? parseInt(filters.sqftMax) : Infinity;
+      if (l.sqft < sqftMin || l.sqft > sqftMax) return false;
+      const lotMin = filters.lotMin ? parseInt(filters.lotMin) : 0;
+      const lotMax = filters.lotMax ? parseInt(filters.lotMax) : Infinity;
+      if (l.lotSqft < lotMin || l.lotSqft > lotMax) return false;
+
+      // home age
+      const currentYear = new Date().getFullYear();
+      const age = currentYear - l.yearBuilt;
+      const ageMin = filters.ageMin ? parseInt(filters.ageMin) : 0;
+      const ageMax = filters.ageMax ? parseInt(filters.ageMax) : Infinity;
+      if (age < ageMin || age > ageMax) return false;
+
+      // HOA
+      if (filters.hoaMax && l.hoaMonthly > parseInt(filters.hoaMax)) return false;
+
+      // garage
+      if (filters.garage !== "any" && l.garage < parseInt(filters.garage)) return false;
+
+      // stories
+      if (filters.stories === "single" && l.stories !== 1) return false;
+      if (filters.stories === "multi" && l.stories < 2) return false;
+
       return true;
     });
-  }, [query, priceMax, beds, baths, dealType, propertyType]);
+  }, [query, filters]);
 
   const handleCardClick = (listing: Listing) => {
     setSelectedCenter([listing.lat, listing.lng]);
     const m = markerRefs.current[listing.id];
-    if (m) {
-      setTimeout(() => m.openPopup(), 250);
-    }
+    if (m) setTimeout(() => m.openPopup(), 250);
   };
+
+  // count active filters for badge
+  const activeCount = useMemo(() => {
+    let n = 0;
+    if (filters.priceMin || filters.priceMax) n++;
+    if (filters.priceReduced) n++;
+    if (filters.beds !== "any") n++;
+    if (filters.baths !== "any") n++;
+    if (filters.homeTypes.length) n++;
+    if (filters.saleStatus !== "for-sale") n++;
+    if (filters.listingStatus.length) n++;
+    if (filters.saleTypes.length) n++;
+    if (filters.openHouse || filters.threeDTour || filters.virtualTour) n++;
+    if (filters.daysOnMarket !== "any") n++;
+    if (filters.sqftMin || filters.sqftMax) n++;
+    if (filters.lotMin || filters.lotMax) n++;
+    if (filters.ageMin || filters.ageMax) n++;
+    if (filters.hoaMax) n++;
+    if (filters.garage !== "any") n++;
+    if (filters.stories !== "any") n++;
+    return n;
+  }, [filters]);
 
   return (
     <div className="min-h-screen bg-muted/20 flex flex-col">
       {/* Header */}
       <div className="bg-white border-b border-border py-6 px-4">
         <div className="container mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <h1 className="text-3xl font-extrabold text-primary mb-1">
-              <strong>{filteredListings.length}</strong> deals available
-            </h1>
-          </div>
-          
+          <h1 className="text-3xl font-extrabold text-primary mb-1">
+            <strong>{filteredListings.length}</strong> deals available
+          </h1>
+
           <div className="flex bg-muted rounded-lg p-1 shrink-0">
             <button
               onClick={() => updateUrl("list")}
@@ -133,7 +198,7 @@ export default function Search() {
       <div className="bg-white border-b border-border sticky top-[73px] z-40 shadow-sm px-4 py-3">
         <div className="container mx-auto">
           <div className="flex flex-wrap gap-3 items-center">
-            <div className="relative w-full md:w-64 shrink-0">
+            <div className="relative w-full md:w-72 shrink-0">
               <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 value={query}
@@ -143,81 +208,31 @@ export default function Search() {
               />
             </div>
 
-            <Select value={priceMax} onValueChange={setPriceMax}>
-              <SelectTrigger className="w-[130px] bg-muted/50">
-                <SelectValue placeholder="Max Price" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="any">Any Price</SelectItem>
-                <SelectItem value="100000">Under $100k</SelectItem>
-                <SelectItem value="200000">Under $200k</SelectItem>
-                <SelectItem value="300000">Under $300k</SelectItem>
-                <SelectItem value="500000">Under $500k</SelectItem>
-                <SelectItem value="750000">Under $750k</SelectItem>
-                <SelectItem value="1000000">Under $1M</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="relative">
+              <SearchFiltersSheet
+                filters={filters}
+                setFilters={setFilters}
+                resultCount={filteredListings.length}
+                open={filtersOpen}
+                onOpenChange={setFiltersOpen}
+              />
+              {activeCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-accent text-white text-xs font-bold rounded-full h-5 min-w-5 px-1 flex items-center justify-center">
+                  {activeCount}
+                </span>
+              )}
+            </div>
 
-            <Select value={beds} onValueChange={setBeds}>
-              <SelectTrigger className="w-[110px] bg-muted/50">
-                <SelectValue placeholder="Beds" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="any">Any Beds</SelectItem>
-                <SelectItem value="1">1+ Beds</SelectItem>
-                <SelectItem value="2">2+ Beds</SelectItem>
-                <SelectItem value="3">3+ Beds</SelectItem>
-                <SelectItem value="4">4+ Beds</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select value={baths} onValueChange={setBaths}>
-              <SelectTrigger className="w-[110px] bg-muted/50">
-                <SelectValue placeholder="Baths" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="any">Any Baths</SelectItem>
-                <SelectItem value="1">1+ Baths</SelectItem>
-                <SelectItem value="2">2+ Baths</SelectItem>
-                <SelectItem value="3">3+ Baths</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select value={dealType} onValueChange={setDealType}>
-              <SelectTrigger className="w-[150px] bg-muted/50">
-                <SelectValue placeholder="Deal Type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="any">All Deals</SelectItem>
-                <SelectItem value="Handyman Special">Handyman Special</SelectItem>
-                <SelectItem value="Fixer">Fixer</SelectItem>
-                <SelectItem value="Cash Only">Cash Only</SelectItem>
-                <SelectItem value="Wholesale">Wholesale</SelectItem>
-                <SelectItem value="New Listing">New Listing</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select value={propertyType} onValueChange={setPropertyType}>
-              <SelectTrigger className="w-[150px] bg-muted/50">
-                <SelectValue placeholder="Property Type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="any">All Types</SelectItem>
-                <SelectItem value="Single Family">Single Family</SelectItem>
-                <SelectItem value="Condo">Condo</SelectItem>
-                <SelectItem value="Multi-Family">Multi-Family</SelectItem>
-                <SelectItem value="Land">Land</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Button variant="ghost" onClick={resetFilters} className="text-muted-foreground ml-auto">
-              <X className="w-4 h-4 mr-2" /> Reset
-            </Button>
+            {(activeCount > 0 || query) && (
+              <Button variant="ghost" onClick={resetAll} className="text-muted-foreground ml-auto">
+                <X className="w-4 h-4 mr-2" /> Clear all
+              </Button>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Main Content Area */}
+      {/* Main */}
       {view === "list" ? (
         <div className="container mx-auto px-4 py-8 flex-1">
           {filteredListings.length > 0 ? (
@@ -235,10 +250,9 @@ export default function Search() {
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-32 text-center">
-              <SlidersHorizontal className="w-12 h-12 text-muted-foreground/50 mb-4" />
               <h3 className="text-2xl font-bold text-primary mb-2">No deals match your filters</h3>
               <p className="text-muted-foreground mb-6">Try widening your criteria.</p>
-              <Button onClick={resetFilters} className="bg-primary text-white rounded-full">
+              <Button onClick={resetAll} className="bg-primary text-white rounded-full">
                 Clear Filters
               </Button>
             </div>
@@ -246,11 +260,10 @@ export default function Search() {
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-[2fr_3fr] gap-0 lg:h-[720px]">
-          {/* Map Mobile: Top, Desktop: Right */}
           <div className="order-1 lg:order-2 relative z-0 h-[420px] lg:h-full touch-none">
-            <MapContainer 
-              center={[37.3, -119.5]} 
-              zoom={6} 
+            <MapContainer
+              center={[37.3, -119.5]}
+              zoom={6}
               scrollWheelZoom
               dragging
               touchZoom
@@ -264,7 +277,7 @@ export default function Search() {
               />
               <MapController center={selectedCenter} />
               {filteredListings.map(listing => (
-                <Marker 
+                <Marker
                   key={listing.id}
                   position={[listing.lat, listing.lng]}
                   icon={createCustomIcon(hoveredId === listing.id)}
@@ -292,11 +305,10 @@ export default function Search() {
             </MapContainer>
           </div>
 
-          {/* Cards Mobile: Bottom, Desktop: Left */}
           <div className="order-2 lg:order-1 lg:overflow-y-auto bg-muted/10 p-4 pb-12 border-r border-border lg:h-full">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-8">
               {filteredListings.map(listing => (
-                <div 
+                <div
                   key={listing.id}
                   onMouseEnter={() => setHoveredId(listing.id)}
                   onMouseLeave={() => setHoveredId(null)}

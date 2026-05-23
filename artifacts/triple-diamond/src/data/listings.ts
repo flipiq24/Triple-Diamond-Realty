@@ -7,6 +7,10 @@ import prop6 from "./images/prop6.png";
 import prop7 from "./images/prop7.png";
 import prop8 from "./images/prop8.png";
 
+export type PropertyType = "Single Family" | "Condo" | "Townhome" | "Multi-Family" | "Mobile" | "Land" | "Farm";
+export type ListingStatus = "Active" | "Pending" | "Just Sold";
+export type SaleType = "Existing" | "Foreclosure" | "New Construction" | "55+ Community";
+
 export type Listing = {
   id: string;
   price: number;
@@ -20,14 +24,28 @@ export type Listing = {
   zip: string;
   lat: number;
   lng: number;
-  propertyType: "Single Family" | "Condo" | "Multi-Family" | "Land";
+  propertyType: PropertyType;
   dealType: "Handyman Special" | "Fixer" | "Cash Only" | "Wholesale" | "New Listing";
   image: string;
   description?: string;
+  // Extended detail fields
+  yearBuilt: number;
+  hoaMonthly: number;
+  garage: number;
+  stories: 1 | 2 | 3;
+  status: ListingStatus;
+  saleType: SaleType;
+  daysOnMarket: number;
+  hasOpenHouse: boolean;
+  has3DTour: boolean;
+  hasVirtualTour: boolean;
+  priceReduced: boolean;
 };
 
-// Generate 18 listings distributed across specific California cities
-export const listings: Listing[] = [
+// Base listing data — extended fields applied below via .map
+type BaseListing = Omit<Listing, "yearBuilt" | "hoaMonthly" | "garage" | "stories" | "status" | "saleType" | "daysOnMarket" | "hasOpenHouse" | "has3DTour" | "hasVirtualTour" | "priceReduced">;
+
+const baseListings: BaseListing[] = [
   {
     id: "td-001",
     price: 450000,
@@ -353,3 +371,39 @@ export const listings: Listing[] = [
     description: "Massive potential. Hillside views. Structural work needed."
   }
 ];
+
+// Deterministic enrichment so every listing has the full Realtor-style detail set
+// without requiring hand-edits to all 18 records.
+function hash(s: string): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
+  return Math.abs(h);
+}
+
+export const listings: Listing[] = baseListings.map((b) => {
+  const h = hash(b.id);
+  const yearBuilt = 1925 + (h % 95); // 1925..2019
+  const hoaMonthly = b.propertyType === "Condo" ? 200 + (h % 350) : (h % 5 === 0 ? 50 + (h % 100) : 0);
+  const garage = b.propertyType === "Land" ? 0 : (h % 4); // 0..3
+  const stories: 1 | 2 | 3 = b.sqft > 2000 ? 2 : (h % 6 === 0 ? 2 : 1);
+  const status: ListingStatus = h % 9 === 0 ? "Pending" : (h % 17 === 0 ? "Just Sold" : "Active");
+  const saleType: SaleType =
+    b.dealType === "Cash Only" || b.dealType === "Wholesale" ? "Foreclosure" :
+    b.dealType === "New Listing" && h % 3 === 0 ? "New Construction" :
+    (h % 11 === 0 ? "55+ Community" : "Existing");
+  const daysOnMarket = h % 90; // 0..89
+  return {
+    ...b,
+    yearBuilt,
+    hoaMonthly,
+    garage,
+    stories,
+    status,
+    saleType,
+    daysOnMarket,
+    hasOpenHouse: h % 4 === 0,
+    has3DTour: h % 3 === 0,
+    hasVirtualTour: h % 5 === 0,
+    priceReduced: h % 6 === 0,
+  };
+});
