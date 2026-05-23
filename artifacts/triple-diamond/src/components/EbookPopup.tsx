@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { BookOpen, Download, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
-import ebookCover from "@assets/ChatGPT_Image_May_23,_2026,_12_30_58_PM_1779564683142.png";
+import ebookCover from "@assets/ChatGPT_Image_May_23,_2026,_01_01_41_PM_1779566515114.png";
 
 const KEY = "tdr_ebook_popup_v1";
 
