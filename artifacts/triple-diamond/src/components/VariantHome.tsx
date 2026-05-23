@@ -93,7 +93,7 @@ export default function VariantHome({ config, cityName }: { config: VariantConfi
             {[
               { step: 1, title: "Set Your Buy Box", body: "Tell us your buy box — ZIP, price, beds, deal type." },
               { step: 2, title: "Get Matched Deals", body: "Get matched deals with instant comps, ARV, and rehab numbers." },
-              { step: 3, title: "Close Fast", body: "Close fast with our vetted lenders, contractors, and title partners." },
+              { step: 3, title: "Close like a pro!", body: "Close fast with our vetted lenders, contractors, and title partners." },
             ].map((item, i) => (
               <div key={i} className="flex flex-col items-center text-center">
                 <div className="w-24 h-24 rounded-full bg-white border-4 border-accent text-accent flex items-center justify-center text-4xl font-black mb-6 shadow-sm">{item.step}</div>
