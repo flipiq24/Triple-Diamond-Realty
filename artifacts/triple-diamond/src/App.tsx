@@ -16,7 +16,7 @@ import CityPage from "@/pages/city";
 import Property from "@/pages/property";
 import SellProperty from "@/pages/sell-property";
 import CompWithAI from "@/pages/comp-with-ai";
-import { HomeA, HomeB, HomeC, HomeD, HomeE } from "@/pages/variant-home";
+import { HomeA, HomeB, HomeC, HomeD, HomeE, HomeF } from "@/pages/variant-home";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import CookieConsent from "@/components/CookieConsent";
@@ -51,12 +51,14 @@ function Router() {
           <Route path="/cash-flow-rentals" component={HomeC} />
           <Route path="/wholesale-deals" component={HomeD} />
           <Route path="/1031-exchange" component={HomeE} />
+          <Route path="/focus" component={HomeF} />
           {/* Legacy short-code aliases (kept for existing PPC/print links) */}
           <Route path="/a" component={HomeA} />
           <Route path="/b" component={HomeB} />
           <Route path="/c" component={HomeC} />
           <Route path="/d" component={HomeD} />
           <Route path="/e" component={HomeE} />
+          <Route path="/f" component={HomeF} />
           <Route path="/california/:city" component={CityPage} />
           <Route path="/property/:id" component={Property} />
           <Route path="/sell-property" component={SellProperty} />

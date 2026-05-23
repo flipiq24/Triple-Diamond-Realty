@@ -11,7 +11,7 @@ export type VariantConfig = {
   disclaimer?: string;
 };
 
-export const variants: Record<"a" | "b" | "c" | "d" | "e", VariantConfig> = {
+export const variants: Record<"a" | "b" | "c" | "d" | "e" | "f", VariantConfig> = {
   a: {
     slug: "a",
     path: "/fixer-uppers",
@@ -132,6 +132,30 @@ export const variants: Record<"a" | "b" | "c" | "d" | "e", VariantConfig> = {
       { q: "What properties qualify as 1031 replacement?", a: "Real property held for investment or productive use in a trade or business — single-family rentals, multifamily, commercial, NNN, land, and DST interests can qualify. Primary residences and flips generally do not." },
       { q: "Can I do a 1031 into a single-family rental?", a: "Yes. SFR rentals held for investment are one of the most common 1031 replacement choices. We maintain a live shortlist of SFRs ready to clear identification." },
       { q: "Do I need a Qualified Intermediary?", a: "Yes. The taxpayer cannot take constructive receipt of sale proceeds — they must flow through a Qualified Intermediary. We work with established QIs and can refer one." },
+    ],
+  },
+  f: {
+    slug: "f",
+    path: "/focus",
+    pill: "Focus List • Hand-Picked Weekly",
+    h1Lead: "The Focus List —",
+    h1Accent: "Our Best Deals This Week",
+    subHeadline: "A short list. Hand-picked. Highest margin, lowest friction.",
+    subCopy:
+      "Every Monday we publish a tight Focus List of the strongest deals across our pipeline — fixers, off-market, cash-flow, wholesale, and 1031-ready inventory — ranked by margin, condition, and speed-to-close. No noise. Just the deals worth your time.",
+    meta: {
+      title: "The Focus List — Best Off-Market Deals This Week | Triple Diamond Realty",
+      description:
+        "Our weekly Focus List — hand-picked, ranked, and underwritten. The strongest off-market and fixer deals in California this week.",
+      keywords:
+        "best real estate deals, weekly deal list, hand picked investment properties, top off market deals, focus list, hot deals real estate, investor deal of the week",
+    },
+    faq: [
+      { q: "What is the Focus List?", a: "A hand-picked, weekly shortlist of the strongest deals across our entire pipeline — typically 5 to 12 properties — ranked by margin, condition, and speed-to-close." },
+      { q: "How often is the Focus List updated?", a: "Every Monday morning. Properties stay on the list until they're under contract or pulled — most clear within 7 days." },
+      { q: "How do you pick what makes the Focus List?", a: "Each prospective deal is scored on margin (price vs. ARV or rent), condition risk, title and disclosure cleanliness, and how fast a vetted buyer could close. Only the top of the pipeline makes the list." },
+      { q: "Can I get the Focus List by email?", a: "Yes. Verified buyers receive the Focus List every Monday at 6 a.m. PT, plus a 'just added' alert any time a new property is promoted to the list mid-week." },
+      { q: "Do you charge for access to the Focus List?", a: "No. Access is free for verified buyers. We're compensated at closing per standard California brokerage agreements." },
     ],
   },
 };
