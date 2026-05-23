@@ -1,0 +1,123 @@
+GLOBAL INSTRUCTIONS (apply to all 5 variants + city pages)
+Tighten the entire site for sharp, investor-focused copy. Apply these changes across ALL pages (/, /a, /b, /c, /d, /e, and /california/:city):
+
+1. TOP BAR
+   - Keep: "Diamonds in the Rough. Delivered Daily."
+   - Replace "CA DRE #[INSERT]" with the actual DRE number before publish.
+
+2. HERO CTAs
+   - Keep ONE primary CTA: "Find Your Next Deal"
+   - Move "Sell a Property" and "Comp with AI" below the fold as secondary links.
+
+3. TRUST BAR
+   - Remove "Trusted by thousands of investors" with stock avatars.
+   - Replace with: "Active buy box for 1,200+ California investors" (or real number).
+
+4. STATS ROW — rewrite to benefit-led:
+   - "30 Years Sourcing California Deals"
+   - "$1B+ in Transactions Closed"
+   - "Deals You Won't Find on Zillow"
+
+5. "WHY INVESTORS CHOOSE" — rewrite cards:
+   - Card 1: "On + Off-Market Inventory" → "MLS, pre-market, and pocket listings — all in one feed."
+   - Card 2: "Proprietary Sourcing" → "Direct-to-seller pipeline built over 30 years."
+   - Card 3: "Real Numbers" → "Comps, ARV, and rehab scope on every listing."
+   - Move all disclaimers ("where available," "not guaranteed") to footer fine print.
+
+6. HOW IT WORKS — tighten to one sentence each:
+   - Step 1: "Tell us your buy box — ZIP, price, beds, deal type."
+   - Step 2: "Get matched deals with instant comps, ARV, and rehab numbers."
+   - Step 3: "Close fast with our vetted lenders, contractors, and title partners."
+
+7. FINAL CTA SECTION
+   - Headline: "Ready to find your next diamond in the rough?"
+   - Subcopy: DELETE the long disclaimer paragraph. Move to footer.
+   - Keep button: "Start Searching Now"
+
+8. FOOTER
+   - Replace all [INSERT] placeholders with real DRE #, address, broker name.
+   - Keep legal disclaimer block as-is (it belongs in the footer).
+
+VARIANT /a — Handyman Specials & Fixer-Uppers
+Update variant /a in src/data/variants.ts:
+
+H1: "Fixer-Uppers & Handyman Specials"
+Subheadline: "Homes with real upside — delivered to your inbox based on your buying criteria."
+Search placeholder: "Enter city, ZIP, or county"
+Meta title: "California Fixer-Upper & Handyman Special Listings | Triple Diamond Realty"
+Meta description: "Off-market and MLS fixer-uppers across California. Real comps, real ARV, real margin."
+Primary keyword: "fixer upper California"
+
+VARIANT /b — Off-Market Investment Properties
+Update variant /b:
+
+H1: "Off-Market California Investment Properties"
+Subheadline: "Pocket listings and pre-market deals — sourced direct, before they hit the MLS."
+Search placeholder: "Enter city, ZIP, or county"
+Meta title: "Off-Market Real Estate Deals in California | Triple Diamond Realty"
+Meta description: "Exclusive off-market investment properties across California. Direct-to-seller pipeline, no bidding wars."
+Primary keyword: "off-market deals California"
+
+VARIANT /c — Cash-Flow Rentals & BRRRR
+Update variant /c:
+
+H1: "Cash-Flow Rentals & BRRRR Deals"
+Subheadline: "Buy-and-hold properties with the numbers that work — cap rate, rent, and refi-ready ARV on every listing."
+Search placeholder: "Enter city, ZIP, or county"
+Meta title: "California BRRRR & Cash-Flow Rental Properties | Triple Diamond Realty"
+Meta description: "Rental properties built for cash flow and BRRRR. Real rents, real cap rates, real ARV."
+Primary keyword: "BRRRR properties California"
+
+VARIANT /d — Wholesale & Assignment Contracts
+Update variant /d:
+
+H1: "Wholesale & Assignable Contracts"
+Subheadline: "Assignable deals direct from our pipeline — locked up, priced for margin, ready to move."
+Search placeholder: "Enter city, ZIP, or county"
+Meta title: "California Wholesale Real Estate & Assignment Contracts | Triple Diamond Realty"
+Meta description: "Assignable wholesale contracts across California. Locked-up deals with margin built in."
+Primary keyword: "wholesale real estate California"
+
+VARIANT /e — 1031 Exchange Replacement Inventory
+Update variant /e:
+
+H1: "1031 Exchange Replacement Properties"
+Subheadline: "Identification-ready inventory across California — close on your timeline, defer your gain."
+Search placeholder: "Enter city, ZIP, or county"
+Meta title: "1031 Exchange Replacement Properties in California | Triple Diamond Realty"
+Meta description: "Pre-vetted 1031 replacement inventory across California. Close on your 45/180-day timeline."
+Primary keyword: "1031 exchange properties California"
+
+ONE-SHOT PROMPT (paste this single block if you want it all at once)
+Apply the following copy updates across the entire site.
+
+GLOBAL (all pages):
+- Reduce hero CTAs to one primary: "Find Your Next Deal"
+- Replace trust bar with: "Active buy box for 1,200+ California investors"
+- Stats row: "30 Years Sourcing California Deals" | "$1B+ in Transactions Closed" | "Deals You Won't Find on Zillow"
+- Rewrite "Why Investors Choose" cards to: (1) "MLS, pre-market, and pocket listings — all in one feed." (2) "Direct-to-seller pipeline built over 30 years." (3) "Comps, ARV, and rehab scope on every listing."
+- How It Works: (1) "Tell us your buy box — ZIP, price, beds, deal type." (2) "Get matched deals with instant comps, ARV, and rehab numbers." (3) "Close fast with our vetted lenders, contractors, and title partners."
+- Delete the long disclaimer under "Ready to find your next diamond in the rough?" — move to footer.
+- Replace all [INSERT] placeholders in footer with real DRE #, address, broker name.
+
+VARIANT /a (Handyman Specials & Fixer-Uppers):
+H1: "Fixer-Uppers & Handyman Specials"
+Sub: "Homes with real upside — delivered to your inbox based on your buying criteria."
+
+VARIANT /b (Off-Market Investment Properties):
+H1: "Off-Market California Investment Properties"
+Sub: "Pocket listings and pre-market deals — sourced direct, before they hit the MLS."
+
+VARIANT /c (Cash-Flow Rentals & BRRRR):
+H1: "Cash-Flow Rentals & BRRRR Deals"
+Sub: "Buy-and-hold properties with the numbers that work — cap rate, rent, and refi-ready ARV on every listing."
+
+VARIANT /d (Wholesale & Assignment Contracts):
+H1: "Wholesale & Assignable Contracts"
+Sub: "Assignable deals direct from our pipeline — locked up, priced for margin, ready to move."
+
+VARIANT /e (1031 Exchange Replacement Inventory):
+H1: "1031 Exchange Replacement Properties"
+Sub: "Identification-ready inventory across California — close on your timeline, defer your gain."
+
+Update meta titles, descriptions, and FAQ sets in src/data/variants.ts to match each variant's audience and primary keyword.

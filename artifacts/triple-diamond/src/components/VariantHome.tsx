@@ -65,9 +65,9 @@ export default function VariantHome({ config, cityName }: { config: VariantConfi
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
-              { icon: Building2, title: "Off-Market & On-Market Inventory", body: "Browse residential listings including off-market, pre-market, and active MLS properties. Listing status is disclosed on every property." },
-              { icon: Cpu, title: "Proprietary Sourcing Tools", body: "Our team uses public records, direct outreach, and proprietary software to identify potential opportunities. Inventory availability is not guaranteed at any given time." },
-              { icon: TrendingUp, title: "Reference Comps & ARV Data", body: "Where available, listings include seller-provided or public-record figures for comparable sales, ARV estimates, and rehab scope — provided for your independent review and verification." },
+              { icon: Building2, title: "On + Off-Market Inventory", body: "MLS, pre-market, and pocket listings — all in one feed." },
+              { icon: Cpu, title: "Proprietary Sourcing", body: "Direct-to-seller pipeline built over 30 years." },
+              { icon: TrendingUp, title: "Real Numbers", body: "Comps, ARV, and rehab scope on every listing." },
             ].map((prop, i) => (
               <motion.article key={i} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }} className="p-6 rounded-2xl bg-muted/30 border border-border">
                 <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-6">
@@ -91,9 +91,9 @@ export default function VariantHome({ config, cityName }: { config: VariantConfi
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12 max-w-5xl mx-auto relative">
             <div className="hidden md:block absolute top-12 left-[15%] right-[15%] h-0.5 bg-border -z-10" />
             {[
-              { step: 1, title: "Set Up Your Free Account & Buy Box", body: "Create your free account in minutes and tell us exactly what you're hunting — ZIP, price, beds, deal type. We tune your buy box so only matching deals reach you." },
-              { step: 2, title: "Get Matched Deals. Run the Numbers.", body: "Receive on- and off-market opportunities the moment they hit our pipeline, then run instant comps, ARV, rehab, and full investment analysis right inside the platform." },
-              { step: 3, title: "Close Like a Pro", body: "Tap into our toolkit of vetted lenders, contractors, title, and transaction resources so you can move from offer to close fast — and confident." },
+              { step: 1, title: "Set Your Buy Box", body: "Tell us your buy box — ZIP, price, beds, deal type." },
+              { step: 2, title: "Get Matched Deals", body: "Get matched deals with instant comps, ARV, and rehab numbers." },
+              { step: 3, title: "Close Fast", body: "Close fast with our vetted lenders, contractors, and title partners." },
             ].map((item, i) => (
               <div key={i} className="flex flex-col items-center text-center">
                 <div className="w-24 h-24 rounded-full bg-white border-4 border-accent text-accent flex items-center justify-center text-4xl font-black mb-6 shadow-sm">{item.step}</div>
@@ -131,10 +131,8 @@ export default function VariantHome({ config, cityName }: { config: VariantConfi
       <section id="footer" className="py-24 bg-primary text-center px-4 relative overflow-hidden">
         <div className="absolute inset-0 opacity-5" style={{ backgroundImage: "radial-gradient(circle at 2px 2px, white 1px, transparent 0)", backgroundSize: "32px 32px" }} />
         <div className="container mx-auto relative z-10">
-          <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-6">Ready to find your next diamond in the rough?</h2>
-          <p className="text-primary-foreground/80 text-lg mb-10 max-w-xl mx-auto">Browse current on-market and off-market listings. Listing status, condition notes, and seller-provided figures disclosed on every property.</p>
+          <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-10">Ready to find your next diamond in the rough?</h2>
           <Button className="bg-accent hover:bg-accent/90 text-white rounded-full font-bold px-10 h-14 text-lg shadow-[0_0_20px_rgba(245,158,11,0.5)]" onClick={() => setLocation("/search")}>Start Searching Now</Button>
-          {config.disclaimer && <p className="text-xs text-primary-foreground/60 max-w-3xl mx-auto mt-8 leading-relaxed">{config.disclaimer}</p>}
         </div>
       </section>
     </div>

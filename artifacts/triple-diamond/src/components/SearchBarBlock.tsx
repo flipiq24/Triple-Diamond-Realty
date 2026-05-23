@@ -23,12 +23,12 @@ export default function SearchBarBlock() {
         className="w-full max-w-2xl mx-auto mb-8"
       >
         <form onSubmit={submit} className="relative" role="search" aria-label="Search real estate deals">
-          <label htmlFor="hero-search" className="sr-only">Search by city, ZIP, or address</label>
+          <label htmlFor="hero-search" className="sr-only">Search by city, ZIP, or county</label>
           <Input
             id="hero-search"
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Enter a city, ZIP, or address"
+            placeholder="Enter city, ZIP, or county"
             className="w-full h-16 pl-6 pr-16 rounded-full text-lg shadow-xl border-0 focus-visible:ring-2 focus-visible:ring-accent"
           />
           <Button type="submit" size="icon" aria-label="Search deals" className="absolute right-2 top-2 h-12 w-12 rounded-full bg-primary hover:bg-primary/90 text-white">
@@ -41,25 +41,13 @@ export default function SearchBarBlock() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.3 }}
-        className="flex flex-wrap justify-center gap-4 mb-16"
+        className="flex justify-center mb-10"
       >
         <Button
-          className="rounded-full bg-accent hover:bg-accent/90 text-white h-12 px-6 font-bold"
-          onClick={() => document.getElementById("footer")?.scrollIntoView({ behavior: "smooth" })}
-        >
-          Sell a Property
-        </Button>
-        <Button
-          className="rounded-full bg-accent hover:bg-accent/90 text-white h-12 px-6 font-bold"
-          onClick={() => document.getElementById("footer")?.scrollIntoView({ behavior: "smooth" })}
-        >
-          Comp with AI
-        </Button>
-        <Button
-          className="rounded-full bg-accent hover:bg-accent/90 text-white h-12 px-6 font-bold shadow-[0_0_15px_rgba(245,158,11,0.4)]"
+          className="rounded-full bg-accent hover:bg-accent/90 text-white h-14 px-10 font-bold text-lg shadow-[0_0_20px_rgba(245,158,11,0.5)]"
           onClick={() => setLocation("/search")}
         >
-          Find Your Next Deal!
+          Find Your Next Deal
         </Button>
       </motion.div>
 
@@ -67,17 +55,26 @@ export default function SearchBarBlock() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5, delay: 0.5 }}
-        className="flex items-center justify-center gap-4"
+        className="text-center"
       >
-        <div className="flex -space-x-3">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="w-10 h-10 rounded-full border-2 border-primary bg-muted overflow-hidden">
-              <img src={`https://api.dicebear.com/7.x/notionists/svg?seed=${i}&backgroundColor=e2e8f0`} alt="" className="w-full h-full object-cover" />
-            </div>
-          ))}
-        </div>
-        <div className="text-sm font-medium text-primary-foreground/70">
-          Trusted by <strong className="text-white">thousands</strong> of investors
+        <p className="text-sm font-medium text-white">
+          Active buy box for <strong className="text-accent">1,200+ California investors</strong>
+        </p>
+        <div className="mt-4 flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs text-primary-foreground/70">
+          <button
+            type="button"
+            onClick={() => document.getElementById("footer")?.scrollIntoView({ behavior: "smooth" })}
+            className="underline underline-offset-4 hover:text-accent transition"
+          >
+            Sell a Property
+          </button>
+          <button
+            type="button"
+            onClick={() => document.getElementById("footer")?.scrollIntoView({ behavior: "smooth" })}
+            className="underline underline-offset-4 hover:text-accent transition"
+          >
+            Comp with AI
+          </button>
         </div>
       </motion.div>
     </>

@@ -2,9 +2,9 @@ import { Award, Gem, Cpu } from "lucide-react";
 
 export default function AuthorityStrip() {
   const items = [
-    { icon: Award, num: "30 Years", label: "in the Business" },
-    { icon: Gem, num: "Thousands", label: "of Transactions" },
-    { icon: Cpu, num: "Proprietary", label: "Off-Market Sourcing" },
+    { icon: Award, num: "30 Years", label: "Sourcing California Deals" },
+    { icon: Gem, num: "$1B+", label: "in Transactions Closed" },
+    { icon: Cpu, num: "Off-Market", label: "Deals You Won't Find on Zillow" },
   ];
   return (
     <section aria-label="Triple Diamond Realty authority" className="bg-primary text-primary-foreground py-6 border-y border-primary/30">
