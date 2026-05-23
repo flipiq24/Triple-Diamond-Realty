@@ -103,10 +103,9 @@ export default function Search() {
       <div className="bg-white border-b border-border py-6 px-4">
         <div className="container mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-extrabold text-primary mb-1">Handyman Specials</h1>
-            <p className="text-muted-foreground">
-              <strong className="text-primary">{filteredListings.length}</strong> deals available now
-            </p>
+            <h1 className="text-3xl font-extrabold text-primary mb-1">
+              <strong>{filteredListings.length}</strong> deals available
+            </h1>
           </div>
           
           <div className="flex bg-muted rounded-lg p-1 shrink-0">
