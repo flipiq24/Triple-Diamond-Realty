@@ -107,12 +107,11 @@ export default function About() {
       {/* Stats */}
       <section className="py-16 bg-muted/30 border-y border-border">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 text-center">
             {[
               { value: "30+", label: "Years in California" },
               { value: "1000s", label: "Properties Closed" },
               { value: "#1", label: "Off-Market Tech Platform" },
-              { value: "$0", label: "Buyer-Side Fees" },
             ].map((stat, i) => (
               <div key={i} className="flex flex-col">
                 <div className="text-4xl md:text-5xl font-black text-accent mb-2">{stat.value}</div>
