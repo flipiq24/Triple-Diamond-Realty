@@ -1,9 +1,11 @@
 import { useState } from "react";
-import { Link } from "wouter";
-import { Heart, MapPin, BedDouble, Bath, Square } from "lucide-react";
+import { Link, useLocation } from "wouter";
+import { Heart, MapPin, BedDouble, Bath, Square, Lock } from "lucide-react";
 import { type Listing } from "@/data/listings";
 import { Button } from "@/components/ui/button";
 import EmailAgentDialog from "@/components/EmailAgentDialog";
+import RegisterDialog from "@/components/RegisterDialog";
+import { useBuyerVerified } from "@/hooks/useBuyerVerified";
 import { toast } from "sonner";
 
 export default function ListingCard({ listing }: { listing: Listing }) {
@@ -34,6 +36,18 @@ export default function ListingCard({ listing }: { listing: Listing }) {
 
   const href = `/property/${listing.id}`;
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [registerOpen, setRegisterOpen] = useState(false);
+  const { verified } = useBuyerVerified();
+  const [, setLocation] = useLocation();
+
+  const handleViewDeal = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (verified) {
+      setLocation(href);
+    } else {
+      setRegisterOpen(true);
+    }
+  };
 
   return (
     <div className="group bg-white rounded-xl border border-border shadow-sm overflow-hidden hover:shadow-md transition-all duration-300 flex flex-col h-full">
@@ -105,26 +119,49 @@ export default function ListingCard({ listing }: { listing: Listing }) {
           </div>
         </div>
 
-        {/* Address */}
+        {/* Location — city only until verified */}
         <div className="mt-auto mb-5">
-          <div className="text-sm font-semibold text-foreground mb-0.5">{listing.street}</div>
-          <div className="text-xs text-muted-foreground flex items-center gap-1">
-            <MapPin className="w-3 h-3" />
-            {listing.city}, {listing.state} {listing.zip}
-          </div>
+          {verified ? (
+            <>
+              <div className="text-sm font-semibold text-foreground mb-0.5">{listing.street}</div>
+              <div className="text-xs text-muted-foreground flex items-center gap-1">
+                <MapPin className="w-3 h-3" />
+                {listing.city}, {listing.state} {listing.zip}
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="text-sm font-semibold text-foreground mb-0.5 flex items-center gap-1.5">
+                <Lock className="w-3 h-3 text-muted-foreground" />
+                <span className="text-muted-foreground italic">Address available after verification</span>
+              </div>
+              <div className="text-xs text-muted-foreground flex items-center gap-1">
+                <MapPin className="w-3 h-3" />
+                {listing.city}, {listing.state}
+              </div>
+            </>
+          )}
         </div>
 
-        {/* CTAs — Email Agent is primary; View Deal is a small text link underneath */}
+        {/* Primary CTA — opens register dialog if not verified, else navigates */}
         <Button
-          onClick={() => setDialogOpen(true)}
+          onClick={handleViewDeal}
           className="w-full bg-accent hover:bg-accent/90 text-white font-bold rounded-lg h-11"
         >
-          Email Agent
+          {verified ? "View Deal" : "View Deal"}
         </Button>
-        <Link href={href} className="block mt-2 text-center text-xs font-semibold text-primary/80 hover:text-accent underline underline-offset-2">
-          View deal details
-        </Link>
+        <button
+          onClick={() => setDialogOpen(true)}
+          className="block w-full mt-2 text-center text-xs font-semibold text-primary/80 hover:text-accent underline underline-offset-2"
+        >
+          Email the listing agent
+        </button>
         <EmailAgentDialog listing={listing} open={dialogOpen} onOpenChange={setDialogOpen} />
+        <RegisterDialog
+          open={registerOpen}
+          onOpenChange={setRegisterOpen}
+          onVerified={() => setLocation(href)}
+        />
       </div>
     </div>
   );

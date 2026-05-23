@@ -300,7 +300,9 @@ export default function Search() {
                       <div className="text-xs text-muted-foreground mb-2">
                         {listing.beds} bd | {listing.baths} ba | {listing.sqft} sqft
                       </div>
-                      <div className="text-sm font-medium mb-1">{listing.street}</div>
+                      <div className="text-sm font-medium mb-1 text-muted-foreground italic">
+                        {listing.city}, {listing.state}
+                      </div>
                       <div className="text-[10px] text-muted-foreground mb-3 truncate">
                         Brokered by {listing.brokerage}
                       </div>

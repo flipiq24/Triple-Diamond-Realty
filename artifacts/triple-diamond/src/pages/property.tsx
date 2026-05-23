@@ -10,6 +10,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { MapContainer, TileLayer, Marker } from "react-leaflet";
 import L from "leaflet";
 import SeoHead from "@/components/SeoHead";
+import RegisterDialog from "@/components/RegisterDialog";
+import { useBuyerVerified } from "@/hooks/useBuyerVerified";
+import { Lock, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
 const pin = L.divIcon({
@@ -26,6 +29,8 @@ export default function Property() {
   const [photoIdx, setPhotoIdx] = useState(0);
   const [saved, setSaved] = useState(false);
   const [showMessage, setShowMessage] = useState(false);
+  const [registerOpen, setRegisterOpen] = useState(false);
+  const { verified } = useBuyerVerified();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -90,9 +95,24 @@ export default function Property() {
       />
 
       <div className="container mx-auto px-4 py-6 max-w-7xl">
+        {/* Verification gate banner */}
+        {!verified && (
+          <div className="mb-4 rounded-xl border-2 border-accent/40 bg-accent/5 p-4 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+            <ShieldCheck className="w-6 h-6 text-accent shrink-0" />
+            <div className="flex-1 text-sm">
+              <strong className="text-primary">Verified-buyer access only.</strong>{" "}
+              The full address, exact map pin, and showing instructions are hidden.
+              Register with your email and phone to unlock — it takes 30 seconds.
+            </div>
+            <Button onClick={() => setRegisterOpen(true)} className="bg-accent hover:bg-accent/90 text-white rounded-full whitespace-nowrap">
+              Register to unlock
+            </Button>
+          </div>
+        )}
+
         {/* Listing agent / brokerage line (CAR-compliant) */}
         <div className="text-sm text-muted-foreground mb-3">
-          Listed by <span className="underline font-semibold text-primary">{listing.agentName}</span> ({listing.agentPhone})
+          Listed by <span className="underline font-semibold text-primary">{listing.agentName}</span>{verified ? ` (${listing.agentPhone})` : ""}
           <br />
           Brokered by <span className="font-semibold text-foreground">{listing.brokerage}</span> · {listing.brokerageDRE}
         </div>
@@ -176,15 +196,26 @@ export default function Property() {
               <span><strong>{listing.sqft.toLocaleString()}</strong> sqft</span>
               <span><strong>{listing.lotSqft.toLocaleString()}</strong> sqft lot</span>
             </div>
-            <a
-              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${listing.street}, ${listing.city}, ${listing.state} ${listing.zip}`)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm underline text-primary inline-flex items-center gap-1"
-            >
-              <MapPin className="w-4 h-4" />
-              {listing.street}, {listing.city}, {listing.state} {listing.zip}
-            </a>
+            {verified ? (
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${listing.street}, ${listing.city}, ${listing.state} ${listing.zip}`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm underline text-primary inline-flex items-center gap-1"
+              >
+                <MapPin className="w-4 h-4" />
+                {listing.street}, {listing.city}, {listing.state} {listing.zip}
+              </a>
+            ) : (
+              <button
+                onClick={() => setRegisterOpen(true)}
+                className="text-sm inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted hover:bg-muted/80 text-foreground font-medium"
+              >
+                <Lock className="w-3.5 h-3.5 text-accent" />
+                <span className="italic text-muted-foreground">Address hidden</span> · <span className="text-foreground">{listing.city}, {listing.state}</span>
+                <span className="ml-1 text-primary underline underline-offset-2">Unlock</span>
+              </button>
+            )}
 
             <div className="mt-4 flex items-center gap-3">
               <span className="text-sm">
@@ -340,7 +371,7 @@ export default function Property() {
               <div className="h-[360px] rounded-xl overflow-hidden border border-border relative z-0">
                 <MapContainer
                   center={[listing.lat, listing.lng]}
-                  zoom={14}
+                  zoom={verified ? 14 : 11}
                   scrollWheelZoom
                   dragging
                   style={{ width: "100%", height: "100%", zIndex: 0 }}
@@ -349,10 +380,23 @@ export default function Property() {
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                   />
-                  <Marker position={[listing.lat, listing.lng]} icon={pin} />
+                  {verified && <Marker position={[listing.lat, listing.lng]} icon={pin} />}
                 </MapContainer>
+                {!verified && (
+                  <div className="absolute inset-0 z-[400] flex items-center justify-center pointer-events-none">
+                    <div className="bg-white/95 backdrop-blur px-5 py-3 rounded-full shadow-lg flex items-center gap-2 pointer-events-auto">
+                      <Lock className="w-4 h-4 text-accent" />
+                      <span className="text-sm font-semibold text-foreground">Exact location hidden — </span>
+                      <button onClick={() => setRegisterOpen(true)} className="text-sm font-bold text-primary hover:text-accent underline">
+                        Register to view
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
+
+            <RegisterDialog open={registerOpen} onOpenChange={setRegisterOpen} />
           </div>
 
           {/* RIGHT — sidebar contact form */}
