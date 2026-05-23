@@ -247,12 +247,16 @@ export default function Search() {
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-[2fr_3fr] gap-0 lg:h-[720px]">
           {/* Map Mobile: Top, Desktop: Right */}
-          <div className="order-1 lg:order-2 relative z-0 h-[340px] lg:h-full">
+          <div className="order-1 lg:order-2 relative z-0 h-[420px] lg:h-full touch-none">
             <MapContainer 
               center={[37.3, -119.5]} 
               zoom={6} 
               scrollWheelZoom
-              style={{ width: '100%', height: '100%', zIndex: 0 }}
+              dragging
+              touchZoom
+              doubleClickZoom
+              keyboard
+              style={{ width: '100%', height: '100%', zIndex: 0, cursor: 'grab' }}
             >
               <TileLayer
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -289,8 +293,8 @@ export default function Search() {
           </div>
 
           {/* Cards Mobile: Bottom, Desktop: Left */}
-          <div className="order-2 lg:order-1 lg:overflow-y-auto bg-muted/10 p-4 border-r border-border lg:h-full">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="order-2 lg:order-1 lg:overflow-y-auto bg-muted/10 p-4 pb-12 border-r border-border lg:h-full">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-8">
               {filteredListings.map(listing => (
                 <div 
                   key={listing.id}
