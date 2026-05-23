@@ -1,0 +1,85 @@
+uploads = []
+
+[[generated]]
+id = "0nbXYNYjzwzjJP1hTIqnj"
+uri = "file://artifacts/triple-diamond/src/data/images/hero-bg.png"
+type = "image"
+title = "Hero background keys"
+
+[[generated]]
+id = "B7atxB89QljSnIWbNTuPe"
+uri = "file://artifacts/triple-diamond/src/data/images/prop1.png"
+type = "image"
+title = "Property 1"
+
+[[generated]]
+id = "vvQB_wzvOdJrO_WZo5JSf"
+uri = "file://artifacts/triple-diamond/src/data/images/prop2.png"
+type = "image"
+title = "Property 2"
+
+[[generated]]
+id = "PSh4OoM3kAOYj7P2do-yn"
+uri = "file://artifacts/triple-diamond/src/data/images/prop3.png"
+type = "image"
+title = "Property 3"
+
+[[generated]]
+id = "NS208iQ8k3Rjb0AzwM1p7"
+uri = "file://artifacts/triple-diamond/src/data/images/prop4.png"
+type = "image"
+title = "Property 4"
+
+[[generated]]
+id = "-5fzGyieDKn_oG-5X0oFx"
+uri = "file://artifacts/triple-diamond/src/data/images/prop5.png"
+type = "image"
+title = "Property 5"
+
+[[generated]]
+id = "jABpkqsrxQM2o_KvznvH5"
+uri = "file://artifacts/triple-diamond/src/data/images/prop6.png"
+type = "image"
+title = "Property 6"
+
+[[generated]]
+id = "L7PTh-n3-TuipjN3n_1zj"
+uri = "file://artifacts/triple-diamond/src/data/images/prop7.png"
+type = "image"
+title = "Property 7"
+
+[[generated]]
+id = "VIOHuNmT8JP0_AQ5tzdbB"
+uri = "file://artifacts/triple-diamond/src/data/images/prop8.png"
+type = "image"
+title = "Property 8"
+
+[[generated]]
+id = "mk5Bm39wfXovovJ2_6Jvf"
+uri = "file://artifacts/triple-diamond/src/data/images/about-team.png"
+type = "image"
+title = "About us team working"
+
+[[outputs]]
+id = "lxQ7zmo0XKTcT5nybOpNA"
+uri = "file://artifacts/triple-diamond/src/data/images/team_1.jpg"
+type = "image"
+title = "professional diverse real estate agent headshot"
+
+[[outputs]]
+id = "jtP30_4H9R2shwpxU3Lwz"
+uri = "file://artifacts/triple-diamond/src/data/images/team_2.jpg"
+type = "image"
+title = "professional diverse real estate agent headshot"
+
+[[outputs]]
+id = "t3WJZfAgvLGuoM7wPwhzz"
+uri = "file://artifacts/triple-diamond/src/data/images/team_3.jpg"
+type = "image"
+title = "professional diverse real estate agent headshot"
+
+[[outputs]]
+id = "VnrArbdv_SJHyduyEQa7u"
+uri = "file://artifacts/triple-diamond/src/data/images/team_4.jpg"
+type = "image"
+title = "professional diverse real estate agent headshot"
