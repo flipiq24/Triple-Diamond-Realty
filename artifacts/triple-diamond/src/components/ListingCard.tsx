@@ -3,6 +3,7 @@ import { Link } from "wouter";
 import { Heart, MapPin, BedDouble, Bath, Square } from "lucide-react";
 import { type Listing } from "@/data/listings";
 import { Button } from "@/components/ui/button";
+import EmailAgentDialog from "@/components/EmailAgentDialog";
 import { toast } from "sonner";
 
 export default function ListingCard({ listing }: { listing: Listing }) {
@@ -32,11 +33,17 @@ export default function ListingCard({ listing }: { listing: Listing }) {
   };
 
   const href = `/property/${listing.id}`;
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   return (
     <div className="group bg-white rounded-xl border border-border shadow-sm overflow-hidden hover:shadow-md transition-all duration-300 flex flex-col h-full">
+      {/* Brokerage disclosure (CAR-compliant) */}
+      <div className="px-5 pt-3 text-[11px] text-muted-foreground font-medium truncate">
+        Brokered by <span className="text-foreground">{listing.brokerage}</span>
+      </div>
+
       {/* Image Container */}
-      <Link href={href} className="relative aspect-4/3 overflow-hidden bg-muted block">
+      <Link href={href} className="relative aspect-4/3 overflow-hidden bg-muted block mt-2">
         <img
           src={listing.image}
           alt={listing.street}
@@ -73,7 +80,7 @@ export default function ListingCard({ listing }: { listing: Listing }) {
       {/* Content */}
       <div className="p-5 flex flex-col flex-1">
         <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">
-          Brokered by Triple Diamond Realty
+          Listed by {listing.agentName} · {listing.brokerageDRE}
         </div>
         
         <div className="text-2xl font-bold text-primary mb-3">
@@ -107,12 +114,21 @@ export default function ListingCard({ listing }: { listing: Listing }) {
           </div>
         </div>
 
-        {/* CTA */}
-        <Link href={href}>
-          <Button className="w-full bg-accent hover:bg-accent/90 text-white font-bold rounded-lg h-11">
-            View Deal
+        {/* CTAs */}
+        <div className="grid grid-cols-2 gap-2">
+          <Link href={href}>
+            <Button variant="outline" className="w-full font-bold rounded-lg h-11">
+              View Deal
+            </Button>
+          </Link>
+          <Button
+            onClick={() => setDialogOpen(true)}
+            className="w-full bg-accent hover:bg-accent/90 text-white font-bold rounded-lg h-11"
+          >
+            Email Agent
           </Button>
-        </Link>
+        </div>
+        <EmailAgentDialog listing={listing} open={dialogOpen} onOpenChange={setDialogOpen} />
       </div>
     </div>
   );

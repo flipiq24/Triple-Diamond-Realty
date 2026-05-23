@@ -40,10 +40,40 @@ export type Listing = {
   has3DTour: boolean;
   hasVirtualTour: boolean;
   priceReduced: boolean;
+  // Listing agent / brokerage (CAR-compliant disclosure)
+  agentName: string;
+  agentPhone: string;
+  brokerage: string;
+  brokerageDRE: string;
 };
 
 // Base listing data — extended fields applied below via .map
-type BaseListing = Omit<Listing, "yearBuilt" | "hoaMonthly" | "garage" | "stories" | "status" | "saleType" | "daysOnMarket" | "hasOpenHouse" | "has3DTour" | "hasVirtualTour" | "priceReduced">;
+type BaseListing = Omit<Listing, "yearBuilt" | "hoaMonthly" | "garage" | "stories" | "status" | "saleType" | "daysOnMarket" | "hasOpenHouse" | "has3DTour" | "hasVirtualTour" | "priceReduced" | "agentName" | "agentPhone" | "brokerage" | "brokerageDRE">;
+
+const BROKERAGES: { name: string; dre: string }[] = [
+  { name: "Triple Diamond Realty",              dre: "DRE# 02145789" },
+  { name: "CENTURY 21 Realty Team",             dre: "DRE# 01100495" },
+  { name: "eXp Realty of Southern CA Inc.",     dre: "DRE# 01878277" },
+  { name: "Berkshire Hathaway HomeServices CA", dre: "DRE# 01317331" },
+  { name: "Coldwell Banker Realty",             dre: "DRE# 00616212" },
+  { name: "Keller Williams Realty",             dre: "DRE# 01295699" },
+  { name: "FIRST TEAM Real Estate",             dre: "DRE# 01008773" },
+  { name: "Compass California",                 dre: "DRE# 01991628" },
+  { name: "RE/MAX Time Realty",                 dre: "DRE# 01902162" },
+];
+
+const AGENTS = [
+  "Stacy McQueen", "Marcus Reyes", "Daniela Cho", "Antonio Vargas",
+  "Priya Shah", "Brandon Lee", "Kim Nguyen", "Jordan Patel",
+  "Rachel Owens", "Diego Salazar",
+];
+
+function fmtPhone(n: number): string {
+  const a = 200 + (n % 700);
+  const b = 100 + ((n >> 4) % 900);
+  const c = 1000 + ((n >> 8) % 9000);
+  return `(${a}) ${b}-${c}`;
+}
 
 const baseListings: BaseListing[] = [
   {
@@ -392,6 +422,7 @@ export const listings: Listing[] = baseListings.map((b) => {
     b.dealType === "New Listing" && h % 3 === 0 ? "New Construction" :
     (h % 11 === 0 ? "55+ Community" : "Existing");
   const daysOnMarket = h % 90; // 0..89
+  const brk = BROKERAGES[h % BROKERAGES.length];
   return {
     ...b,
     yearBuilt,
@@ -405,5 +436,9 @@ export const listings: Listing[] = baseListings.map((b) => {
     has3DTour: h % 3 === 0,
     hasVirtualTour: h % 5 === 0,
     priceReduced: h % 6 === 0,
+    agentName: AGENTS[h % AGENTS.length],
+    agentPhone: fmtPhone(h),
+    brokerage: brk.name,
+    brokerageDRE: brk.dre,
   };
 });

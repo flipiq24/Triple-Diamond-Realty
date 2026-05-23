@@ -90,9 +90,11 @@ export default function Property() {
       />
 
       <div className="container mx-auto px-4 py-6 max-w-7xl">
-        {/* Broker line */}
+        {/* Listing agent / brokerage line (CAR-compliant) */}
         <div className="text-sm text-muted-foreground mb-3">
-          Listed by <span className="underline font-semibold text-primary">Triple Diamond Realty</span> · (909) 280-4906
+          Listed by <span className="underline font-semibold text-primary">{listing.agentName}</span> ({listing.agentPhone})
+          <br />
+          Brokered by <span className="font-semibold text-foreground">{listing.brokerage}</span> · {listing.brokerageDRE}
         </div>
 
         {/* Gallery */}
@@ -300,7 +302,7 @@ export default function Property() {
               </div>
 
               {/* Financial */}
-              <div className="rounded-lg border border-border overflow-hidden">
+              <div className="rounded-lg border border-border overflow-hidden mb-6">
                 <div className="bg-muted/60 px-4 py-3 font-bold text-primary">Financial</div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-5">
                   <ul className="text-sm text-foreground/80 space-y-1 list-disc list-inside">
@@ -313,6 +315,21 @@ export default function Property() {
                     <li>Status: {statusLabel}</li>
                     <li>Deal type: {listing.dealType}</li>
                   </ul>
+                </div>
+              </div>
+
+              {/* Listing courtesy of (CAR-compliant) */}
+              <div className="rounded-lg border border-border overflow-hidden">
+                <div className="bg-muted/60 px-4 py-3 font-bold text-primary">Listing courtesy of</div>
+                <div className="p-5 text-sm text-foreground/80">
+                  <div className="font-semibold text-foreground">{listing.agentName}</div>
+                  <div>Brokered by {listing.brokerage}</div>
+                  <div className="text-muted-foreground">{listing.brokerageDRE}</div>
+                  <div className="mt-3 text-[11px] text-muted-foreground leading-relaxed">
+                    Information deemed reliable but not guaranteed. Listing information provided
+                    courtesy of the listing brokerage; Triple Diamond Realty may act as a cooperating
+                    broker. Buyer to verify all material facts. Equal Housing Opportunity.
+                  </div>
                 </div>
               </div>
             </div>
