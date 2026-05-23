@@ -7,8 +7,10 @@ import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import Search from "@/pages/search";
 import About from "@/pages/about";
+import Legal from "@/pages/legal";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
+import CookieConsent from "@/components/CookieConsent";
 
 const queryClient = new QueryClient();
 
@@ -21,10 +23,12 @@ function Router() {
           <Route path="/" component={Home} />
           <Route path="/search" component={Search} />
           <Route path="/about" component={About} />
+          <Route path="/legal" component={Legal} />
           <Route component={NotFound} />
         </Switch>
       </main>
       <SiteFooter />
+      <CookieConsent />
     </div>
   );
 }

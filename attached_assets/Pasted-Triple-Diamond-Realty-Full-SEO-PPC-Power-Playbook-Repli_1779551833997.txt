@@ -1,0 +1,213 @@
+Triple Diamond Realty — Full SEO + PPC Power Playbook (Replit-Ready)
+I researched the highest-performing buyer-acquisition sites in the country (New Western, Roofstock, We Buy Ugly Houses / HomeVestors, Foreclosure.com, Auction.com, Connected Investors) and pulled the exact keyword patterns, copy structures, social-proof formulas, and SEO architectures they use to dominate organic and paid traffic. Below is everything baked into one playbook your Replit Agent can execute on top of the existing build.
+
+What the Winners Are Actually Doing (Pattern Library)
+New Western leads with "A Marketplace Built for Real Estate Investors" + giant social-proof stats ($17B in sales, 250K+ investors, 15+ years). They segment buyers into "Fix-and-Flip Investors" and "Landlords." Their power phrase: "the largest private source of value-add properties, ready to rehab."
+Foreclosure.com wins on raw keyword volume. They build SEO pages by stacking "[city] foreclosures" + "[state] foreclosures" as internal links — hundreds of geo-targeted pages funneling to the same search. Their hero promise: "Get the best real estate deals first, before they hit the mass market."
+Auction.com stacks credibility numbers (553K properties closed, $69B sold, 8.1M accounts) and uses category keywords nakedly: "Top Foreclosures, Bank Owned, Vacant, Investment Homes Near You, Price Reduced." Their tagline: "Search. Bid. Buy. Succeed."
+We Buy Ugly Houses / HomeVestors owns the "America's #1 Cash Home Buyer" positioning + the ® trademark trust signal.
+The keyword formulas that consistently win: geo + asset type + intent modifier (e.g., "off-market investment properties California," "fixer upper homes Los Angeles," "foreclosure deals near me," "cash flow rental properties Texas"), plus long-tail phrases like "before they hit the MLS," "bank-owned," "as-is," "investor-only marketplace."
+You will outflank all of them with the "Diamond in the Rough" wordplay tied to your brand name — that's a unique, ownable, memorable hook none of them have.
+
+Brand Power Positioning (Use Across Every Page)
+Master Tagline Options (pick one for the site, use the others as sub-heads and ad copy):
+
+"Every Deal Is a Diamond in the Rough. We Just Found It First."
+"Diamonds in the Rough. Delivered Daily."
+"30 Years. Thousands of Properties. One Job: Find Your Next Diamond."
+
+Authority Stat Strip (put on every page, below the hero — mirrors New Western/Auction.com pattern):
+
+30 Years in the Business • Thousands of Properties Closed • California's Most Powerful Deal-Finding Technology
+
+One-line Brand Promise:
+
+"Triple Diamond Realty turns rough properties into real returns — hand-picked, pre-screened, and delivered before the rest of the market sees them."
+
+
+Master Keyword Map (Drop Into PPC + Site Content)
+The most powerful keyword clusters scraped from the top-ranking competitor sites, ranked by buyer intent and PPC profitability:
+Cluster 1 — Handyman / Fixer (your Variant A control):
+handyman special, fixer upper, fixer upper homes for sale, homes needing work, cheap houses for sale, ugly houses, distressed homes, as-is homes, rehab properties, value-add properties, properties ready to rehab, fix and flip homes, diamond in the rough homes
+Cluster 2 — Off-Market / Investor-Friendly (Variant B):
+off market properties, off market deals, off market homes for sale, investor friendly agent, pre-market listings, exclusive investment properties, investor-only marketplace, off MLS properties, pocket listings, wholesale real estate deals, before they hit the MLS
+Cluster 3 — Cash Flow / BRRRR (Variant C):
+cash flow rental properties, BRRRR properties, turnkey rental properties, buy and hold investment, positive cash flow real estate, rental properties with tenant in place, passive income real estate, single family rental SFR, small multifamily for sale, cap rate investment property
+Cluster 4 — Foreclosure / Distressed (Variant D):
+foreclosure homes, foreclosures near me, pre-foreclosure, bank owned homes, REO properties, short sale homes, auction homes, distressed properties, sheriff sale, tax delinquent properties, foreclosure listings, bank foreclosures, HUD homes
+Cluster 5 — 1031 Exchange (Variant E):
+1031 exchange property, 1031 replacement property, like-kind exchange, 1031 eligible property, DST 1031 alternatives, NNN 1031, 1031 identification deadline
+Geo Modifier Layer (combine with every cluster — Foreclosure.com's secret weapon):
+[city] + [keyword], [county] + [keyword], [state] + [keyword] — e.g., "Riverside fixer upper," "San Bernardino foreclosures," "Los Angeles off market deals," "California cash flow rentals."
+
+Replit Agent — Final Build Instructions (One-Shot Prompt)
+
+Update the existing Triple Diamond Realty React + Vite site with the following SEO, content, and branding upgrades. Keep the Handyman Special hero as Variant A (control) at / and /a. Add /b, /c, /d, /e variant homepages. Apply all of the following globally and per page:
+GLOBAL CHANGES (apply to every page):
+
+Install react-helmet-async and add unique <title>, <meta name="description">, <meta name="keywords">, Open Graph tags, and JSON-LD structured data on every page.
+Add a new Authority Strip component placed directly under every hero on every page. Content: "30 Years in the Business — Thousands of Properties Closed — California's Most Powerful Deal-Finding Technology." Style: dark navy background, white text, gold/orange highlights on the three numbers.
+Update the brand tagline shown in the header utility bar and footer to: "Diamonds in the Rough. Delivered Daily."
+Add a global JSON-LD RealEstateAgent schema in App.tsx head:
+
+json{
+  "@context": "https://schema.org",
+  "@type": "RealEstateAgent",
+  "name": "Triple Diamond Realty",
+  "url": "https://tripledimondrealty.com",
+  "telephone": "(909) 280-4901",
+  "email": "info@tdrealty.net",
+  "areaServed": "California",
+  "description": "30 years finding off-market, handyman special, foreclosure, BRRRR, and 1031 investment properties across California.",
+  "slogan": "Diamonds in the Rough. Delivered Daily."
+}
+
+Generate a sitemap.xml and robots.txt listing /, /a, /b, /c, /d, /e, /search, /about, and one geo landing page per major California city: /california/los-angeles, /california/san-bernardino, /california/riverside, /california/orange-county, /california/san-diego, /california/fresno, /california/sacramento, /california/bakersfield (these can render the same Variant A template with the city name swapped into headlines and meta — pure SEO geo pages).
+Add FAQ schema (FAQPage JSON-LD) on every variant homepage with at least 5 Q&As specific to that variant. This is the single biggest SEO multiplier — competitors are using it everywhere.
+Add semantic HTML headings: every page must have ONE <h1>, then <h2> for each major section, then <h3> inside. No skipped levels.
+Update the About Us page to include the 30-year story, the diamond-in-the-rough wordplay, and the "Most Powerful Deal-Finding Technology" positioning. (Full copy below.)
+
+VARIANT-SPECIFIC SEO COPY (use exactly):
+
+VARIANT A — / and /a — Handyman Special (CONTROL)
+Meta Title: Handyman Specials & Fixer Upper Homes in California | Triple Diamond Realty
+Meta Description: Find your next handyman special or fixer upper in California. Hand-picked diamonds in the rough delivered daily — before they hit the MLS. 30 years of deal-finding experience.
+Meta Keywords: handyman special, fixer upper, fixer upper homes for sale, california fixer upper, rehab properties, as-is homes, value-add properties, cheap houses california, diamond in the rough
+H1: "Find Your Next Handyman Special"
+Sub-headline (H2): "Diamonds in the Rough. Delivered Daily Across California."
+Sub-copy: "Hand-picked fixers, wholesale deals, and cash-only opportunities across California. Every property is a diamond in the rough — we just found it first. New deals added daily, before they hit the MLS."
+
+VARIANT B — /b — Off-Market & Investor-Friendly Agents
+Meta Title: Off-Market Investment Properties in California | Investor-Friendly Agents | Triple Diamond Realty
+Meta Description: Get off-market deals in California before they hit Zillow. Investor-friendly agents, pre-market listings, exclusive investor inventory. 30 years finding diamonds in the rough.
+Meta Keywords: off market properties, off market deals california, investor friendly agent, pre-market listings, off MLS properties, wholesale real estate, exclusive investment properties
+Pill: "Off-Market Deals • Investor-Friendly Agents"
+H1: "Off-Market Deals Before They Hit Zillow"
+Sub-headline (H2): "The Diamonds in the Rough Nobody Else Sees."
+Sub-copy: "Connect with investor-friendly agents who source off-market and pre-market opportunities across California. Pre-screened deals, real numbers, no bidding wars. We disclose property status on every listing — off-market or active MLS."
+
+VARIANT C — /c — Cash Flow / BRRRR Rentals
+Meta Title: Cash Flow Rentals & BRRRR Properties California | Turnkey Investment | Triple Diamond Realty
+Meta Description: Day-one income rentals and BRRRR-ready properties in California. Underwritten cap rates, tenant-in-place options, real numbers. 30 years finding rental diamonds in the rough.
+Meta Keywords: cash flow rental property, BRRRR property, turnkey rental california, buy and hold investment, positive cash flow real estate, single family rental, rental property with tenant
+Pill: "Cash Flow Rentals • BRRRR Ready"
+H1: "Cash-Flowing Rentals With Day-One Income"
+Sub-headline (H2): "Rental Diamonds in the Rough — Underwritten and Ready."
+Sub-copy: "Underwritten rental properties with rent, taxes, insurance, vacancy, and cap rate already calculated. Turnkey with tenant in place, or BRRRR-ready value-add. Stop guessing pro formas. Start collecting rent."
+
+VARIANT D — /d — Foreclosures & Distressed Deals
+Meta Title: Foreclosures, REO & Pre-Foreclosure Homes California | Triple Diamond Realty
+Meta Description: Verified California foreclosures, REO bank-owned homes, short sales, and pre-foreclosure deals updated weekly. Cash buyers get first look. 30 years finding distressed diamonds.
+Meta Keywords: foreclosure homes california, foreclosures near me, pre-foreclosure, bank owned homes, REO properties, short sale homes, distressed properties california, auction homes
+Pill: "Foreclosures • REO • Pre-Foreclosure • Short Sale"
+H1: "Verified Foreclosure Deals Not the Same Stale Lists"
+Sub-headline (H2): "Distressed Diamonds in the Rough, Verified Weekly."
+Sub-copy: "REO bank-owned, court-step auction, short sale, and pre-foreclosure inventory updated weekly. Real properties, verified status, current pricing. Cash buyers and hard-money pre-approved investors get first look."
+
+VARIANT E — /e — 1031 Exchange Replacement Property
+Meta Title: 1031 Exchange Replacement Properties California | Identification Ready | Triple Diamond Realty
+Meta Description: Live 1031-eligible inventory in California. Close inside your 45/180 day windows. SFR, small multifamily, and NNN — pre-vetted and ready. 30 years of deal-finding power.
+Meta Keywords: 1031 exchange property, 1031 replacement property california, like-kind exchange, 1031 eligible, NNN 1031, DST 1031 alternatives
+Pill: "1031 Exchange • Identification Ready"
+H1: "The Clock Is Ticking. We Have Your Replacement Property."
+Sub-headline (H2): "1031-Ready Diamonds in the Rough — Identification Cleared."
+Sub-copy: "45 days to identify. 180 days to close. We maintain a live inventory of 1031-eligible single-family rentals, small multifamily, and NNN commercial properties — pre-vetted for cash flow and clean title. We coordinate directly with your Qualified Intermediary."
+Footer disclaimer: "Triple Diamond Realty is not a tax advisor. Consult your CPA and Qualified Intermediary for 1031 guidance."
+
+
+NEW About Us Page Copy (Use Verbatim)
+H1: Three Decades. Thousands of Deals. One Mission: Diamonds in the Rough.
+Opening paragraph:
+Triple Diamond Realty was built on a simple idea — every property has potential, but only the right eye finds it first. For more than 30 years, our team has walked thousands of California properties, negotiated thousands of deals, and built the relationships that turn rough houses into real returns for our investors. We didn't just learn the market. We helped shape it.
+Section H2 — Why "Triple Diamond"?
+A diamond doesn't start out brilliant. It starts out buried, rough, and overlooked — exactly like the properties we hunt down for our buyers every single day. The "triple" in our name stands for the three diamonds we deliver on every deal: the right property, the right price, and the right exit strategy. Hand-pick any one and you have a good deal. Stack all three and you have a Triple Diamond.
+Section H2 — 30 Years. Thousands of Properties. One Pipeline.
+Three decades in California real estate means we know which neighborhoods rent, which streets flip, which agents move inventory off-market, which banks dump REOs early, and which sellers will say yes before they ever list. That pipeline isn't something a new platform can replicate. It's earned, deal by deal, year after year.
+Section H2 — The Most Powerful Deal-Finding Technology in the Market
+We've layered three decades of relationships with the most advanced deal-sourcing technology available today — AI-driven comp analysis, real-time MLS and off-market data ingestion, predictive distressed-property alerts, and underwriting tools that score every deal for cash flow, ARV, and rehab cost before you ever see it. The result: faster deals, better numbers, fewer surprises. Old-school hustle. New-school horsepower.
+Section H2 — Who We Serve
+Fix-and-flip investors hunting their next handyman special. Buy-and-hold landlords stacking cash flow rentals. Cash buyers chasing foreclosures and REOs. 1031 exchangers racing the clock. And the smart owner-occupant who knows sweat equity beats a bidding war every time. If you want a diamond in the rough in California, you're in the right place.
+CTA: "Start Searching" → routes to /search
+
+FAQ Schema Content (Add to Every Variant — Massive SEO Lift)
+Below is the Q&A bank. Pick the 5 most relevant per variant and inject as FAQPage JSON-LD.
+Handyman / Fixer (Variant A):
+
+What is a handyman special?
+How do I finance a fixer upper in California?
+What's the difference between a fixer upper and a handyman special?
+Can I buy a fixer upper with an FHA 203k loan?
+How do you find fixer uppers before they hit the MLS?
+
+Off-Market (Variant B):
+
+What does "off-market" really mean?
+How do you find off-market properties in California?
+What is an investor-friendly agent?
+Are off-market deals always better than MLS deals?
+Why do off-market sellers accept less than market value?
+
+Cash Flow / BRRRR (Variant C):
+
+What is the BRRRR method?
+How do you calculate cash flow on a rental property?
+What's a good cap rate in California?
+Can I buy a turnkey rental with a tenant already in place?
+How do you underwrite a rental property?
+
+Foreclosures (Variant D):
+
+What's the difference between REO, pre-foreclosure, and short sale?
+Can I buy a foreclosure with financing or only cash?
+How do California foreclosure auctions work?
+Are foreclosure homes a good deal?
+How often is your foreclosure list updated?
+
+1031 Exchange (Variant E):
+
+What is a 1031 exchange?
+How does the 45-day identification rule work?
+What properties qualify as 1031 replacement property?
+Can I do a 1031 into a single-family rental?
+Do I need a Qualified Intermediary?
+
+
+Content Marketing Engine (Articles to Promote)
+To "promote the crap out of this" as you said, here's the article launch schedule. Each article supports one variant and links back to it — classic SEO topic cluster strategy.
+Pillar Articles (publish at /blog/[slug]):
+
+"Diamond in the Rough: How to Spot a Handyman Special That's Actually Worth Buying" → links to Variant A
+"Off-Market Real Estate: The 7 Ways We Find Deals Before They Hit Zillow" → links to Variant B
+"BRRRR in California: A Step-by-Step Guide for Cash Flow Investors" → links to Variant C
+"Foreclosure vs. Pre-Foreclosure vs. REO vs. Short Sale: California Buyer's Guide" → links to Variant D
+"1031 Exchange Replacement Property: Beat the 45-Day Clock" → links to Variant E
+
+Each article should be 1,500–2,500 words, include the H1/H2/H3 structure, internal links, FAQ schema, and a closing CTA back to the matching variant landing page.
+
+PPC Campaign Architecture (Ready-to-Launch)
+CampaignVariantTop KeywordsEstimated CPCLandingHandyman Specials CAAhandyman special, fixer upper california, rehab properties$3–7/aOff-Market Investors CABoff market properties, investor friendly agent$5–10/bCash Flow / BRRRR CACcash flow rental, BRRRR property, turnkey rental$4–9/cForeclosures CADforeclosure homes, REO, short sale, bank owned$4–8/d1031 Exchange CAE1031 exchange property, 1031 replacement$8–15/e
+Universal negative keywords: free, rent, for rent, jobs, salary, course, school, attorney, lawsuit, definition, meaning, what is (unless intent matches).
+UTM convention: utm_source=google&utm_medium=cpc&utm_campaign=handyman_ca&utm_content=variant_a&utm_term={keyword}
+
+Diamond-in-the-Rough Wordplay Bank (Use Across Ads, Articles, Social)
+Use these as A/B test headlines and ad copy:
+
+"Every Deal Is a Diamond in the Rough. We Just Found It First."
+"Diamonds in the Rough. Delivered Daily."
+"Rough on the Outside. Returns on the Inside."
+"Three Decades of Finding Diamonds in California Dirt."
+"Forget the Rough. Keep the Diamond."
+"We Don't List Properties. We Mine Them."
+"Triple the Diamond. Triple the Return."
+"Some Agents Sell Houses. We Find Diamonds."
+
+
+One-Shot Replit Agent Prompt (Copy/Paste This)
+
+Upgrade the Triple Diamond Realty React + Vite app with the following: (1) Add react-helmet-async and apply unique title/description/keywords/OpenGraph/JSON-LD on /, /a, /b, /c, /d, /e, /search, /about, and 8 new California geo pages at /california/[city] for Los Angeles, San Bernardino, Riverside, Orange County, San Diego, Fresno, Sacramento, Bakersfield. (2) Build a reusable AuthorityStrip component reading "30 Years in the Business — Thousands of Properties Closed — California's Most Powerful Deal-Finding Technology" and place it under every hero. (3) Update the utility-bar and footer tagline to "Diamonds in the Rough. Delivered Daily." (4) Inject a global RealEstateAgent JSON-LD schema in App.tsx. (5) Generate sitemap.xml and robots.txt covering all routes. (6) Add FAQPage JSON-LD on every variant homepage with 5 variant-specific Q&As. (7) Use the exact meta titles, meta descriptions, meta keywords, H1, H2, pill, and sub-copy provided in the project brief for variants A through E. (8) Replace the About Us page content with the new 30-year diamond-in-the-rough copy provided. (9) Build a /blog route that lists 5 pillar articles (slugs: diamond-in-the-rough-handyman, off-market-7-ways, brrrr-california-guide, foreclosure-vs-reo-vs-short-sale, 1031-replacement-45-days) — placeholder MDX or markdown is fine. (10) Ensure every page has exactly one H1, semantic H2/H3 hierarchy, alt text on all images, and lang="en" on the html element. (11) Reuse the existing SearchBarBlock (search input + 3 orange CTAs + trust row) on every variant unchanged; only the hero pill, headline, highlighted phrase, and sub-copy change per variant.
+
+
+What This Delivers
+You'll end up with a site that has the keyword coverage of Foreclosure.com, the authority signaling of New Western and Auction.com, the brand stickiness of We Buy Ugly Houses, plus a completely original wordplay angle ("diamond in the rough") that none of them own — wrapped around a 30-year credibility story and a "most powerful technology" tech-forward positioning.
+Once the Agent ships this, your PPC dollars hit landing pages that already speak the exact language Google is matching your ads against (the #1 driver of Quality Score and lower CPC), and your organic content engine starts ranking for the long-tail geo + intent keywords your competitors are leaving on the table.
+Want me to write the actual full 1,500-word pillar article #1 ("Diamond in the Rough: How to Spot a Handyman Special That's Actually Worth Buying") so you have day-one publishable content to launch with?
