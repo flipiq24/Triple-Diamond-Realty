@@ -44,11 +44,6 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <div className="inline-flex items-center gap-2 bg-accent/10 border border-accent/20 text-accent px-4 py-1.5 rounded-full text-sm font-semibold mb-8">
-              <div className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
-              Off-Market Deals in California
-            </div>
-            
             <h1 className="text-5xl md:text-7xl font-extrabold text-white tracking-tight mb-6 leading-[1.1]">
               Find Your Next <br />
               <span className="text-accent inline-block mt-2">Handyman Special</span>
