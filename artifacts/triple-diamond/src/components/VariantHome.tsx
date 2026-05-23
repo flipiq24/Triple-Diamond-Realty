@@ -8,7 +8,6 @@ import heroBg from "@/data/images/hero-bg.png";
 import SeoHead from "@/components/SeoHead";
 import AuthorityStrip from "@/components/AuthorityStrip";
 import SearchBarBlock from "@/components/SearchBarBlock";
-import FaqSection from "@/components/FaqSection";
 import type { VariantConfig } from "@/data/variants";
 
 export default function VariantHome({ config, cityName }: { config: VariantConfig; cityName?: string }) {
@@ -127,8 +126,6 @@ export default function VariantHome({ config, cityName }: { config: VariantConfi
           </div>
         </div>
       </section>
-
-      <FaqSection items={config.faq} />
 
       {/* Final CTA */}
       <section id="footer" className="py-24 bg-primary text-center px-4 relative overflow-hidden">
