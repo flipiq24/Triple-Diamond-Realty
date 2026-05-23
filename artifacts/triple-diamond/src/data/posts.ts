@@ -8,6 +8,10 @@ export type Post = {
   body: string[];
 };
 
+export function findPost(slug: string): Post | undefined {
+  return posts.find((p) => p.slug === slug);
+}
+
 export const posts: Post[] = [
   {
     slug: "handyman-special-checklist",
