@@ -55,11 +55,13 @@ export default function SiteHeader() {
               <Phone className="w-4 h-4" />
               <span>(909) 280-4906</span>
             </a>
-            <Link href="/search">
-              <Button className="bg-accent hover:bg-accent/90 text-accent-foreground rounded-full px-6 font-bold shadow-md shadow-accent/20">
-                Find Deals
-              </Button>
-            </Link>
+            {location !== "/search" && (
+              <Link href="/search">
+                <Button className="bg-accent hover:bg-accent/90 text-accent-foreground rounded-full px-6 font-bold shadow-md shadow-accent/20">
+                  Find Deals
+                </Button>
+              </Link>
+            )}
           </div>
         </nav>
 
@@ -103,11 +105,13 @@ export default function SiteHeader() {
                     <Mail className="w-4 h-4 text-accent" /> info@tdrealty.net
                   </a>
                 </div>
-                <Link href="/search" onClick={() => setIsOpen(false)} className="mt-4">
-                  <Button className="w-full bg-accent hover:bg-accent/90 text-accent-foreground rounded-full font-bold">
-                    Find Deals
-                  </Button>
-                </Link>
+                {location !== "/search" && (
+                  <Link href="/search" onClick={() => setIsOpen(false)} className="mt-4">
+                    <Button className="w-full bg-accent hover:bg-accent/90 text-accent-foreground rounded-full font-bold">
+                      Find Deals
+                    </Button>
+                  </Link>
+                )}
               </div>
             </SheetContent>
           </Sheet>
