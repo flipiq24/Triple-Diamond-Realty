@@ -112,13 +112,6 @@ export default function Property() {
           </div>
         )}
 
-        {/* Listing agent / brokerage line (CAR-compliant) */}
-        <div className="text-sm text-muted-foreground mb-3">
-          Listed by <span className="underline font-semibold text-primary">{listing.agentName}</span>{verified ? ` (${listing.agentPhone})` : ""}
-          <br />
-          Brokered by <span className="font-semibold text-foreground">{listing.brokerage}</span> · {listing.brokerageDRE}
-        </div>
-
         {/* Gallery */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-2 rounded-xl overflow-hidden mb-6 bg-muted">
           <div className="md:col-span-2 relative aspect-[4/3] md:aspect-auto md:h-[500px]">
