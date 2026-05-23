@@ -1,5 +1,5 @@
 import { useLocation } from "wouter";
-import { Building2, TrendingUp, HandCoins, Cpu, ArrowRight } from "lucide-react";
+import { Building2, TrendingUp, Cpu, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import ListingCard from "@/components/ListingCard";
@@ -64,12 +64,11 @@ export default function VariantHome({ config, cityName }: { config: VariantConfi
             <p className="text-muted-foreground max-w-2xl mx-auto">Three decades of relationships. The state's most advanced on and off-market deal engine. Real properties, real numbers, real margin — delivered to you real time.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               { icon: Building2, title: "Off-Market Inventory", body: "Exclusive access to handyman specials, fixer-uppers and distressed properties across California — before they ever touch the MLS." },
               { icon: Cpu, title: "Powered by Smart Tech", body: "The most powerful property-sourcing technology on the market scans, scores and surfaces opportunities 24/7 so you see the deal first." },
               { icon: TrendingUp, title: "Vetted ARV & Comps", body: "Every deal comes with realistic After-Repair-Value estimates, rehab budgets and comparable sales — underwriting you can trust." },
-              { icon: HandCoins, title: "Cash-Buyer Network", body: "Plug into a statewide network of hard-money lenders, JV partners and cash buyers ready to close in days, not months." },
             ].map((prop, i) => (
               <motion.article key={i} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }} className="p-6 rounded-2xl bg-muted/30 border border-border">
                 <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-6">
