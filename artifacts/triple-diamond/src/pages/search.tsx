@@ -1,6 +1,8 @@
 import { useEffect, useState, useMemo, useRef } from "react";
 import { Link, useLocation } from "wouter";
-import { Search as SearchIcon, X, Map as MapIcon, List as ListIcon, Heart } from "lucide-react";
+import { Search as SearchIcon, X, Map as MapIcon, List as ListIcon, Heart, Bookmark } from "lucide-react";
+import { useBuyBoxes } from "@/hooks/useBuyBoxes";
+import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import ListingCard from "@/components/ListingCard";
@@ -53,6 +55,15 @@ export default function Search() {
   const { verified } = useBuyerVerified();
   const { favorites } = useFavorites();
   const [favoritesOnly, setFavoritesOnly] = useState(false);
+  const { boxes: buyBoxes, remove: removeBuyBox } = useBuyBoxes();
+  const [activeBuyBoxId, setActiveBuyBoxId] = useState<string | null>(null);
+  const applyBuyBox = (id: string) => {
+    const b = buyBoxes.find((x) => x.id === id);
+    if (!b) return;
+    setFilters(b.filters);
+    setActiveBuyBoxId(id);
+    toast.success(`Applied "${b.name}"`);
+  };
   const [, setLocation] = useLocation();
   const [registerOpen, setRegisterOpen] = useState(false);
   const [pendingNavId, setPendingNavId] = useState<string | null>(null);
@@ -153,12 +164,11 @@ export default function Search() {
       // home types (multi)
       if (filters.homeTypes.length > 0 && !filters.homeTypes.includes(l.propertyType)) return false;
 
-      // sale status (for-sale = Active/Pending, just-sold = Just Sold)
-      if (filters.saleStatus === "for-sale" && l.status === "Just Sold") return false;
-      if (filters.saleStatus === "just-sold" && l.status !== "Just Sold") return false;
+      // For-sale only — never show Just Sold on the search page
+      if (l.status === "Just Sold") return false;
 
-      // listing status filters (only apply if any checked and on for-sale tab)
-      if (filters.saleStatus === "for-sale" && filters.listingStatus.length > 0) {
+      // listing status filters (Active / Pending checkboxes)
+      if (filters.listingStatus.length > 0) {
         if (!filters.listingStatus.includes(l.status as "Active" | "Pending")) return false;
       }
 
@@ -211,7 +221,6 @@ export default function Search() {
     if (filters.beds !== "any") n++;
     if (filters.baths !== "any") n++;
     if (filters.homeTypes.length) n++;
-    if (filters.saleStatus !== "for-sale") n++;
     if (filters.listingStatus.length) n++;
     if (filters.saleTypes.length) n++;
     if (filters.openHouse || filters.threeDTour || filters.virtualTour) n++;
@@ -257,7 +266,51 @@ export default function Search() {
 
       {/* Filters Bar */}
       <div className="bg-white border-b border-border sticky top-[73px] z-40 shadow-sm px-4 py-3">
-        <div className="container mx-auto">
+        <div className="container mx-auto space-y-3">
+          {buyBoxes.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs font-bold uppercase tracking-wide text-muted-foreground flex items-center gap-1.5">
+                <Bookmark className="w-3.5 h-3.5 text-accent" /> Buy Boxes:
+              </span>
+              {buyBoxes.map((b) => {
+                const active = activeBuyBoxId === b.id;
+                return (
+                  <div
+                    key={b.id}
+                    className={`flex items-center gap-1.5 rounded-full border-2 pl-3 pr-1 py-1 text-sm font-semibold transition ${
+                      active
+                        ? "bg-accent text-white border-accent"
+                        : "bg-white text-primary border-border hover:border-accent"
+                    }`}
+                  >
+                    <button type="button" onClick={() => applyBuyBox(b.id)} className="truncate max-w-[180px]">
+                      {b.name}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => applyBuyBox(b.id)}
+                      className={`text-xs font-bold rounded-full px-2 py-0.5 ${
+                        active ? "bg-white/20 text-white" : "bg-accent/10 text-accent"
+                      }`}
+                    >
+                      Apply
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        removeBuyBox(b.id);
+                        if (active) setActiveBuyBoxId(null);
+                      }}
+                      className={`rounded-full p-1 ${active ? "hover:bg-white/20" : "hover:bg-muted"}`}
+                      title="Delete buy box"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
           <div className="flex flex-wrap gap-3 items-center">
             <div className="relative w-full md:w-64 shrink-0">
               <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />

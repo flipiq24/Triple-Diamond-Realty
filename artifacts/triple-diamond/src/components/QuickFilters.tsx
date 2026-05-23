@@ -82,26 +82,8 @@ export default function QuickFilters({
         : `${filters.homeTypes.length} types`
       : "Home Type";
 
-  const forSaleLabel = filters.saleStatus === "just-sold" ? "Just Sold" : "For Sale";
-
   return (
     <div className="flex flex-wrap gap-2 items-center">
-      {/* For Sale / Just Sold */}
-      <Pill label={forSaleLabel} active={filters.saleStatus !== "for-sale"}>
-        <div className="space-y-2">
-          {(["for-sale", "just-sold"] as const).map((v) => (
-            <button
-              key={v}
-              onClick={() => update("saleStatus", v)}
-              className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium ${
-                filters.saleStatus === v ? "bg-primary text-white" : "hover:bg-muted"
-              }`}
-            >
-              {v === "for-sale" ? "For Sale" : "Just Sold"}
-            </button>
-          ))}
-        </div>
-      </Pill>
 
       {/* Price */}
       <Pill label={priceLabel} active={!!(filters.priceMin || filters.priceMax)}>

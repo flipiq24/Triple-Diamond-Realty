@@ -5,8 +5,11 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { SlidersHorizontal } from "lucide-react";
+import { SlidersHorizontal, Bookmark, Trash2 } from "lucide-react";
+import { useState } from "react";
 import type { PropertyType, ListingStatus, SaleType } from "@/data/listings";
+import { useBuyBoxes } from "@/hooks/useBuyBoxes";
+import { toast } from "sonner";
 
 export type FilterState = {
   priceMin: string;
@@ -14,7 +17,6 @@ export type FilterState = {
   beds: string; // "any" | "0" (studio) | "1".."5"
   baths: string;
   homeTypes: PropertyType[];
-  saleStatus: "for-sale" | "just-sold";
   listingStatus: ListingStatus[];
   saleTypes: SaleType[];
   openHouse: boolean;
@@ -39,7 +41,6 @@ export const defaultFilters: FilterState = {
   beds: "any",
   baths: "any",
   homeTypes: [],
-  saleStatus: "for-sale",
   listingStatus: [],
   saleTypes: [],
   openHouse: false,
@@ -122,6 +123,15 @@ export default function SearchFiltersSheet({ filters, setFilters, resultCount, o
   const toggleArr = <T,>(arr: T[], item: T): T[] =>
     arr.includes(item) ? arr.filter((x) => x !== item) : [...arr, item];
 
+  const { boxes, add, remove } = useBuyBoxes();
+  const [bbName, setBbName] = useState("");
+  const handleSaveBuyBox = () => {
+    const name = bbName.trim() || `Buy Box ${boxes.length + 1}`;
+    add(name, filters);
+    setBbName("");
+    toast.success(`Saved "${name}"`, { description: "Apply it from the buy-box bar on the search page." });
+  };
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetTrigger asChild>
@@ -135,6 +145,52 @@ export default function SearchFiltersSheet({ filters, setFilters, resultCount, o
         </SheetHeader>
 
         <div className="flex-1 overflow-y-auto px-6 py-4 space-y-8">
+          {/* Buy Boxes */}
+          <section className="bg-accent/5 border-2 border-accent/30 rounded-xl p-4">
+            <h3 className="font-bold text-primary mb-1 flex items-center gap-2">
+              <Bookmark className="w-4 h-4 text-accent" /> My Buy Boxes
+            </h3>
+            <p className="text-xs text-muted-foreground mb-3">
+              Save your current filter set as a buy box you can re-apply with one tap.
+            </p>
+            <div className="flex gap-2 mb-3">
+              <Input
+                value={bbName}
+                onChange={(e) => setBbName(e.target.value)}
+                placeholder="Name this buy box (e.g. SoCal SFR Flips)"
+                className="flex-1"
+              />
+              <Button onClick={handleSaveBuyBox} className="bg-accent hover:bg-accent/90 text-white">
+                Save
+              </Button>
+            </div>
+            {boxes.length > 0 && (
+              <div className="space-y-1.5">
+                {boxes.map((b) => (
+                  <div key={b.id} className="flex items-center gap-2 bg-white rounded-md px-3 py-2 border">
+                    <Bookmark className="w-3.5 h-3.5 text-accent shrink-0" />
+                    <span className="text-sm font-semibold text-primary flex-1 truncate">{b.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => { setFilters(b.filters); toast.success(`Applied "${b.name}"`); }}
+                      className="text-xs font-bold text-accent hover:underline"
+                    >
+                      Apply
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => remove(b.id)}
+                      className="text-muted-foreground hover:text-destructive"
+                      title="Delete buy box"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+
           {/* Price */}
           <section>
             <h3 className="font-bold text-primary mb-3">Price</h3>
@@ -211,27 +267,6 @@ export default function SearchFiltersSheet({ filters, setFilters, resultCount, o
           {/* Listing details */}
           <section>
             <h3 className="font-bold text-primary mb-3">Listing details</h3>
-
-            <div className="flex gap-2 mb-4">
-              <button
-                type="button"
-                onClick={() => update("saleStatus", "for-sale")}
-                className={`flex-1 py-2 rounded-md text-sm font-semibold border-2 transition ${
-                  filters.saleStatus === "for-sale" ? "bg-primary text-white border-primary" : "bg-white text-primary border-border"
-                }`}
-              >
-                For sale
-              </button>
-              <button
-                type="button"
-                onClick={() => update("saleStatus", "just-sold")}
-                className={`flex-1 py-2 rounded-md text-sm font-semibold border-2 transition ${
-                  filters.saleStatus === "just-sold" ? "bg-primary text-white border-primary" : "bg-white text-primary border-border"
-                }`}
-              >
-                Just sold
-              </button>
-            </div>
 
             <Label className="text-xs text-muted-foreground">Listing status</Label>
             <div className="grid grid-cols-2 gap-2 mt-1 mb-4">
