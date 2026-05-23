@@ -89,7 +89,7 @@ export default function Property() {
   return (
     <div className="w-full bg-white">
       <SeoHead
-        title={`${listing.street}, ${listing.city} ${listing.zip} | Triple Diamond Realty`}
+        title={`${verified ? `${listing.street}, ` : ""}${listing.city}, ${listing.state}${verified ? ` ${listing.zip}` : ""} | Triple Diamond Realty`}
         description={`${listing.beds} bd, ${listing.baths} ba, ${listing.sqft.toLocaleString()} sqft ${listing.propertyType} — $${listing.price.toLocaleString()}. ${listing.description ?? ""}`}
         path={`/property/${listing.id}`}
       />
@@ -433,7 +433,7 @@ export default function Property() {
                       rows={4}
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
-                      placeholder={`I'm interested in ${listing.street}.`}
+                      placeholder={verified ? `I'm interested in ${listing.street}.` : `I'm interested in the property in ${listing.city}, ${listing.state}.`}
                     />
                   </div>
                 )}

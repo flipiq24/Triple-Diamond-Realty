@@ -8,6 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Phone, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { type Listing } from "@/data/listings";
+import { useBuyerVerified } from "@/hooks/useBuyerVerified";
 
 export default function EmailAgentDialog({
   listing,
@@ -20,10 +21,18 @@ export default function EmailAgentDialog({
   open?: boolean;
   onOpenChange?: (o: boolean) => void;
 }) {
+  const { verified } = useBuyerVerified();
+  const locationLabel = verified
+    ? `${listing.street}, ${listing.city}, ${listing.state} ${listing.zip}`
+    : `${listing.city}, ${listing.state}`;
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [message, setMessage] = useState(`I'm interested in ${listing.street}, ${listing.city}.`);
+  const [message, setMessage] = useState(
+    verified
+      ? `I'm interested in ${listing.street}, ${listing.city}.`
+      : `I'm interested in the property in ${listing.city}, ${listing.state}.`
+  );
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,7 +57,7 @@ export default function EmailAgentDialog({
               Email about this property
             </DialogTitle>
             <DialogDescription className="text-white/80 text-sm">
-              {listing.street}, {listing.city}, {listing.state} {listing.zip}
+              {locationLabel}
             </DialogDescription>
           </DialogHeader>
         </div>
@@ -90,9 +99,15 @@ export default function EmailAgentDialog({
           </Button>
 
           <div className="flex items-center justify-center gap-4 pt-1 text-xs">
-            <a href={`tel:${listing.agentPhone.replace(/\D/g, "")}`} className="flex items-center gap-1 font-semibold text-primary hover:text-accent">
-              <Phone className="w-3.5 h-3.5" /> {listing.agentPhone}
-            </a>
+            {verified ? (
+              <a href={`tel:${listing.agentPhone.replace(/\D/g, "")}`} className="flex items-center gap-1 font-semibold text-primary hover:text-accent">
+                <Phone className="w-3.5 h-3.5" /> {listing.agentPhone}
+              </a>
+            ) : (
+              <span className="flex items-center gap-1 font-semibold text-muted-foreground">
+                <Phone className="w-3.5 h-3.5" /> Agent phone unlocks after verification
+              </span>
+            )}
             <span className="text-muted-foreground">·</span>
             <a href="mailto:info@tdrealty.net" className="flex items-center gap-1 font-semibold text-primary hover:text-accent">
               <Mail className="w-3.5 h-3.5" /> info@tdrealty.net

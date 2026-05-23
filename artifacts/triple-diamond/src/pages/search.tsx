@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo, useRef } from "react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Search as SearchIcon, X, Map as MapIcon, List as ListIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,8 @@ import ListingCard from "@/components/ListingCard";
 import { listings, type Listing } from "@/data/listings";
 import SearchFiltersSheet, { defaultFilters, type FilterState } from "@/components/SearchFiltersSheet";
 import QuickFilters from "@/components/QuickFilters";
+import RegisterDialog from "@/components/RegisterDialog";
+import { useBuyerVerified } from "@/hooks/useBuyerVerified";
 import { motion } from "framer-motion";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
@@ -47,6 +49,14 @@ export default function Search() {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [selectedCenter, setSelectedCenter] = useState<[number, number] | null>(null);
   const markerRefs = useRef<Record<string, LeafletMarker | null>>({});
+  const { verified } = useBuyerVerified();
+  const [, setLocation] = useLocation();
+  const [registerOpen, setRegisterOpen] = useState(false);
+  const [pendingNavId, setPendingNavId] = useState<string | null>(null);
+  const handleMapViewDeal = (id: string) => {
+    if (verified) setLocation(`/property/${id}`);
+    else { setPendingNavId(id); setRegisterOpen(true); }
+  };
 
   // Adjustable map: column ratio (0.2 - 0.85) and height in px (420 - 1100)
   const [mapFraction, setMapFraction] = useState(0.6);
@@ -369,9 +379,12 @@ export default function Search() {
                       <div className="text-[10px] text-muted-foreground mb-3 truncate">
                         Brokered by {listing.brokerage}
                       </div>
-                      <Link href={`/property/${listing.id}`}>
-                        <Button className="w-full h-8 text-xs bg-accent hover:bg-accent/90">View Deal</Button>
-                      </Link>
+                      <Button
+                        onClick={() => handleMapViewDeal(listing.id)}
+                        className="w-full h-8 text-xs bg-accent hover:bg-accent/90"
+                      >
+                        View Deal
+                      </Button>
                     </div>
                   </Popup>
                 </Marker>
@@ -409,6 +422,12 @@ export default function Search() {
           </div>
         </div>
       )}
+
+      <RegisterDialog
+        open={registerOpen}
+        onOpenChange={(o) => { setRegisterOpen(o); if (!o) setPendingNavId(null); }}
+        onVerified={() => { if (pendingNavId) setLocation(`/property/${pendingNavId}`); }}
+      />
     </div>
   );
 }
