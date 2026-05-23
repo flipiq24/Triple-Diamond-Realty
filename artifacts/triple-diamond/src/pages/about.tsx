@@ -109,7 +109,7 @@ export default function About() {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 text-center">
             {[
-              { value: "30+", label: "Years in California" },
+              { value: "30+", label: "Years in the Business" },
               { value: "1000s", label: "Properties Closed" },
               { value: "#1", label: "Off-Market Tech Platform" },
             ].map((stat, i) => (
@@ -127,7 +127,7 @@ export default function About() {
         <div className="container mx-auto px-4 max-w-6xl">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">Meet the Team</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">The people working the phones, running the numbers, and feeding the most powerful off-market deal engine in California real estate.</p>
+            <p className="text-muted-foreground max-w-2xl mx-auto">The people working the phones, running the numbers, and feeding the most powerful off-market deal engine in the market.</p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">

@@ -4,7 +4,7 @@ export default function AuthorityStrip() {
   const items = [
     { icon: Award, num: "30 Years", label: "in the Business" },
     { icon: Gem, num: "Thousands", label: "of Properties Closed" },
-    { icon: Cpu, num: "Most Powerful", label: "Deal-Finding Technology in California" },
+    { icon: Cpu, num: "Most Powerful", label: "Deal-Finding Technology" },
   ];
   return (
     <section aria-label="Triple Diamond Realty authority" className="bg-primary text-primary-foreground py-6 border-y border-primary/30">
