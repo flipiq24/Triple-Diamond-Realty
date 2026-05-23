@@ -114,20 +114,16 @@ export default function ListingCard({ listing }: { listing: Listing }) {
           </div>
         </div>
 
-        {/* CTAs */}
-        <div className="grid grid-cols-2 gap-2">
-          <Link href={href}>
-            <Button variant="outline" className="w-full font-bold rounded-lg h-11">
-              View Deal
-            </Button>
-          </Link>
-          <Button
-            onClick={() => setDialogOpen(true)}
-            className="w-full bg-accent hover:bg-accent/90 text-white font-bold rounded-lg h-11"
-          >
-            Email Agent
-          </Button>
-        </div>
+        {/* CTAs — Email Agent is primary; View Deal is a small text link underneath */}
+        <Button
+          onClick={() => setDialogOpen(true)}
+          className="w-full bg-accent hover:bg-accent/90 text-white font-bold rounded-lg h-11"
+        >
+          Email Agent
+        </Button>
+        <Link href={href} className="block mt-2 text-center text-xs font-semibold text-primary/80 hover:text-accent underline underline-offset-2">
+          View deal details
+        </Link>
         <EmailAgentDialog listing={listing} open={dialogOpen} onOpenChange={setDialogOpen} />
       </div>
     </div>

@@ -53,14 +53,14 @@ export default function SearchBarBlock() {
         <Button
           variant="outline"
           className="rounded-full bg-transparent border-2 border-white text-white hover:bg-white hover:text-primary h-14 px-8 font-semibold text-base w-full sm:w-auto"
-          onClick={() => document.getElementById("footer")?.scrollIntoView({ behavior: "smooth" })}
+          onClick={() => setLocation("/sell-property")}
         >
           Sell a Property
         </Button>
         <Button
           variant="outline"
           className="rounded-full bg-transparent border-2 border-white text-white hover:bg-white hover:text-primary h-14 px-8 font-semibold text-base w-full sm:w-auto"
-          onClick={() => document.getElementById("footer")?.scrollIntoView({ behavior: "smooth" })}
+          onClick={() => setLocation("/comp-with-ai")}
         >
           Comp with AI
         </Button>
