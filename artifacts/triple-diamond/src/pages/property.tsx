@@ -12,8 +12,10 @@ import L from "leaflet";
 import SeoHead from "@/components/SeoHead";
 import RegisterDialog from "@/components/RegisterDialog";
 import { useBuyerVerified } from "@/hooks/useBuyerVerified";
-import { Lock, ShieldCheck } from "lucide-react";
+import { Lock, ShieldCheck, Calculator, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
+import DealCalculatorDialog from "@/components/DealCalculatorDialog";
+import RunCompsDialog from "@/components/RunCompsDialog";
 
 const pin = L.divIcon({
   className: "custom-pin",
@@ -187,8 +189,18 @@ export default function Property() {
               </div>
             </div>
 
-            <div className="text-4xl md:text-5xl font-extrabold text-primary mb-2">
-              ${listing.price.toLocaleString()}
+            <div className="flex flex-wrap items-center gap-3 mb-2">
+              <div className="text-4xl md:text-5xl font-extrabold text-primary">
+                ${listing.price.toLocaleString()}
+              </div>
+              <RunCompsDialog
+                listing={listing}
+                trigger={
+                  <Button size="sm" variant="outline" className="gap-1.5 rounded-full border-primary/30 text-primary hover:bg-primary hover:text-white">
+                    <BarChart3 className="w-4 h-4" /> Run Comps
+                  </Button>
+                }
+              />
             </div>
             <div className="flex flex-wrap gap-x-4 gap-y-1 text-base font-semibold text-foreground mb-2">
               <span><strong>{listing.beds}</strong> bed</span>
@@ -399,8 +411,32 @@ export default function Property() {
             <RegisterDialog open={registerOpen} onOpenChange={setRegisterOpen} />
           </div>
 
-          {/* RIGHT — sidebar contact form */}
-          <aside className="lg:sticky lg:top-24 self-start">
+          {/* RIGHT — sidebar */}
+          <aside className="lg:sticky lg:top-24 self-start space-y-4">
+            {/* Deal tools — Calculator + Run Comps */}
+            <div className="grid grid-cols-2 gap-3">
+              <DealCalculatorDialog
+                listing={listing}
+                trigger={
+                  <button className="rounded-2xl border-2 border-accent/40 bg-accent/5 hover:bg-accent/10 p-4 text-left transition-colors">
+                    <Calculator className="w-6 h-6 text-accent mb-2" />
+                    <div className="font-extrabold text-primary text-sm leading-tight">Deal Calculator</div>
+                    <div className="text-[11px] text-muted-foreground mt-0.5">MAO + spread</div>
+                  </button>
+                }
+              />
+              <RunCompsDialog
+                listing={listing}
+                trigger={
+                  <button className="rounded-2xl border-2 border-primary/30 bg-primary/5 hover:bg-primary/10 p-4 text-left transition-colors">
+                    <BarChart3 className="w-6 h-6 text-primary mb-2" />
+                    <div className="font-extrabold text-primary text-sm leading-tight">Run Comps</div>
+                    <div className="text-[11px] text-muted-foreground mt-0.5">Nearby sold $/sqft</div>
+                  </button>
+                }
+              />
+            </div>
+
             <div className="rounded-2xl border-2 border-border p-6 shadow-sm bg-white">
               <h3 className="text-xl font-extrabold text-primary mb-4">Contact a buyer's agent</h3>
               <form onSubmit={submitContact} className="space-y-3">
