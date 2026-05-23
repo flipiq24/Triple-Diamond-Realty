@@ -3,7 +3,6 @@ import { Link, useLocation } from "wouter";
 import { Heart, MapPin, BedDouble, Bath, Square, Lock } from "lucide-react";
 import { type Listing } from "@/data/listings";
 import { Button } from "@/components/ui/button";
-import EmailAgentDialog from "@/components/EmailAgentDialog";
 import RegisterDialog from "@/components/RegisterDialog";
 import { useBuyerVerified } from "@/hooks/useBuyerVerified";
 import { toast } from "sonner";
@@ -35,7 +34,6 @@ export default function ListingCard({ listing }: { listing: Listing }) {
   };
 
   const href = `/property/${listing.id}`;
-  const [dialogOpen, setDialogOpen] = useState(false);
   const [registerOpen, setRegisterOpen] = useState(false);
   const { verified } = useBuyerVerified();
   const [, setLocation] = useLocation();
@@ -141,19 +139,12 @@ export default function ListingCard({ listing }: { listing: Listing }) {
         >
           {verified ? "View Deal" : "View Deal"}
         </Button>
-        <button
-          onClick={() => setDialogOpen(true)}
-          className="block w-full mt-2 text-center text-xs font-semibold text-primary/80 hover:text-accent underline underline-offset-2"
-        >
-          Email the listing agent
-        </button>
         {/* Brokerage disclosure (CAR-compliant) — moved to bottom */}
         <div className="mt-3 pt-3 border-t border-border text-[10px] text-muted-foreground font-medium leading-snug">
           Listed by <span className="text-foreground">{listing.agentName}</span> · {listing.brokerageDRE}
           <br />
           Brokered by <span className="text-foreground">{listing.brokerage}</span>
         </div>
-        <EmailAgentDialog listing={listing} open={dialogOpen} onOpenChange={setDialogOpen} />
         <RegisterDialog
           open={registerOpen}
           onOpenChange={setRegisterOpen}
