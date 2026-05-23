@@ -3,20 +3,28 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 
-const STORAGE_KEY = "tdr_cookie_consent_v1";
+const STORAGE_KEY = "tdr_cookie_consent_v2";
+
+type Choice = "accept_all" | "reject_non_essential" | "manage" | "gpc";
 
 export default function CookieConsent() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
     try {
-      if (!localStorage.getItem(STORAGE_KEY)) setOpen(true);
+      if (localStorage.getItem(STORAGE_KEY)) return;
+      const gpc = (navigator as any).globalPrivacyControl === true;
+      if (gpc) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ choice: "gpc", ts: Date.now() }));
+        return;
+      }
+      setOpen(true);
     } catch {
       setOpen(true);
     }
   }, []);
 
-  const close = (choice: "accept_all" | "essential_only") => {
+  const close = (choice: Choice) => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({ choice, ts: Date.now() }));
     } catch {}
@@ -34,35 +42,27 @@ export default function CookieConsent() {
     >
       <div className="flex items-start gap-3">
         <div className="flex-1">
-          <h3 className="font-bold text-primary mb-1">Your privacy choices</h3>
+          <h2 className="font-bold text-primary mb-1">Your privacy choices</h2>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            We use cookies and similar technologies to operate this site, remember your preferences, measure performance, and improve our marketing. California residents have rights under the CCPA/CPRA, including the right to opt out of the sale or sharing of personal information.{" "}
-            <Link href="/legal#privacy" className="text-accent font-semibold hover:underline">Learn more</Link>.
+            We use cookies and similar technologies to operate our site, analyze traffic, and personalize content and advertising. California residents may exercise privacy rights including opting out of the sale or sharing of personal information. We honor the Global Privacy Control (GPC) signal.{" "}
+            <Link href="/privacy" className="text-accent font-semibold hover:underline">Learn more</Link>.
           </p>
           <div className="flex flex-wrap gap-2 mt-4">
-            <Button
-              onClick={() => close("accept_all")}
-              className="bg-accent hover:bg-accent/90 text-white rounded-full h-9 px-4 text-sm font-semibold"
-            >
-              Accept all
+            <Button onClick={() => close("accept_all")} className="bg-accent hover:bg-accent/90 text-white rounded-full h-9 px-4 text-sm font-semibold">
+              Accept All
             </Button>
-            <Button
-              variant="outline"
-              onClick={() => close("essential_only")}
-              className="rounded-full h-9 px-4 text-sm font-semibold border-primary text-primary"
-            >
-              Essential only
+            <Button variant="outline" onClick={() => close("reject_non_essential")} className="rounded-full h-9 px-4 text-sm font-semibold border-primary text-primary">
+              Reject Non-Essential
             </Button>
-            <Link href="/legal#ccpa" className="inline-flex items-center text-sm font-semibold text-primary hover:text-accent px-3 h-9">
+            <Link href="/privacy#cookies" onClick={() => close("manage")} className="inline-flex items-center text-sm font-semibold text-primary hover:text-accent px-3 h-9">
+              Manage Preferences
+            </Link>
+            <Link href="/do-not-sell" onClick={() => close("reject_non_essential")} className="inline-flex items-center text-sm font-semibold text-accent hover:underline px-3 h-9">
               Do Not Sell or Share My Info
             </Link>
           </div>
         </div>
-        <button
-          onClick={() => close("essential_only")}
-          aria-label="Dismiss"
-          className="text-muted-foreground hover:text-primary"
-        >
+        <button onClick={() => close("reject_non_essential")} aria-label="Dismiss" className="text-muted-foreground hover:text-primary">
           <X className="w-4 h-4" />
         </button>
       </div>

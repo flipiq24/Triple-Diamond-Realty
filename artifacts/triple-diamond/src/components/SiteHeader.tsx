@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Phone, Mail, Menu, MapPin } from "lucide-react";
+import { Phone, Mail, Menu, MapPin, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useState } from "react";
@@ -14,17 +14,19 @@ export default function SiteHeader() {
     { href: "/", label: "Home" },
     { href: "/search", label: "Search Deals" },
     { href: "/about", label: "About Us" },
+    { href: "/blog", label: "Blog" },
   ];
 
   return (
     <header className="flex flex-col w-full sticky top-0 z-50 shadow-sm">
       {/* Top Utility Bar */}
-      <div className="bg-primary text-primary-foreground py-1.5 px-4 md:px-8 text-xs font-medium flex justify-between items-center hidden sm:flex">
+      <div className="bg-primary text-primary-foreground py-1.5 px-4 md:px-8 text-xs font-medium hidden sm:flex justify-between items-center">
         <div className="flex items-center gap-2">
-          <MapPin className="w-3.5 h-3.5 text-accent" />
-          <span>Find Handyman Specials in California</span>
+          <Sparkles className="w-3.5 h-3.5 text-accent" />
+          <span className="font-semibold text-white">Diamonds in the Rough. Delivered Daily.</span>
         </div>
         <div className="flex items-center gap-6">
+          <span className="hidden lg:inline text-primary-foreground/70">CA DRE #[INSERT]</span>
           <a href="tel:9092804906" className="flex items-center gap-1.5 hover:text-accent transition-colors">
             <Phone className="w-3.5 h-3.5" />
             <span>(909) 280-4906</span>
@@ -39,16 +41,15 @@ export default function SiteHeader() {
       {/* Main Navigation */}
       <div className="bg-white border-b border-border py-3 px-4 md:px-8 flex justify-between items-center">
         <Link href="/" className="flex items-center gap-2 shrink-0">
-          <img src={logoUrl} alt="Triple Diamond Realty" className="h-10 w-auto object-contain" />
+          <img src={logoUrl} alt="Triple Diamond Realty — California off-market real estate" className="h-10 w-auto object-contain" />
         </Link>
 
-        {/* Desktop Nav */}
-        <nav className="hidden md:flex items-center gap-8">
+        <nav className="hidden md:flex items-center gap-8" aria-label="Main">
           <ul className="flex items-center gap-6 text-sm font-semibold text-foreground">
             {navLinks.map((link) => (
               <li key={link.href}>
-                <Link 
-                  href={link.href} 
+                <Link
+                  href={link.href}
                   className={`transition-colors hover:text-accent ${location === link.href ? "text-accent" : ""}`}
                 >
                   {link.label}
@@ -63,11 +64,10 @@ export default function SiteHeader() {
           </Link>
         </nav>
 
-        {/* Mobile Nav Toggle */}
         <div className="md:hidden">
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="text-primary">
+              <Button variant="ghost" size="icon" className="text-primary" aria-label="Open menu">
                 <Menu className="w-6 h-6" />
               </Button>
             </SheetTrigger>
@@ -76,10 +76,10 @@ export default function SiteHeader() {
                 <Link href="/" onClick={() => setIsOpen(false)}>
                   <img src={logoUrl} alt="Triple Diamond Realty" className="h-8 w-auto mb-4" />
                 </Link>
-                <nav className="flex flex-col gap-4 text-lg font-semibold text-primary">
+                <nav className="flex flex-col gap-4 text-lg font-semibold text-primary" aria-label="Mobile">
                   {navLinks.map((link) => (
-                    <Link 
-                      key={link.href} 
+                    <Link
+                      key={link.href}
                       href={link.href}
                       onClick={() => setIsOpen(false)}
                       className={`${location === link.href ? "text-accent" : ""}`}
@@ -96,6 +96,9 @@ export default function SiteHeader() {
                   <a href="mailto:info@tdrealty.net" className="flex items-center gap-2">
                     <Mail className="w-4 h-4" /> info@tdrealty.net
                   </a>
+                  <div className="flex items-center gap-2 text-xs">
+                    <MapPin className="w-4 h-4" /> CA DRE #[INSERT]
+                  </div>
                 </div>
                 <Link href="/search" onClick={() => setIsOpen(false)} className="mt-4">
                   <Button className="w-full bg-accent hover:bg-accent/90 text-accent-foreground rounded-full font-bold">

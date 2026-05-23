@@ -51,9 +51,15 @@ export default function ListingCard({ listing }: { listing: Listing }) {
         />
         
         {/* Status Pill */}
-        <div className="absolute top-3 left-3">
+        <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
           <span className={`px-2.5 py-1 text-xs font-bold rounded-full shadow-sm ${getStatusColor(listing.dealType)}`}>
             {listing.dealType}
+          </span>
+          <span className="px-2 py-0.5 text-[10px] font-bold rounded-full shadow-sm bg-white text-primary border border-primary/20 uppercase tracking-wider">
+            AS-IS
+          </span>
+          <span className="px-2 py-0.5 text-[10px] font-bold rounded-full shadow-sm bg-primary/90 text-white uppercase tracking-wider">
+            Status: {listing.dealType === "New Listing" ? "MLS" : listing.dealType === "Wholesale" ? "Assignment" : "Off-Market"}
           </span>
         </div>
 
