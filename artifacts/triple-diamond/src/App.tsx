@@ -20,6 +20,7 @@ import { HomeA, HomeB, HomeC, HomeD, HomeE } from "@/pages/variant-home";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import CookieConsent from "@/components/CookieConsent";
+import EbookPopup from "@/components/EbookPopup";
 
 const queryClient = new QueryClient();
 
@@ -72,6 +73,7 @@ function Router() {
       </main>
       <SiteFooter />
       <CookieConsent />
+      <EbookPopup />
     </div>
   );
 }
