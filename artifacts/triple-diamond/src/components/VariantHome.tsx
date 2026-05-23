@@ -60,7 +60,7 @@ export default function VariantHome({ config, cityName }: { config: VariantConfi
       <section className="py-24 bg-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">Why California Investors Choose Triple Diamond Realty</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">Why Investors Choose Triple Diamond Realty</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">Three decades of relationships. The state's most advanced off-market deal engine. Real properties, real numbers, real margin — every single day.</p>
           </div>
 
