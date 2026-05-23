@@ -336,23 +336,13 @@ export default function Search() {
           )}
         </div>
       ) : (
-        <div
-          ref={splitRef}
-          className="grid grid-cols-1 gap-0 relative lg:grid-cols-[var(--list-col)_6px_var(--map-col)]"
-          style={{
-            height: `${mapHeight}px`,
-            ['--list-col' as string]: `${(1 - mapFraction) * 100}%`,
-            ['--map-col' as string]: `${mapFraction * 100}%`,
-          }}
-        >
+        <div className="flex flex-col">
+          {/* Map on top — full width, sticky so it stays in view as you scroll */}
           <div
-            onMouseDown={onColDragStart}
-            className="hidden lg:flex order-2 cursor-col-resize bg-border hover:bg-accent transition-colors items-center justify-center group"
-            title="Drag to resize map"
+            ref={splitRef}
+            className="relative z-0 w-full sticky top-16 lg:top-20 bg-muted/10"
+            style={{ height: `${mapHeight}px` }}
           >
-            <div className="w-1 h-10 rounded-full bg-white/70 group-hover:bg-white" />
-          </div>
-          <div className="order-1 lg:order-3 relative z-0 h-[420px] lg:h-full touch-none">
             <MapContainer
               center={[37.3, -119.5]}
               zoom={6}
@@ -405,35 +395,44 @@ export default function Search() {
                 </Marker>
               ))}
             </MapContainer>
+
+            {/* Drag handle to resize map height */}
+            <div
+              onMouseDown={onRowDragStart}
+              className="hidden lg:flex absolute -bottom-1.5 left-0 right-0 h-3 cursor-row-resize items-center justify-center group z-10"
+              title="Drag to resize map height"
+            >
+              <div className="w-16 h-1 rounded-full bg-border group-hover:bg-accent transition-colors" />
+            </div>
           </div>
 
-          {/* Bottom edge drag handle to adjust map height (desktop only) */}
-          <div
-            onMouseDown={onRowDragStart}
-            className="hidden lg:flex absolute -bottom-1.5 left-0 right-0 h-3 cursor-row-resize items-center justify-center group z-10"
-            title="Drag to resize map height"
-          >
-            <div className="w-16 h-1 rounded-full bg-border group-hover:bg-accent transition-colors" />
-          </div>
-          <div className="order-2 lg:order-1 lg:overflow-y-auto bg-muted/10 p-4 pb-12 lg:h-full">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-8">
-              {filteredListings.map(listing => (
-                <div
-                  key={listing.id}
-                  onMouseEnter={() => setHoveredId(listing.id)}
-                  onMouseLeave={() => setHoveredId(null)}
-                  onClick={() => handleCardClick(listing)}
-                  className="cursor-pointer"
-                >
-                  <ListingCard listing={listing} />
-                </div>
-              ))}
-              {filteredListings.length === 0 && (
-                <div className="col-span-full py-12 text-center text-muted-foreground">
-                  No listings found in this area with these filters.
-                </div>
-              )}
+          {/* Listings flow underneath the map */}
+          <div className="bg-white px-4 lg:px-8 py-6">
+            <div className="text-sm text-muted-foreground mb-4">
+              <strong className="text-foreground">{filteredListings.length}</strong> deals on this map
             </div>
+            {filteredListings.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {filteredListings.map((listing, i) => (
+                  <motion.div
+                    key={listing.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: Math.min(i * 0.04, 0.4) }}
+                    onMouseEnter={() => setHoveredId(listing.id)}
+                    onMouseLeave={() => setHoveredId(null)}
+                    onClick={() => handleCardClick(listing)}
+                    className="cursor-pointer"
+                  >
+                    <ListingCard listing={listing} />
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              <div className="py-12 text-center text-muted-foreground">
+                No listings found in this area with these filters.
+              </div>
+            )}
           </div>
         </div>
       )}
