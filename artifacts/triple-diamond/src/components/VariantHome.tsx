@@ -92,9 +92,9 @@ export default function VariantHome({ config, cityName }: { config: VariantConfi
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12 max-w-5xl mx-auto relative">
             <div className="hidden md:block absolute top-12 left-[15%] right-[15%] h-0.5 bg-border -z-10" />
             {[
-              { step: 1, title: "Search the Deal Feed", body: "Filter California off-market inventory by ZIP, price, beds, and deal type to match your buy box." },
-              { step: 2, title: "Run Instant Comps", body: "Review ARVs, rehab estimates, and neighborhood comparables on every property — underwriting included." },
-              { step: 3, title: "Close in Days, Not Months", body: "Cash, hard-money, or conventional — we handle the paperwork so you close fast and start your project." },
+              { step: 1, title: "Set Up Your Free Account & Buy Box", body: "Create your free account in minutes and tell us exactly what you're hunting — ZIP, price, beds, deal type. We tune your buy box so only matching deals reach you." },
+              { step: 2, title: "Get Matched Deals. Run the Numbers.", body: "Receive on- and off-market opportunities the moment they hit our pipeline, then run instant comps, ARV, rehab, and full investment analysis right inside the platform." },
+              { step: 3, title: "Close Like a Pro", body: "Tap into our toolkit of vetted lenders, contractors, title, and transaction resources so you can move from offer to close fast — and confident." },
             ].map((item, i) => (
               <div key={i} className="flex flex-col items-center text-center">
                 <div className="w-24 h-24 rounded-full bg-white border-4 border-accent text-accent flex items-center justify-center text-4xl font-black mb-6 shadow-sm">{item.step}</div>
