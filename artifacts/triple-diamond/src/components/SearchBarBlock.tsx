@@ -58,7 +58,7 @@ export default function SearchBarBlock() {
         className="text-center"
       >
         <p className="text-sm font-medium text-white">
-          Active buy box for <strong className="text-accent">1,200+ California investors</strong>
+          Active buy box for <strong className="text-accent">1,200+ investors</strong>
         </p>
         <div className="mt-4 flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs text-primary-foreground/70">
           <button

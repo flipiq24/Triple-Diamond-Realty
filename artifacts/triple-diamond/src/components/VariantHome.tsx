@@ -18,7 +18,7 @@ export default function VariantHome({ config, cityName }: { config: VariantConfi
   const meta = cityName
     ? {
         title: `${cityName} ${config.meta.title}`,
-        description: `${cityName}, California — ${config.meta.description}`,
+        description: `${cityName} — ${config.meta.description}`,
         keywords: `${cityName.toLowerCase()} ${config.meta.keywords}`,
       }
     : config.meta;

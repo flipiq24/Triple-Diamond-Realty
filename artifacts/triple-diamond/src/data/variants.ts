@@ -20,17 +20,17 @@ export const variants: Record<"a" | "b" | "c" | "d" | "e", VariantConfig> = {
     h1Accent: "Handyman Specials",
     subHeadline: "Homes with real upside.",
     subCopy:
-      "Delivered to your inbox based on your buying criteria. Off-market and MLS fixers across California — real comps, real ARV, real margin.",
+      "Delivered to your inbox based on your buying criteria. Off-market and MLS fixers — real comps, real ARV, real margin.",
     meta: {
-      title: "California Fixer-Upper & Handyman Special Listings | Triple Diamond Realty",
+      title: "Fixer-Upper & Handyman Special Listings | Triple Diamond Realty",
       description:
-        "Off-market and MLS fixer-uppers across California. Real comps, real ARV, real margin.",
+        "Off-market and MLS fixer-uppers. Real comps, real ARV, real margin.",
       keywords:
-        "fixer upper California, handyman special, fixer upper homes for sale, rehab properties, as-is homes, value-add properties, distressed homes California",
+        "fixer upper, handyman special, fixer upper homes for sale, rehab properties, as-is homes, value-add properties, distressed homes",
     },
     faq: [
       { q: "What is a handyman special?", a: "A residential property sold as-is, typically priced below comparable updated homes because it needs cosmetic, mechanical, or structural repair work." },
-      { q: "How do I finance a fixer upper in California?", a: "Common options include hard-money loans, FHA 203(k) renovation loans for owner-occupants, Fannie Mae HomeStyle loans, conventional financing with a separate construction line, and all-cash. We can introduce you to vetted lenders." },
+      { q: "How do I finance a fixer upper?", a: "Common options include hard-money loans, FHA 203(k) renovation loans for owner-occupants, Fannie Mae HomeStyle loans, conventional financing with a separate construction line, and all-cash. We can introduce you to vetted lenders." },
       { q: "What's the difference between a fixer upper and a handyman special?", a: "A fixer upper generally needs primarily cosmetic updating. A handyman special often involves more substantial repairs to systems or structure. Each listing's condition is disclosed in the listing notes." },
       { q: "Can I buy a fixer upper with an FHA 203(k) loan?", a: "Yes, the FHA 203(k) program is generally available to owner-occupants for eligible properties. The loan combines purchase price and renovation budget into a single mortgage." },
       { q: "How do you find fixer-uppers before they hit the MLS?", a: "Through 30 years of direct-seller relationships, wholesaler networks, probate and distressed-property data, and proprietary off-market sourcing." },
@@ -40,21 +40,21 @@ export const variants: Record<"a" | "b" | "c" | "d" | "e", VariantConfig> = {
     slug: "b",
     path: "/b",
     pill: "Off-Market • Pre-Market • Pocket Listings",
-    h1Lead: "Off-Market California",
+    h1Lead: "Off-Market",
     h1Accent: "Investment Properties",
     subHeadline: "Pocket listings and pre-market deals.",
     subCopy:
-      "Sourced direct, before they hit the MLS. Exclusive off-market investment properties across California — direct-to-seller pipeline, no bidding wars.",
+      "Sourced direct, before they hit the MLS. Exclusive off-market investment properties — direct-to-seller pipeline, no bidding wars.",
     meta: {
-      title: "Off-Market Real Estate Deals in California | Triple Diamond Realty",
+      title: "Off-Market Real Estate Deals | Triple Diamond Realty",
       description:
-        "Exclusive off-market investment properties across California. Direct-to-seller pipeline, no bidding wars.",
+        "Exclusive off-market investment properties. Direct-to-seller pipeline, no bidding wars.",
       keywords:
-        "off-market deals California, off market properties, pocket listings California, pre-market listings, off MLS properties, wholesale real estate, investor friendly agent",
+        "off market deals, off market properties, pocket listings, pre-market listings, off MLS properties, wholesale real estate, investor friendly agent",
     },
     faq: [
       { q: "What does \"off-market\" mean?", a: "An off-market property is one offered for sale but not actively listed on the MLS or public portals like Zillow or Redfin at the time of marketing." },
-      { q: "How do you find off-market properties in California?", a: "Direct-seller outreach, wholesaler relationships, probate and divorce records, agent networks, and proprietary off-market sourcing software built over 30 years." },
+      { q: "How do you find off-market properties?", a: "Direct-seller outreach, wholesaler relationships, probate and divorce records, agent networks, and proprietary off-market sourcing software built over 30 years." },
       { q: "What is an investor-friendly agent?", a: "An agent experienced working with real estate investors — understands ARV, cap rate, cash-on-cash return, BRRRR, and rehab budgets, and writes contracts that protect investor buyers." },
       { q: "Are off-market deals always better than MLS deals?", a: "Not always. Off-market deals usually have less competition and more negotiation room, but we surface both. Compare each opportunity on its own numbers." },
       { q: "Are off-market listings published to the MLS?", a: "Publicly marketed listings are submitted to the MLS within one business day per the NAR Clear Cooperation Policy. Office-exclusive arrangements are disclosed individually." },
@@ -70,16 +70,16 @@ export const variants: Record<"a" | "b" | "c" | "d" | "e", VariantConfig> = {
     subCopy:
       "Cap rate, rent, and refi-ready ARV on every listing. Rental properties built for cash flow and BRRRR — real rents, real cap rates, real ARV.",
     meta: {
-      title: "California BRRRR & Cash-Flow Rental Properties | Triple Diamond Realty",
+      title: "BRRRR & Cash-Flow Rental Properties | Triple Diamond Realty",
       description:
         "Rental properties built for cash flow and BRRRR. Real rents, real cap rates, real ARV.",
       keywords:
-        "BRRRR properties California, cash flow rental property, turnkey rental California, buy and hold investment, positive cash flow real estate, single family rental, rental property with tenant",
+        "BRRRR properties, cash flow rental property, turnkey rental, buy and hold investment, positive cash flow real estate, single family rental, rental property with tenant",
     },
     faq: [
       { q: "What is the BRRRR method?", a: "Buy, Rehab, Rent, Refinance, Repeat. You buy a distressed property under market, renovate to force appreciation, rent it to a qualified tenant, refinance into long-term debt at the new value, and repeat with recycled capital." },
       { q: "How do you calculate cash flow on a rental?", a: "Gross rent minus PITI, property management, vacancy reserve, maintenance, capex, HOA, and owner-paid utilities. Listing figures are seller- or public-record sourced — verify independently." },
-      { q: "What's a typical cap rate in California?", a: "Cap rates vary by submarket and asset class. Coastal metros typically run lower; Inland Empire and Central Valley typically run higher. Any cap-rate figure on a listing is calculated from seller-provided income and expenses." },
+      { q: "What's a typical cap rate?", a: "Cap rates vary by submarket and asset class. Dense coastal metros typically run lower; inland and secondary markets typically run higher. Any cap-rate figure on a listing is calculated from seller-provided income and expenses." },
       { q: "Can I buy a turnkey rental with a tenant in place?", a: "Yes. Tenant-occupied listings include disclosed lease terms, deposits, and rent history. Buyers must comply with all applicable landlord-tenant laws." },
       { q: "How do you underwrite a rental property?", a: "Live rent comps, expenses verified against tax records and HOA documents, realistic vacancy and capex reserves, and financing stress tests. You get an underwriting sheet with every deal." },
     ],
@@ -92,18 +92,18 @@ export const variants: Record<"a" | "b" | "c" | "d" | "e", VariantConfig> = {
     h1Accent: "Assignable Contracts",
     subHeadline: "Assignable deals direct from our pipeline.",
     subCopy:
-      "Locked up, priced for margin, ready to move. Assignable wholesale contracts across California — locked-up deals with margin built in.",
+      "Locked up, priced for margin, ready to move. Assignable wholesale contracts — locked-up deals with margin built in.",
     meta: {
-      title: "California Wholesale Real Estate & Assignment Contracts | Triple Diamond Realty",
+      title: "Wholesale Real Estate & Assignment Contracts | Triple Diamond Realty",
       description:
-        "Assignable wholesale contracts across California. Locked-up deals with margin built in.",
+        "Assignable wholesale contracts. Locked-up deals with margin built in.",
       keywords:
-        "wholesale real estate California, wholesale properties California, assignment contracts, assignable contracts, real estate wholesalers, off market wholesale deals, cash buyer deals",
+        "wholesale real estate, wholesale properties, assignment contracts, assignable contracts, real estate wholesalers, off market wholesale deals, cash buyer deals",
     },
     faq: [
       { q: "What is an assignment contract?", a: "An assignment is a real estate contract in which the original buyer (assignor) transfers their right to purchase a property to another buyer (assignee) for a fee, before closing." },
-      { q: "Do you disclose your equitable interest?", a: "Yes. When Triple Diamond Realty or an affiliate holds an equitable interest or assignment, that status is disclosed on the listing. We comply with all California Department of Real Estate disclosure requirements." },
-      { q: "Are wholesale assignments legal in California?", a: "Assignment of real estate contracts is generally legal in California when properly disclosed and structured. Recent legislation (AB 968) imposes additional disclosure rules on certain quick resales of residential property." },
+      { q: "Do you disclose your equitable interest?", a: "Yes. When Triple Diamond Realty or an affiliate holds an equitable interest or assignment, that status is disclosed on the listing. We comply with all applicable state and federal real estate disclosure requirements." },
+      { q: "Are wholesale assignments legal?", a: "Assignment of real estate contracts is generally legal when properly disclosed and structured. State-specific rules apply; certain jurisdictions impose additional disclosure requirements on quick resales of residential property." },
       { q: "Who is an assignment deal best for?", a: "Cash buyers and hard-money pre-approved investors who can close quickly and take properties as-is. Assignment fees are paid at closing in addition to the contract price." },
       { q: "How fast can I close an assignment?", a: "Most assignments close in 7 to 21 days depending on funding source, title, and any contingencies in the original contract." },
     ],
@@ -114,15 +114,15 @@ export const variants: Record<"a" | "b" | "c" | "d" | "e", VariantConfig> = {
     pill: "1031 Exchange • Identification Ready",
     h1Lead: "1031 Exchange",
     h1Accent: "Replacement Properties",
-    subHeadline: "Identification-ready inventory across California.",
+    subHeadline: "Identification-ready inventory.",
     subCopy:
-      "Close on your timeline. Defer your gain. Pre-vetted 1031 replacement inventory across California — close on your 45/180-day timeline.",
+      "Close on your timeline. Defer your gain. Pre-vetted 1031 replacement inventory — close on your 45/180-day timeline.",
     meta: {
-      title: "1031 Exchange Replacement Properties in California | Triple Diamond Realty",
+      title: "1031 Exchange Replacement Properties | Triple Diamond Realty",
       description:
-        "Pre-vetted 1031 replacement inventory across California. Close on your 45/180-day timeline.",
+        "Pre-vetted 1031 replacement inventory. Close on your 45/180-day timeline.",
       keywords:
-        "1031 exchange properties California, 1031 replacement property, like-kind exchange, 1031 eligible, NNN 1031, DST 1031 alternatives",
+        "1031 exchange properties, 1031 replacement property, like-kind exchange, 1031 eligible, NNN 1031, DST 1031 alternatives",
     },
     disclaimer:
       "Triple Diamond Realty is a licensed real estate brokerage and does not provide tax, legal, or accounting advice. Confirm 1031 eligibility and timelines with your CPA and Qualified Intermediary.",
@@ -130,8 +130,8 @@ export const variants: Record<"a" | "b" | "c" | "d" | "e", VariantConfig> = {
       { q: "What is a 1031 exchange?", a: "A 1031 exchange (IRC §1031) allows investors to defer capital gains tax by exchanging one investment property for another like-kind investment property within IRS deadlines." },
       { q: "How does the 45-day identification rule work?", a: "From the close of the relinquished property, the taxpayer has 45 calendar days to formally identify replacement property in writing to the Qualified Intermediary, and 180 days total to close." },
       { q: "What properties qualify as 1031 replacement?", a: "Real property held for investment or productive use in a trade or business — single-family rentals, multifamily, commercial, NNN, land, and DST interests can qualify. Primary residences and flips generally do not." },
-      { q: "Can I do a 1031 into a single-family rental?", a: "Yes. SFR rentals held for investment are one of the most common 1031 replacement choices. We maintain a live shortlist of California SFRs ready to clear identification." },
-      { q: "Do I need a Qualified Intermediary?", a: "Yes. The taxpayer cannot take constructive receipt of sale proceeds — they must flow through a Qualified Intermediary. We work with established California QIs and can refer one." },
+      { q: "Can I do a 1031 into a single-family rental?", a: "Yes. SFR rentals held for investment are one of the most common 1031 replacement choices. We maintain a live shortlist of SFRs ready to clear identification." },
+      { q: "Do I need a Qualified Intermediary?", a: "Yes. The taxpayer cannot take constructive receipt of sale proceeds — they must flow through a Qualified Intermediary. We work with established QIs and can refer one." },
     ],
   },
 };

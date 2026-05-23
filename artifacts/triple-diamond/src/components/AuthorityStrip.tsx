@@ -2,7 +2,7 @@ import { Award, Gem, Cpu } from "lucide-react";
 
 export default function AuthorityStrip() {
   const items = [
-    { icon: Award, num: "30 Years", label: "Sourcing California Deals" },
+    { icon: Award, num: "30 Years", label: "Sourcing Off-Market Deals" },
     { icon: Gem, num: "$1B+", label: "in Transactions Closed" },
     { icon: Cpu, num: "Off-Market", label: "Deals You Won't Find on Zillow" },
   ];

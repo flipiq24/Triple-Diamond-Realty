@@ -7,8 +7,8 @@ export default function Blog() {
   return (
     <div className="w-full bg-white">
       <SeoHead
-        title="The Triple Diamond Blog | California Real Estate Investment Insights"
-        description="Pillar guides on California off-market deals, BRRRR cash flow, foreclosures, fixer-uppers, and 1031 exchange — written by the team behind 30 years of deal-finding."
+        title="The Triple Diamond Blog | Real Estate Investment Insights"
+        description="Pillar guides on off-market deals, BRRRR cash flow, foreclosures, fixer-uppers, and 1031 exchange — written by the team behind 30 years of deal-finding."
         path="/blog"
       />
       <section className="bg-primary py-16 px-4">
