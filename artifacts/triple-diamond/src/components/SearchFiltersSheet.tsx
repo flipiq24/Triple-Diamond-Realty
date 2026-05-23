@@ -259,23 +259,7 @@ export default function SearchFiltersSheet({ filters, setFilters, resultCount, o
               ))}
             </div>
 
-            <Label className="text-xs text-muted-foreground">Open houses & tours</Label>
-            <div className="grid grid-cols-1 gap-2 mt-1">
-              <label className="flex items-center gap-2 text-sm">
-                <Checkbox checked={filters.openHouse} onCheckedChange={(v) => update("openHouse", !!v)} />
-                Open house
-              </label>
-              <label className="flex items-center gap-2 text-sm">
-                <Checkbox checked={filters.threeDTour} onCheckedChange={(v) => update("threeDTour", !!v)} />
-                3D tours
-              </label>
-              <label className="flex items-center gap-2 text-sm">
-                <Checkbox checked={filters.virtualTour} onCheckedChange={(v) => update("virtualTour", !!v)} />
-                Virtual tours
-              </label>
-            </div>
-
-            <Label className="text-xs text-muted-foreground mt-4 block">Days on Triple Diamond</Label>
+<Label className="text-xs text-muted-foreground mt-4 block">Days on Triple Diamond</Label>
             <Select value={filters.daysOnMarket} onValueChange={(v) => update("daysOnMarket", v)}>
               <SelectTrigger className="mt-1">
                 <SelectValue />

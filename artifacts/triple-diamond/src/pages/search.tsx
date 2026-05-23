@@ -159,12 +159,7 @@ export default function Search() {
       // sale types (multi)
       if (filters.saleTypes.length > 0 && !filters.saleTypes.includes(l.saleType)) return false;
 
-      // tours
-      if (filters.openHouse && !l.hasOpenHouse) return false;
-      if (filters.threeDTour && !l.has3DTour) return false;
-      if (filters.virtualTour && !l.hasVirtualTour) return false;
-
-      // days on market
+// days on market
       if (filters.daysOnMarket !== "any" && l.daysOnMarket > parseInt(filters.daysOnMarket)) return false;
 
       // sqft / lot
