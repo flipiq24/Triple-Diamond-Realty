@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Heart, MapPin, BedDouble, Bath, Square, Ruler } from "lucide-react";
+import { Link } from "wouter";
+import { Heart, MapPin, BedDouble, Bath, Square } from "lucide-react";
 import { type Listing } from "@/data/listings";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -30,20 +31,12 @@ export default function ListingCard({ listing }: { listing: Listing }) {
     }
   };
 
-  const handleViewDeal = () => {
-    toast("Deal details coming soon", {
-      description: "Contact us at (909) 280-4906 to discuss this property.",
-      action: {
-        label: "Call Now",
-        onClick: () => window.location.href = "tel:9092804906"
-      }
-    });
-  };
+  const href = `/property/${listing.id}`;
 
   return (
     <div className="group bg-white rounded-xl border border-border shadow-sm overflow-hidden hover:shadow-md transition-all duration-300 flex flex-col h-full">
       {/* Image Container */}
-      <div className="relative aspect-4/3 overflow-hidden bg-muted">
+      <Link href={href} className="relative aspect-4/3 overflow-hidden bg-muted block">
         <img
           src={listing.image}
           alt={listing.street}
@@ -67,14 +60,15 @@ export default function ListingCard({ listing }: { listing: Listing }) {
         <button
           onClick={(e) => {
             e.preventDefault();
+            e.stopPropagation();
             setSaved(!saved);
             toast(saved ? "Removed from saved" : "Property saved");
           }}
-          className="absolute top-3 right-3 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-sm hover:scale-110 transition-transform"
+          className="absolute top-3 right-3 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-sm hover:scale-110 transition-transform z-10"
         >
           <Heart className={`w-4 h-4 ${saved ? "fill-accent text-accent" : "text-primary"}`} />
         </button>
-      </div>
+      </Link>
 
       {/* Content */}
       <div className="p-5 flex flex-col flex-1">
@@ -114,12 +108,11 @@ export default function ListingCard({ listing }: { listing: Listing }) {
         </div>
 
         {/* CTA */}
-        <Button 
-          onClick={handleViewDeal}
-          className="w-full bg-accent hover:bg-accent/90 text-white font-bold rounded-lg h-11"
-        >
-          View Deal
-        </Button>
+        <Link href={href}>
+          <Button className="w-full bg-accent hover:bg-accent/90 text-white font-bold rounded-lg h-11">
+            View Deal
+          </Button>
+        </Link>
       </div>
     </div>
   );

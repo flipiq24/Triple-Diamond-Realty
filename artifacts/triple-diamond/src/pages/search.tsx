@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo, useRef } from "react";
+import { Link } from "wouter";
 import { Search as SearchIcon, X, Map as MapIcon, List as ListIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -297,7 +298,9 @@ export default function Search() {
                         {listing.beds} bd | {listing.baths} ba | {listing.sqft} sqft
                       </div>
                       <div className="text-sm font-medium mb-3">{listing.street}</div>
-                      <Button className="w-full h-8 text-xs bg-accent hover:bg-accent/90">View Deal</Button>
+                      <Link href={`/property/${listing.id}`}>
+                        <Button className="w-full h-8 text-xs bg-accent hover:bg-accent/90">View Deal</Button>
+                      </Link>
                     </div>
                   </Popup>
                 </Marker>

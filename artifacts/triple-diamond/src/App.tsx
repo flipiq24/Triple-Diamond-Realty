@@ -13,6 +13,7 @@ import Disclosures from "@/pages/disclosures";
 import Accessibility from "@/pages/accessibility";
 import DoNotSell from "@/pages/do-not-sell";
 import CityPage from "@/pages/city";
+import Property from "@/pages/property";
 import { HomeA, HomeB, HomeC, HomeD, HomeE } from "@/pages/variant-home";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
@@ -54,6 +55,7 @@ function Router() {
           <Route path="/d" component={HomeD} />
           <Route path="/e" component={HomeE} />
           <Route path="/california/:city" component={CityPage} />
+          <Route path="/property/:id" component={Property} />
           <Route path="/search" component={Search} />
           <Route path="/about" component={About} />
           <Route path="/terms" component={Terms} />
