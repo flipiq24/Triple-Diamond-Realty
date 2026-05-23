@@ -24,14 +24,15 @@ export default function SearchBarBlock() {
       >
         <form onSubmit={submit} className="relative" role="search" aria-label="Search real estate deals">
           <label htmlFor="hero-search" className="sr-only">Search by city, ZIP, or county</label>
+          <div className="absolute -inset-1 rounded-full bg-accent/40 blur-md opacity-80 pointer-events-none" aria-hidden="true" />
           <Input
             id="hero-search"
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Enter city, ZIP, or county"
-            className="w-full h-16 pl-6 pr-16 rounded-full text-lg shadow-xl border-0 focus-visible:ring-2 focus-visible:ring-accent"
+            className="relative w-full h-16 pl-6 pr-16 rounded-full text-lg bg-white text-primary placeholder:text-primary/60 shadow-2xl ring-2 ring-accent border-0 focus-visible:ring-4 focus-visible:ring-accent"
           />
-          <Button type="submit" size="icon" aria-label="Search deals" className="absolute right-2 top-2 h-12 w-12 rounded-full bg-primary hover:bg-primary/90 text-white">
+          <Button type="submit" size="icon" aria-label="Search deals" className="absolute right-2 top-2 h-12 w-12 rounded-full bg-accent hover:bg-accent/90 text-white shadow-lg">
             <SearchIcon className="w-5 h-5" />
           </Button>
         </form>
@@ -41,41 +42,28 @@ export default function SearchBarBlock() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.3 }}
-        className="flex justify-center mb-10"
+        className="flex flex-col sm:flex-row flex-wrap justify-center items-center gap-3 mb-6"
       >
         <Button
-          className="rounded-full bg-accent hover:bg-accent/90 text-white h-14 px-10 font-bold text-lg shadow-[0_0_20px_rgba(245,158,11,0.5)]"
+          className="rounded-full bg-accent hover:bg-accent/90 text-white h-14 px-10 font-bold text-lg shadow-[0_0_20px_rgba(245,158,11,0.5)] w-full sm:w-auto"
           onClick={() => setLocation("/search")}
         >
           Find Your Next Deal
         </Button>
-      </motion.div>
-
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5, delay: 0.5 }}
-        className="text-center"
-      >
-        <p className="text-sm font-medium text-white">
-          Active buy box for <strong className="text-accent">1,200+ investors</strong>
-        </p>
-        <div className="mt-4 flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs text-primary-foreground/70">
-          <button
-            type="button"
-            onClick={() => document.getElementById("footer")?.scrollIntoView({ behavior: "smooth" })}
-            className="underline underline-offset-4 hover:text-accent transition"
-          >
-            Sell a Property
-          </button>
-          <button
-            type="button"
-            onClick={() => document.getElementById("footer")?.scrollIntoView({ behavior: "smooth" })}
-            className="underline underline-offset-4 hover:text-accent transition"
-          >
-            Comp with AI
-          </button>
-        </div>
+        <Button
+          variant="outline"
+          className="rounded-full bg-transparent border-2 border-white text-white hover:bg-white hover:text-primary h-14 px-8 font-semibold text-base w-full sm:w-auto"
+          onClick={() => document.getElementById("footer")?.scrollIntoView({ behavior: "smooth" })}
+        >
+          Sell a Property
+        </Button>
+        <Button
+          variant="outline"
+          className="rounded-full bg-transparent border-2 border-white text-white hover:bg-white hover:text-primary h-14 px-8 font-semibold text-base w-full sm:w-auto"
+          onClick={() => document.getElementById("footer")?.scrollIntoView({ behavior: "smooth" })}
+        >
+          Comp with AI
+        </Button>
       </motion.div>
     </>
   );
