@@ -1,8 +1,10 @@
 import { useEffect, useState, useMemo, useRef } from "react";
 import { Link, useLocation } from "wouter";
-import { Search as SearchIcon, X, Map as MapIcon, List as ListIcon, Heart, Bookmark } from "lucide-react";
+import { Search as SearchIcon, X, Map as MapIcon, List as ListIcon, Heart, Bookmark, ChevronDown, Trash2 } from "lucide-react";
 import { useBuyBoxes } from "@/hooks/useBuyBoxes";
 import { toast } from "sonner";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { toggleFavorite } from "@/lib/favorites";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import ListingCard from "@/components/ListingCard";
@@ -339,23 +341,85 @@ export default function Search() {
               )}
             </div>
 
-            <Button
-              variant={favoritesOnly ? "default" : "outline"}
-              onClick={() => setFavoritesOnly((v) => !v)}
-              className={`relative gap-2 rounded-full font-bold ${favoritesOnly ? "bg-accent hover:bg-accent/90 text-white border-accent" : ""}`}
-            >
-              <Heart className={`w-4 h-4 ${favoritesOnly ? "fill-white" : "fill-accent text-accent"}`} />
-              My Favorites
-              {favorites.length > 0 && (
-                <span className={`text-xs font-bold rounded-full h-5 min-w-5 px-1 flex items-center justify-center ${favoritesOnly ? "bg-white text-accent" : "bg-accent text-white"}`}>
-                  {favorites.length}
-                </span>
-              )}
-            </Button>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant={favoritesOnly ? "default" : "outline"}
+                  className={`relative gap-2 rounded-full font-bold ${favoritesOnly ? "bg-accent hover:bg-accent/90 text-white border-accent" : ""}`}
+                >
+                  <Heart className={`w-4 h-4 ${favoritesOnly ? "fill-white" : "fill-accent text-accent"}`} />
+                  My Favorites
+                  {favorites.length > 0 && (
+                    <span className={`text-xs font-bold rounded-full h-5 min-w-5 px-1 flex items-center justify-center ${favoritesOnly ? "bg-white text-accent" : "bg-accent text-white"}`}>
+                      {favorites.length}
+                    </span>
+                  )}
+                  <ChevronDown className="w-3.5 h-3.5 opacity-70" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="start" className="w-80 p-0 overflow-hidden">
+                <div className="px-4 py-3 border-b bg-muted/30 flex items-center justify-between">
+                  <div>
+                    <div className="font-extrabold text-primary text-sm">My Favorites</div>
+                    <div className="text-xs text-muted-foreground">
+                      {favorites.length} saved {favorites.length === 1 ? "property" : "properties"}
+                    </div>
+                  </div>
+                  <Button
+                    size="sm"
+                    onClick={() => setFavoritesOnly((v) => !v)}
+                    className={`h-8 rounded-full text-xs ${favoritesOnly ? "bg-accent hover:bg-accent/90 text-white" : "bg-primary hover:bg-primary/90 text-white"}`}
+                    disabled={favorites.length === 0}
+                  >
+                    {favoritesOnly ? "Show All" : "Show Only These"}
+                  </Button>
+                </div>
+                {favorites.length === 0 ? (
+                  <div className="px-4 py-10 text-center text-sm text-muted-foreground">
+                    Tap the <Heart className="w-3.5 h-3.5 inline fill-accent text-accent" /> on any deal to save it here.
+                  </div>
+                ) : (
+                  <div className="max-h-96 overflow-y-auto divide-y">
+                    {favorites.map((fid) => {
+                      const l = listings.find((x) => x.id === fid);
+                      if (!l) return null;
+                      return (
+                        <div key={fid} className="flex items-center gap-3 px-3 py-2 hover:bg-muted/40">
+                          <img src={l.image} alt="" className="w-14 h-14 rounded-md object-cover shrink-0" />
+                          <button
+                            type="button"
+                            onClick={() => handleMapViewDeal(l.id)}
+                            className="flex-1 text-left min-w-0"
+                          >
+                            <div className="font-bold text-primary text-sm truncate">
+                              ${l.price.toLocaleString()} · {l.city}
+                            </div>
+                            <div className="text-xs text-muted-foreground truncate">
+                              {l.beds} bd · {l.baths} ba · {l.sqft.toLocaleString()} sqft
+                            </div>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => { toggleFavorite(fid); toast.success("Removed from My Favorites"); }}
+                            className="text-muted-foreground hover:text-destructive p-1.5 rounded-md hover:bg-muted"
+                            title="Remove from favorites"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </PopoverContent>
+            </Popover>
 
-            {(activeCount > 0 || query) && (
-              <Button variant="ghost" onClick={resetAll} className="text-muted-foreground ml-auto">
-                <X className="w-4 h-4 mr-2" /> Clear all
+            {(activeCount > 0 || query || favoritesOnly) && (
+              <Button
+                onClick={() => { resetAll(); setFavoritesOnly(false); setActiveBuyBoxId(null); }}
+                className="ml-auto rounded-full bg-destructive hover:bg-destructive/90 text-white font-bold gap-2 shadow-sm"
+              >
+                <X className="w-4 h-4" /> Remove all filters
               </Button>
             )}
           </div>
