@@ -340,7 +340,7 @@ export default function Search() {
           {/* Map on top — full width, sticky so it stays in view as you scroll */}
           <div
             ref={splitRef}
-            className="relative z-0 w-full sticky top-16 lg:top-20 bg-muted/10"
+            className="relative z-0 w-full bg-muted/10 border-b"
             style={{ height: `${mapHeight}px` }}
           >
             <MapContainer
