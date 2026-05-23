@@ -14,7 +14,7 @@ export type VariantConfig = {
 export const variants: Record<"a" | "b" | "c" | "d" | "e", VariantConfig> = {
   a: {
     slug: "a",
-    path: "/a",
+    path: "/fixer-uppers",
     pill: "Fixer-Uppers • Handyman Specials",
     h1Lead: "Fixer-Uppers &",
     h1Accent: "Handyman Specials",
@@ -38,7 +38,7 @@ export const variants: Record<"a" | "b" | "c" | "d" | "e", VariantConfig> = {
   },
   b: {
     slug: "b",
-    path: "/b",
+    path: "/off-market-deals",
     pill: "Off-Market • Pre-Market • Pocket Listings",
     h1Lead: "Off-Market",
     h1Accent: "Investment Properties",
@@ -62,7 +62,7 @@ export const variants: Record<"a" | "b" | "c" | "d" | "e", VariantConfig> = {
   },
   c: {
     slug: "c",
-    path: "/c",
+    path: "/cash-flow-rentals",
     pill: "Cash-Flow Rentals • BRRRR",
     h1Lead: "Cash-Flow Rentals &",
     h1Accent: "BRRRR Deals",
@@ -86,7 +86,7 @@ export const variants: Record<"a" | "b" | "c" | "d" | "e", VariantConfig> = {
   },
   d: {
     slug: "d",
-    path: "/d",
+    path: "/wholesale-deals",
     pill: "Wholesale • Assignment Contracts",
     h1Lead: "Wholesale &",
     h1Accent: "Assignable Contracts",
@@ -110,7 +110,7 @@ export const variants: Record<"a" | "b" | "c" | "d" | "e", VariantConfig> = {
   },
   e: {
     slug: "e",
-    path: "/e",
+    path: "/1031-exchange",
     pill: "1031 Exchange • Identification Ready",
     h1Lead: "1031 Exchange",
     h1Accent: "Replacement Properties",

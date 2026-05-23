@@ -43,6 +43,13 @@ function Router() {
       <main id="main" className="flex-1">
         <Switch>
           <Route path="/" component={HomeA} />
+          {/* SEO-friendly canonical routes */}
+          <Route path="/fixer-uppers" component={HomeA} />
+          <Route path="/off-market-deals" component={HomeB} />
+          <Route path="/cash-flow-rentals" component={HomeC} />
+          <Route path="/wholesale-deals" component={HomeD} />
+          <Route path="/1031-exchange" component={HomeE} />
+          {/* Legacy short-code aliases (kept for existing PPC/print links) */}
           <Route path="/a" component={HomeA} />
           <Route path="/b" component={HomeB} />
           <Route path="/c" component={HomeC} />

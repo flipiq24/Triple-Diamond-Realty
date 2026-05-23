@@ -25,10 +25,11 @@ export default function SiteFooter() {
               <li><Link href="/search" className="hover:text-accent">Search Deals</Link></li>
               <li><Link href="/about" className="hover:text-accent">About Us</Link></li>
               <li><Link href="/blog" className="hover:text-accent">Blog</Link></li>
-              <li><Link href="/b" className="hover:text-accent">Off-Market Deals</Link></li>
-              <li><Link href="/c" className="hover:text-accent">Cash-Flow Rentals</Link></li>
-              <li><Link href="/d" className="hover:text-accent">Foreclosures</Link></li>
-              <li><Link href="/e" className="hover:text-accent">1031 Exchange</Link></li>
+              <li><Link href="/fixer-uppers" className="hover:text-accent">Fixer-Uppers</Link></li>
+              <li><Link href="/off-market-deals" className="hover:text-accent">Off-Market Deals</Link></li>
+              <li><Link href="/cash-flow-rentals" className="hover:text-accent">Cash-Flow Rentals</Link></li>
+              <li><Link href="/wholesale-deals" className="hover:text-accent">Wholesale Deals</Link></li>
+              <li><Link href="/1031-exchange" className="hover:text-accent">1031 Exchange</Link></li>
             </ul>
           </div>
 
