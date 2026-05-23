@@ -14,7 +14,6 @@ export default function SiteHeader() {
     { href: "/", label: "Home" },
     { href: "/search", label: "Search Deals" },
     { href: "/about", label: "About Us" },
-    { href: "/blog", label: "Blog" },
   ];
 
   return (

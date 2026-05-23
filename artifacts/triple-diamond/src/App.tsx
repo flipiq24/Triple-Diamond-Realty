@@ -12,8 +12,6 @@ import Privacy from "@/pages/privacy";
 import Disclosures from "@/pages/disclosures";
 import Accessibility from "@/pages/accessibility";
 import DoNotSell from "@/pages/do-not-sell";
-import Blog from "@/pages/blog";
-import BlogPost from "@/pages/blog-post";
 import CityPage from "@/pages/city";
 import { HomeA, HomeB, HomeC, HomeD, HomeE } from "@/pages/variant-home";
 import SiteHeader from "@/components/SiteHeader";
@@ -58,8 +56,6 @@ function Router() {
           <Route path="/california/:city" component={CityPage} />
           <Route path="/search" component={Search} />
           <Route path="/about" component={About} />
-          <Route path="/blog" component={Blog} />
-          <Route path="/blog/:slug" component={BlogPost} />
           <Route path="/terms" component={Terms} />
           <Route path="/privacy" component={Privacy} />
           <Route path="/disclosures" component={Disclosures} />

@@ -24,7 +24,6 @@ export default function SiteFooter() {
               <li><Link href="/" className="hover:text-accent">Home</Link></li>
               <li><Link href="/search" className="hover:text-accent">Search Deals</Link></li>
               <li><Link href="/about" className="hover:text-accent">About Us</Link></li>
-              <li><Link href="/blog" className="hover:text-accent">Blog</Link></li>
               <li><Link href="/fixer-uppers" className="hover:text-accent">Fixer-Uppers</Link></li>
               <li><Link href="/off-market-deals" className="hover:text-accent">Off-Market Deals</Link></li>
               <li><Link href="/cash-flow-rentals" className="hover:text-accent">Cash-Flow Rentals</Link></li>
