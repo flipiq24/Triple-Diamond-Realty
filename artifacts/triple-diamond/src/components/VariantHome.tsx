@@ -111,7 +111,7 @@ export default function VariantHome({ config, cityName }: { config: VariantConfi
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center mb-12 gap-6">
             <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-primary mb-2">{cityName ? `${cityName}-Area Top Deals` : "This Week's Top California Deals"}</h2>
+              <h2 className="text-3xl md:text-4xl font-bold text-primary mb-2">{cityName ? `${cityName}-Area Top Deals` : "This Week's Top Deals"}</h2>
               <p className="text-muted-foreground">Fresh off-market inventory. These don't last long.</p>
             </div>
             <Button variant="outline" className="border-accent text-accent hover:bg-accent hover:text-white rounded-full font-bold" onClick={() => setLocation("/search")}>
