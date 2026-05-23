@@ -51,13 +51,8 @@ export default function ListingCard({ listing }: { listing: Listing }) {
 
   return (
     <div className="group bg-white rounded-xl border border-border shadow-sm overflow-hidden hover:shadow-md transition-all duration-300 flex flex-col h-full">
-      {/* Brokerage disclosure (CAR-compliant) */}
-      <div className="px-5 pt-3 text-[11px] text-muted-foreground font-medium truncate">
-        Brokered by <span className="text-foreground">{listing.brokerage}</span>
-      </div>
-
       {/* Image Container */}
-      <Link href={href} className="relative aspect-4/3 overflow-hidden bg-muted block mt-2">
+      <Link href={href} className="relative aspect-4/3 overflow-hidden bg-muted block">
         <img
           src={listing.image}
           alt={listing.street}
@@ -93,10 +88,6 @@ export default function ListingCard({ listing }: { listing: Listing }) {
 
       {/* Content */}
       <div className="p-5 flex flex-col flex-1">
-        <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">
-          Listed by {listing.agentName} · {listing.brokerageDRE}
-        </div>
-        
         <div className="text-2xl font-bold text-primary mb-3">
           {formatPrice(listing.price)}
         </div>
@@ -156,6 +147,12 @@ export default function ListingCard({ listing }: { listing: Listing }) {
         >
           Email the listing agent
         </button>
+        {/* Brokerage disclosure (CAR-compliant) — moved to bottom */}
+        <div className="mt-3 pt-3 border-t border-border text-[10px] text-muted-foreground font-medium leading-snug">
+          Listed by <span className="text-foreground">{listing.agentName}</span> · {listing.brokerageDRE}
+          <br />
+          Brokered by <span className="text-foreground">{listing.brokerage}</span>
+        </div>
         <EmailAgentDialog listing={listing} open={dialogOpen} onOpenChange={setDialogOpen} />
         <RegisterDialog
           open={registerOpen}
