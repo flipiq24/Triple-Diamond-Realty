@@ -1,0 +1,9 @@
+{
+  "buildCommand": "pnpm --filter @workspace/triple-diamond run build",
+  "outputDirectory": "artifacts/triple-diamond/dist",
+  "installCommand": "pnpm install",
+  "framework": null,
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
