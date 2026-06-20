@@ -16,11 +16,14 @@ import CityPage from "@/pages/city";
 import Property from "@/pages/property";
 import SellProperty from "@/pages/sell-property";
 import CompWithAI from "@/pages/comp-with-ai";
+import Login from "@/pages/login";
 import { HomeA, HomeB, HomeC, HomeD, HomeE, HomeF } from "@/pages/variant-home";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import CookieConsent from "@/components/CookieConsent";
 import EbookPopup from "@/components/EbookPopup";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { SessionProvider } from "@/contexts/session";
 
 const queryClient = new QueryClient();
 
@@ -45,6 +48,7 @@ function Router() {
       <main id="main" className="flex-1">
         <Switch>
           <Route path="/" component={HomeA} />
+          <Route path="/login" component={Login} />
           {/* SEO-friendly canonical routes */}
           <Route path="/fixer-uppers" component={HomeA} />
           <Route path="/off-market-deals" component={HomeB} />
@@ -60,10 +64,18 @@ function Router() {
           <Route path="/e" component={HomeE} />
           <Route path="/f" component={HomeF} />
           <Route path="/california/:city" component={CityPage} />
-          <Route path="/property/:id" component={Property} />
+          <Route path="/property/:id">
+            <ProtectedRoute>
+              <Property />
+            </ProtectedRoute>
+          </Route>
           <Route path="/sell-property" component={SellProperty} />
           <Route path="/comp-with-ai" component={CompWithAI} />
-          <Route path="/search" component={Search} />
+          <Route path="/search">
+            <ProtectedRoute>
+              <Search />
+            </ProtectedRoute>
+          </Route>
           <Route path="/about" component={About} />
           <Route path="/terms" component={Terms} />
           <Route path="/privacy" component={Privacy} />
@@ -90,7 +102,9 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-            <Router />
+            <SessionProvider>
+              <Router />
+            </SessionProvider>
           </WouterRouter>
           <Toaster />
           <Sonner position="top-center" />
