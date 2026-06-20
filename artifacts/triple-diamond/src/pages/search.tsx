@@ -221,7 +221,7 @@ export default function Search() {
 
       return true;
     });
-  }, [query, filters]);
+  }, [listings, query, filters, favorites, favoritesOnly]);
 
   const handleCardClick = (listing: Listing) => {
     setSelectedCenter([listing.lat, listing.lng]);
@@ -454,7 +454,39 @@ export default function Search() {
       {/* Main */}
       {view === "list" ? (
         <div className="container mx-auto px-4 py-8 flex-1">
-          {filteredListings.length > 0 ? (
+          {isLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="bg-white rounded-xl border border-border overflow-hidden shadow-sm"
+                >
+                  <div className="aspect-4/3 bg-muted animate-pulse" />
+                  <div className="p-5 space-y-3">
+                    <div className="h-6 w-1/2 bg-muted rounded animate-pulse" />
+                    <div className="h-4 w-3/4 bg-muted rounded animate-pulse" />
+                    <div className="h-4 w-2/3 bg-muted rounded animate-pulse" />
+                    <div className="h-11 w-full bg-muted rounded animate-pulse" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : isError ? (
+            <div className="flex flex-col items-center justify-center py-32 text-center">
+              <h3 className="text-2xl font-bold text-red-600 mb-2">
+                Couldn't load deals
+              </h3>
+              <p className="text-muted-foreground mb-6">
+                {error?.message || "Something went wrong. Please try again."}
+              </p>
+              <Button
+                onClick={() => window.location.reload()}
+                className="bg-primary text-white rounded-full"
+              >
+                Retry
+              </Button>
+            </div>
+          ) : filteredListings.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {filteredListings.map((listing, i) => (
                 <motion.div
