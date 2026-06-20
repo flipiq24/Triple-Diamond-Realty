@@ -1,15 +1,13 @@
 import { useEffect, useState } from "react";
-import { isVerified, getVerifiedBuyer, type VerifiedBuyer } from "@/lib/buyerAccess";
+import { getVerifiedBuyer, type VerifiedBuyer } from "@/lib/buyerAccess";
+import { useSession } from "@/contexts/session";
 
 export function useBuyerVerified(): { verified: boolean; buyer: VerifiedBuyer | null } {
-  const [verified, setVerified] = useState<boolean>(() => isVerified());
+  const { user } = useSession();
   const [buyer, setBuyer] = useState<VerifiedBuyer | null>(() => getVerifiedBuyer());
 
   useEffect(() => {
-    const handler = () => {
-      setVerified(isVerified());
-      setBuyer(getVerifiedBuyer());
-    };
+    const handler = () => setBuyer(getVerifiedBuyer());
     window.addEventListener("tdr-verified-change", handler);
     window.addEventListener("storage", handler);
     return () => {
@@ -18,5 +16,5 @@ export function useBuyerVerified(): { verified: boolean; buyer: VerifiedBuyer | 
     };
   }, []);
 
-  return { verified, buyer };
+  return { verified: !!user, buyer };
 }
