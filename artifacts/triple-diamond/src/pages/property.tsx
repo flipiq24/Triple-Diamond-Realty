@@ -1,7 +1,7 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useRoute, Link } from "wouter";
 import { ChevronLeft, ChevronRight, MapPin, Home, Calendar, DollarSign, Hammer, Heart, Share2, Phone, Mail } from "lucide-react";
-import { listings } from "@/data/listings";
+import { useMlsProperty } from "@/hooks/useMlsProperty";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,7 +27,7 @@ const pin = L.divIcon({
 export default function Property() {
   const [, params] = useRoute("/property/:id");
   const id = params?.id;
-  const listing = useMemo(() => listings.find((l) => l.id === id), [id]);
+  const { listing, photos: apiPhotos, isLoading, isError, error } = useMlsProperty(id);
   const [photoIdx, setPhotoIdx] = useState(0);
   const [saved, setSaved] = useState(false);
   const [showMessage, setShowMessage] = useState(false);
@@ -42,11 +42,21 @@ export default function Property() {
     window.scrollTo(0, 0);
   }, [id]);
 
-  if (!listing) {
+  if (isLoading) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-4">
+        <p className="text-muted-foreground">Loading property…</p>
+      </div>
+    );
+  }
+
+  if (isError || !listing) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-4">
         <h1 className="text-3xl font-extrabold text-primary mb-2">Property not found</h1>
-        <p className="text-muted-foreground mb-6">This deal may have been removed or sold.</p>
+        <p className="text-muted-foreground mb-6">
+          {error?.message || "This deal may have been removed or sold."}
+        </p>
         <Link href="/search">
           <Button className="bg-primary text-white rounded-full">Browse all deals</Button>
         </Link>
@@ -54,8 +64,13 @@ export default function Property() {
     );
   }
 
-  // Treat the single image as a gallery for layout purposes
-  const photos = [listing.image, listing.image, listing.image, listing.image];
+  // Use API photos if available; otherwise fall back to the cover image.
+  // Pad to at least 4 so the gallery thumbnails always render.
+  const sourcePhotos = apiPhotos.length > 0 ? apiPhotos : [listing.image];
+  const photos =
+    sourcePhotos.length >= 4
+      ? sourcePhotos
+      : Array.from({ length: 4 }, (_, i) => sourcePhotos[i % sourcePhotos.length]);
 
   const pricePerSqft = Math.round(listing.price / listing.sqft);
   const monthlyEst = Math.round((listing.price * 0.0065)); // rough P&I + tax/ins ballpark

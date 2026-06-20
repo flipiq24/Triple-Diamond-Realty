@@ -103,6 +103,11 @@ function buildQueryString(params: MlsQueryParams): string {
   return qs.toString();
 }
 
+export interface PropertyPhotosResponse {
+  cover_url?: string;
+  photo_urls?: Array<{ objectId: number; url: string }>;
+}
+
 export const mlsService = {
   async getHotDeals(params: MlsQueryParams = {}): Promise<MlsResponse> {
     const query = buildQueryString(params);
@@ -110,6 +115,23 @@ export const mlsService = {
     if (!response.ok) {
       const error = await response.json().catch(() => ({}));
       throw new Error(error.message || "Failed to fetch MLS hot deals");
+    }
+    return response.json();
+  },
+
+  async getById(rId: string | number): Promise<MlsNotificationItem> {
+    const response = await http.get(`/property-details/${rId}`);
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.message || "Failed to fetch property details");
+    }
+    return response.json();
+  },
+
+  async getPhotos(rId: string | number): Promise<PropertyPhotosResponse> {
+    const response = await http.get(`/property-details/${rId}/photos`);
+    if (!response.ok) {
+      return {};
     }
     return response.json();
   },
