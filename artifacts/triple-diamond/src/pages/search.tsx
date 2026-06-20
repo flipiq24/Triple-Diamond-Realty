@@ -8,7 +8,8 @@ import { toggleFavorite } from "@/lib/favorites";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import ListingCard from "@/components/ListingCard";
-import { listings, type Listing } from "@/data/listings";
+import { type Listing } from "@/data/listings";
+import { useMlsListings } from "@/hooks/useMlsListings";
 import SearchFiltersSheet, { defaultFilters, type FilterState } from "@/components/SearchFiltersSheet";
 import QuickFilters from "@/components/QuickFilters";
 import RegisterDialog from "@/components/RegisterDialog";
@@ -50,6 +51,19 @@ export default function Search() {
   const [query, setQuery] = useState(initialQuery);
   const [filters, setFilters] = useState<FilterState>(defaultFilters);
   const [filtersOpen, setFiltersOpen] = useState(false);
+
+  const priceMinNum = filters.priceMin ? parseInt(filters.priceMin) : 0;
+  const priceMaxNum = filters.priceMax ? parseInt(filters.priceMax) : 1500000;
+  const { listings, total, isLoading, isError, error } = useMlsListings({
+    page: 1,
+    pageSize: 100,
+    last_24_hours: true,
+    type: "All",
+    source: "MLS",
+    pricerange_from: priceMinNum,
+    pricerange_to: priceMaxNum,
+    searchQuery: query || undefined,
+  });
 
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [selectedCenter, setSelectedCenter] = useState<[number, number] | null>(null);
@@ -242,7 +256,18 @@ export default function Search() {
       <div className="bg-white border-b border-border py-6 px-4">
         <div className="container mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <h1 className="text-3xl font-extrabold text-primary mb-1">
-            <strong>{filteredListings.length}</strong> deals available
+            {isLoading ? (
+              <span className="text-muted-foreground">Loading deals…</span>
+            ) : isError ? (
+              <span className="text-red-600">
+                Failed to load: {error?.message || "Unknown error"}
+              </span>
+            ) : (
+              <>
+                <strong>{filteredListings.length}</strong> of{" "}
+                <strong>{total}</strong> deals
+              </>
+            )}
           </h1>
 
           <div className="flex bg-muted rounded-lg p-1 shrink-0">

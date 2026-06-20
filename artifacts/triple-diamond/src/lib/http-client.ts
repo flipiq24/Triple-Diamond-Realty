@@ -1,7 +1,12 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL;
+const TENANT_NAME = import.meta.env.VITE_TENANT_NAME;
 
 if (!API_BASE_URL) {
   throw new Error("VITE_API_URL is not set");
+}
+
+if (!TENANT_NAME) {
+  throw new Error("VITE_TENANT_NAME is not set");
 }
 
 const STORAGE_KEYS = {
@@ -15,8 +20,9 @@ type FetchOptions = Omit<RequestInit, "body"> & { body?: unknown };
 function buildUrl(path: string): string {
   if (/^https?:\/\//i.test(path)) return path;
   const base = API_BASE_URL.replace(/\/$/, "");
+  const tenant = TENANT_NAME.replace(/^\/+|\/+$/g, "");
   const suffix = path.startsWith("/") ? path : `/${path}`;
-  return `${base}${suffix}`;
+  return `${base}/${tenant}${suffix}`;
 }
 
 function getTimezone(): string {
