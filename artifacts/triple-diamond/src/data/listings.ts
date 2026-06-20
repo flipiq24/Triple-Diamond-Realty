@@ -20,7 +20,7 @@ export type Listing = {
   lotSqft: number;
   street: string;
   city: string;
-  state: "CA";
+  state: string;
   zip: string;
   lat: number;
   lng: number;
@@ -45,6 +45,11 @@ export type Listing = {
   agentPhone: string;
   brokerage: string;
   brokerageDRE: string;
+  // Raw API fields (populated for live MLS data; absent for static mock data)
+  apiStatus?: string;
+  specialConditions?: string;
+  source?: string;
+  mlsNumber?: string;
 };
 
 // Base listing data — extended fields applied below via .map

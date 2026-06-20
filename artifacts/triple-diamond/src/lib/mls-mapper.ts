@@ -86,7 +86,7 @@ export function mapMlsItemToListing(raw: MlsNotificationItem | AnyRecord): Listi
     lotSqft: toNumber(pick(item, "lotSizeSqft", "lotsizesqft")),
     street: toStr(pick(item, "fullStreetAddress", "fullstreetaddress")),
     city: toStr(pick(item, "city")),
-    state: "CA",
+    state: toStr(pick(item, "state"), "CA"),
     zip: toStr(pick(item, "zipcode", "zipCode")),
     lat: toNumber(pick(item, "latitude")),
     lng: toNumber(pick(item, "longitude")),
@@ -109,5 +109,13 @@ export function mapMlsItemToListing(raw: MlsNotificationItem | AnyRecord): Listi
     agentPhone: "",
     brokerage: "",
     brokerageDRE: "",
+    apiStatus: toStr(
+      pick(item, "status", "caretsListingStatus", "caretslistingstatus"),
+    ),
+    specialConditions: toStr(
+      pick(item, "specialConditions", "specialconditions"),
+    ),
+    source: toStr(pick(item, "source")),
+    mlsNumber: toStr(pick(item, "listingId", "mls", "mlsnum")),
   };
 }

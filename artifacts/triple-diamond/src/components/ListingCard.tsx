@@ -64,12 +64,26 @@ export default function ListingCard({ listing }: { listing: Listing }) {
           <span className={`px-2.5 py-1 text-xs font-bold rounded-full shadow-sm ${getStatusColor(listing.dealType)}`}>
             {listing.dealType}
           </span>
-          <span className="px-2 py-0.5 text-[10px] font-bold rounded-full shadow-sm bg-white text-primary border border-primary/20 uppercase tracking-wider">
-            AS-IS
-          </span>
-          <span className="px-2 py-0.5 text-[10px] font-bold rounded-full shadow-sm bg-primary/90 text-white uppercase tracking-wider">
-            Status: {listing.dealType === "New Listing" ? "MLS" : listing.dealType === "Wholesale" ? "Assignment" : "Off-Market"}
-          </span>
+          {listing.specialConditions &&
+            listing.specialConditions
+              .toUpperCase()
+              .split(/[,;|]/)
+              .map((c) => c.trim())
+              .filter(Boolean)
+              .slice(0, 2)
+              .map((cond) => (
+                <span
+                  key={cond}
+                  className="px-2 py-0.5 text-[10px] font-bold rounded-full shadow-sm bg-white text-primary border border-primary/20 uppercase tracking-wider"
+                >
+                  {cond}
+                </span>
+              ))}
+          {listing.apiStatus && (
+            <span className="px-2 py-0.5 text-[10px] font-bold rounded-full shadow-sm bg-primary/90 text-white uppercase tracking-wider">
+              Status: {listing.apiStatus}
+            </span>
+          )}
         </div>
 
         {/* Save Button */}
@@ -141,12 +155,23 @@ export default function ListingCard({ listing }: { listing: Listing }) {
         >
           {verified ? "View Deal" : "View Deal"}
         </Button>
-        {/* Brokerage disclosure (CAR-compliant) — moved to bottom */}
-        <div className="mt-3 pt-3 border-t border-border text-[10px] text-muted-foreground font-medium leading-snug">
-          Listed by <span className="text-foreground">{listing.agentName}</span> · {listing.brokerageDRE}
-          <br />
-          Brokered by <span className="text-foreground">{listing.brokerage}</span>
-        </div>
+        {/* Brokerage disclosure (CAR-compliant) — only render when API provides agent data */}
+        {(listing.agentName || listing.brokerage) && (
+          <div className="mt-3 pt-3 border-t border-border text-[10px] text-muted-foreground font-medium leading-snug">
+            {listing.agentName && (
+              <>
+                Listed by <span className="text-foreground">{listing.agentName}</span>
+                {listing.brokerageDRE ? ` · ${listing.brokerageDRE}` : ""}
+                <br />
+              </>
+            )}
+            {listing.brokerage && (
+              <>
+                Brokered by <span className="text-foreground">{listing.brokerage}</span>
+              </>
+            )}
+          </div>
+        )}
         <RegisterDialog
           open={registerOpen}
           onOpenChange={setRegisterOpen}
