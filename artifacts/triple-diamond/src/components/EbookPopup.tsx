@@ -5,9 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { BookOpen, Download, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
+import { buyerService } from "@/services/buyer.service";
 import ebookCover from "@assets/ChatGPT_Image_May_23,_2026,_01_01_41_PM_1779566515114.png";
 
 const KEY = "tdr_ebook_popup_v1";
+const EBOOK_PDF_PATH = `/${encodeURIComponent("YOU CAN'T STEAL IN SLOW MOTION How to Compete and Win Against the Pros By Tony Diaz")}.pdf`;
 
 export default function EbookPopup() {
   const [open, setOpen] = useState(false);
@@ -29,14 +31,25 @@ export default function EbookPopup() {
     setOpen(false);
   };
 
-  const submit = (e: React.FormEvent) => {
+  const [submitting, setSubmitting] = useState(false);
+
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !email || !phone) { toast.error("Please fill in all fields"); return; }
+    setSubmitting(true);
     try {
-      localStorage.setItem(KEY, JSON.stringify({ name, email, phone, claimedAt: Date.now() }));
-    } catch {}
-    setSubmitted(true);
-    toast.success("Check your email!", { description: `Download link sent to ${email}` });
+      await buyerService.submitEbookSignup({ name, email, phone });
+      try {
+        localStorage.setItem(KEY, JSON.stringify({ name, email, phone, claimedAt: Date.now() }));
+      } catch { /* ignore quota errors */ }
+      setSubmitted(true);
+      toast.success("Your ebook is ready", { description: "Download will start in a moment." });
+      window.open(EBOOK_PDF_PATH, "_blank", "noopener");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not submit. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -79,8 +92,13 @@ export default function EbookPopup() {
                     <Label htmlFor="eb-phone" className="text-xs">Phone *</Label>
                     <Input id="eb-phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} required />
                   </div>
-                  <Button type="submit" className="w-full h-11 bg-accent hover:bg-accent/90 text-white font-bold rounded-full">
-                    <Download className="w-4 h-4 mr-2" /> Send me the ebook
+                  <Button
+                    type="submit"
+                    disabled={submitting}
+                    className="w-full h-11 bg-accent hover:bg-accent/90 text-white font-bold rounded-full"
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    {submitting ? "Submitting…" : "Send me the ebook"}
                   </Button>
                   <button
                     type="button"
@@ -98,13 +116,25 @@ export default function EbookPopup() {
             ) : (
               <div className="text-center py-4">
                 <CheckCircle2 className="w-14 h-14 text-green-500 mx-auto mb-3" />
-                <h3 className="text-2xl font-extrabold text-primary mb-2">Check your email!</h3>
+                <h3 className="text-2xl font-extrabold text-primary mb-2">Your ebook is ready</h3>
                 <p className="text-sm text-foreground/80 mb-6">
-                  We just emailed the download link for <strong>"You Can't Steal in Slow Motion"</strong> to <strong>{email}</strong>.
+                  Thanks <strong>{name}</strong> — if the download didn't start automatically, click below.
                 </p>
-                <Button onClick={dismiss} className="rounded-full bg-primary text-white">
+                <a
+                  href={EBOOK_PDF_PATH}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-2 w-full h-11 px-4 rounded-full bg-accent hover:bg-accent/90 text-white font-bold transition-colors"
+                >
+                  <Download className="w-4 h-4" /> Download ebook
+                </a>
+                <button
+                  type="button"
+                  onClick={dismiss}
+                  className="mt-3 text-xs text-muted-foreground hover:text-foreground underline"
+                >
                   Keep browsing deals
-                </Button>
+                </button>
               </div>
             )}
           </div>

@@ -9,6 +9,7 @@ import { Phone, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { type Listing } from "@/data/listings";
 import { useBuyerVerified } from "@/hooks/useBuyerVerified";
+import { buyerService } from "@/services/buyer.service";
 
 export default function EmailAgentDialog({
   listing,
@@ -34,17 +35,34 @@ export default function EmailAgentDialog({
       : `I'm interested in the property in ${listing.city}, ${listing.state}.`
   );
 
-  const submit = (e: React.FormEvent) => {
+  const [submitting, setSubmitting] = useState(false);
+
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !email || !phone) {
       toast.error("Please fill in name, email, and phone");
       return;
     }
-    toast.success("Request sent!", {
-      description: `${listing.agentName} at ${listing.brokerage} will reach out within 1 business day.`,
-    });
-    setName(""); setEmail(""); setPhone("");
-    onOpenChange?.(false);
+    setSubmitting(true);
+    try {
+      await buyerService.submitAgentContact({
+        propertyId: listing.id,
+        propertyAddress: `${listing.street ? `${listing.street}, ` : ""}${listing.city}, ${listing.state} ${listing.zip}`.trim(),
+        name,
+        email,
+        phone,
+        message,
+      });
+      toast.success("Request sent!", {
+        description: "An agent will reach out within 1 business day.",
+      });
+      setName(""); setEmail(""); setPhone("");
+      onOpenChange?.(false);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not send. Try again.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -94,8 +112,12 @@ export default function EmailAgentDialog({
             </span>
           </label>
 
-          <Button type="submit" className="w-full h-11 bg-accent hover:bg-accent/90 text-white font-bold rounded-full">
-            Email Agent
+          <Button
+            type="submit"
+            disabled={submitting}
+            className="w-full h-11 bg-accent hover:bg-accent/90 text-white font-bold rounded-full"
+          >
+            {submitting ? "Sending…" : "Email Agent"}
           </Button>
 
           <div className="flex items-center justify-center gap-4 pt-1 text-xs">

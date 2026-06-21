@@ -1,20 +1,53 @@
 import { useEffect, useState } from "react";
-import { getVerifiedBuyer, type VerifiedBuyer } from "@/lib/buyerAccess";
-import { useSession } from "@/contexts/session";
+import { supabase } from "@/lib/supabase";
+import type { Session } from "@supabase/supabase-js";
 
-export function useBuyerVerified(): { verified: boolean; buyer: VerifiedBuyer | null } {
-  const { user } = useSession();
-  const [buyer, setBuyer] = useState<VerifiedBuyer | null>(() => getVerifiedBuyer());
+export interface VerifiedBuyer {
+  name: string;
+  email: string;
+  phone: string;
+  verifiedAt: number;
+}
+
+function buyerFromSession(session: Session | null): VerifiedBuyer | null {
+  if (!session?.user?.email) return null;
+  const meta = (session.user.user_metadata ?? {}) as Record<string, unknown>;
+  return {
+    name: String(meta.name ?? ""),
+    email: session.user.email,
+    phone: String(meta.phone ?? ""),
+    verifiedAt: session.user.confirmed_at
+      ? new Date(session.user.confirmed_at).getTime()
+      : Date.now(),
+  };
+}
+
+export function useBuyerVerified(): {
+  verified: boolean;
+  buyer: VerifiedBuyer | null;
+  loading: boolean;
+} {
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const handler = () => setBuyer(getVerifiedBuyer());
-    window.addEventListener("tdr-verified-change", handler);
-    window.addEventListener("storage", handler);
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session);
+      setLoading(false);
+    });
+
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
+      setSession(s);
+    });
+
     return () => {
-      window.removeEventListener("tdr-verified-change", handler);
-      window.removeEventListener("storage", handler);
+      sub.subscription.unsubscribe();
     };
   }, []);
 
-  return { verified: !!user, buyer };
+  return {
+    verified: !!session,
+    buyer: buyerFromSession(session),
+    loading,
+  };
 }

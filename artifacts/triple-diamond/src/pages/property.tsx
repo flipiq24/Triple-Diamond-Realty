@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useRoute, Link } from "wouter";
 import { ChevronLeft, ChevronRight, MapPin, Home, Calendar, DollarSign, Hammer, Heart, Share2, Phone, Mail } from "lucide-react";
 import { useMlsProperty } from "@/hooks/useMlsProperty";
+import { buyerService } from "@/services/buyer.service";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -82,16 +83,28 @@ export default function Property() {
     listing.status === "Pending" ? "bg-yellow-500" :
     "bg-gray-400";
 
-  const submitContact = (e: React.FormEvent) => {
+  const submitContact = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !email || !phone) {
       toast.error("Please fill in name, email, and phone");
       return;
     }
-    toast.success("Request sent!", {
-      description: "A Triple Diamond agent will reach out within 1 business day.",
-    });
-    setName(""); setEmail(""); setPhone(""); setMessage(""); setShowMessage(false);
+    try {
+      await buyerService.submitAgentContact({
+        propertyId: listing.id,
+        propertyAddress: `${listing.street ? `${listing.street}, ` : ""}${listing.city}, ${listing.state} ${listing.zip}`.trim(),
+        name,
+        email,
+        phone,
+        message,
+      });
+      toast.success("Request sent!", {
+        description: "A Triple Diamond agent will reach out within 1 business day.",
+      });
+      setName(""); setEmail(""); setPhone(""); setMessage(""); setShowMessage(false);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not send. Try again.");
+    }
   };
 
   const chips = [

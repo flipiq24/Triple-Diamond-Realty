@@ -9,12 +9,6 @@ if (!TENANT_NAME) {
   throw new Error("VITE_TENANT_NAME is not set");
 }
 
-const STORAGE_KEYS = {
-  token: "auth_token",
-  user: "user",
-  orgId: "user_org_id",
-} as const;
-
 type FetchOptions = Omit<RequestInit, "body"> & { body?: unknown };
 
 function buildUrl(path: string): string {
@@ -33,16 +27,6 @@ function getTimezone(): string {
   }
 }
 
-async function handleUnauthorized() {
-  localStorage.removeItem(STORAGE_KEYS.token);
-  localStorage.removeItem(STORAGE_KEYS.user);
-  localStorage.removeItem(STORAGE_KEYS.orgId);
-  window.dispatchEvent(new CustomEvent("auth:unauthorized"));
-  if (window.location.pathname !== "/login") {
-    window.location.href = "/login";
-  }
-}
-
 export async function apiFetch(
   path: string,
   options: FetchOptions = {},
@@ -56,12 +40,7 @@ export async function apiFetch(
     ...(headers as Record<string, string> | undefined),
   };
 
-  const token = localStorage.getItem(STORAGE_KEYS.token);
-  if (token) {
-    finalHeaders["Authorization"] = `Bearer ${token}`;
-  }
-
-  const response = await fetch(buildUrl(path), {
+  return fetch(buildUrl(path), {
     ...rest,
     headers: finalHeaders,
     body:
@@ -71,12 +50,6 @@ export async function apiFetch(
           ? body
           : JSON.stringify(body),
   });
-
-  if (response.status === 401 && token) {
-    await handleUnauthorized();
-  }
-
-  return response;
 }
 
 export const http = {
@@ -91,5 +64,3 @@ export const http = {
   delete: (path: string, options?: FetchOptions) =>
     apiFetch(path, { ...options, method: "DELETE" }),
 };
-
-export { STORAGE_KEYS };
