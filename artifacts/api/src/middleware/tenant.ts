@@ -16,7 +16,8 @@ export function tenantGuard(
   res: Response,
   next: NextFunction,
 ): void {
-  const raw = (req.params.tenant ?? "").toLowerCase();
+  const rawParam = req.params.tenant;
+  const raw = (typeof rawParam === "string" ? rawParam : "").toLowerCase();
 
   if (!raw || !SLUG_RE.test(raw)) {
     res.status(404).json({ error: "Unknown tenant" });

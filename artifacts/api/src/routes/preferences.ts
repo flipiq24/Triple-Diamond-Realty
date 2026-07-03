@@ -1,20 +1,7 @@
 import { Router } from "express";
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { getTenantPool } from "../db/tenant.js";
 
 const router = Router({ mergeParams: true });
-
-let supabase: SupabaseClient | null = null;
-
-function getClient(): SupabaseClient | null {
-  if (supabase) return supabase;
-  const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) return null;
-  supabase = createClient(url, key, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
-  return supabase;
-}
 
 const DEFAULTS = {
   logo: "",
@@ -23,35 +10,61 @@ const DEFAULTS = {
   company_name: "Triple Diamond Realty",
 } as const;
 
+// The tenant's Command DB will expose a preferences table for buyer-site
+// branding. Faisal owns the exact table/column names — override here when
+// the schema is finalized. Envs let us switch table/columns without a code
+// change if his naming differs from the assumed default.
+const TABLE = process.env.PREFERENCES_TABLE ?? "sys.buyer_preferences";
+const COL_LOGO = process.env.PREFERENCES_COL_LOGO ?? "logo";
+const COL_BG = process.env.PREFERENCES_COL_BG ?? "bg";
+const COL_SECONDARY = process.env.PREFERENCES_COL_SECONDARY ?? "secondary_color";
+const COL_COMPANY = process.env.PREFERENCES_COL_COMPANY ?? "company_name";
+
 router.get("/", async (req, res, next) => {
   try {
     const { tenant } = req.params as { tenant: string };
-    const client = getClient();
+    const pool = getTenantPool(tenant);
 
-    if (!client) {
+    if (!pool) {
       return res.json({ preferences: DEFAULTS });
     }
 
-    const { data, error } = await client
-      .from("tenant_preferences")
-      .select("logo, bg, secondary_color, company_name")
-      .eq("tenant", tenant.toLowerCase())
-      .maybeSingle();
+    // Single-row config table. If Faisal's schema uses more than one row
+    // per tenant (e.g. org_id scoped), we add `WHERE org_id = ?` here.
+    const sql = `
+      SELECT
+        ${COL_LOGO}      AS logo,
+        ${COL_BG}        AS bg,
+        ${COL_SECONDARY} AS secondary_color,
+        ${COL_COMPANY}   AS company_name
+      FROM ${TABLE}
+      LIMIT 1
+    `;
 
-    if (error) {
-      // Silent fallback — a missing row or table shouldn't 500 the page
-      console.warn("[preferences] supabase error:", error.message);
+    try {
+      const { rows } = await pool.query(sql);
+      const row = rows[0] as
+        | { logo?: string; bg?: string; secondary_color?: string; company_name?: string }
+        | undefined;
+      if (!row) return res.json({ preferences: DEFAULTS });
+
+      return res.json({
+        preferences: {
+          logo: row.logo ?? DEFAULTS.logo,
+          bg: row.bg ?? DEFAULTS.bg,
+          secondary_color: row.secondary_color ?? DEFAULTS.secondary_color,
+          company_name: row.company_name ?? DEFAULTS.company_name,
+        },
+      });
+    } catch (err) {
+      // Table doesn't exist yet, or column names differ. Fall back to
+      // defaults so TDR renders the site with baseline branding.
+      console.warn(
+        `[preferences] tenant=${tenant} query failed, using defaults:`,
+        err instanceof Error ? err.message : err,
+      );
       return res.json({ preferences: DEFAULTS });
     }
-
-    return res.json({
-      preferences: {
-        logo: data?.logo ?? DEFAULTS.logo,
-        bg: data?.bg ?? DEFAULTS.bg,
-        secondary_color: data?.secondary_color ?? DEFAULTS.secondary_color,
-        company_name: data?.company_name ?? DEFAULTS.company_name,
-      },
-    });
   } catch (err) {
     next(err);
   }
