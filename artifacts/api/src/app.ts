@@ -1,0 +1,35 @@
+import express, { type Express, type NextFunction, type Request, type Response } from "express";
+import { corsMiddleware } from "./middleware/cors.js";
+import mlsRouter from "./routes/mls.js";
+import propertyRouter from "./routes/property.js";
+import preferencesRouter from "./routes/preferences.js";
+
+export function createApp(): Express {
+  const app = express();
+
+  app.disable("x-powered-by");
+  app.set("trust proxy", true);
+  app.use(corsMiddleware);
+  app.use(express.json());
+
+  app.get("/health", (_req, res) => res.json({ status: "ok" }));
+
+  // All buyer-facing endpoints are tenant-scoped
+  app.use("/:tenant/mls", mlsRouter);
+  app.use("/:tenant/property-details", propertyRouter);
+  app.use("/:tenant/buyers/preferences", preferencesRouter);
+
+  // 404 fallback
+  app.use((req, res) => {
+    res.status(404).json({ error: "Not found", path: req.path });
+  });
+
+  // Error handler
+  app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
+    console.error("[api] error:", err);
+    const message = err instanceof Error ? err.message : "Internal error";
+    res.status(500).json({ error: message });
+  });
+
+  return app;
+}

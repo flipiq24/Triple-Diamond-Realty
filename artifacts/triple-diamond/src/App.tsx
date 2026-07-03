@@ -22,7 +22,7 @@ import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import CookieConsent from "@/components/CookieConsent";
 import EbookPopup from "@/components/EbookPopup";
-import { supabase } from "@/lib/supabase";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import { buyerService } from "@/services/buyer.service";
 
 const queryClient = new QueryClient();
@@ -86,6 +86,7 @@ function AuthBootstrap() {
   // session automatically (detectSessionInUrl: true). We listen for that
   // event and persist their details to buyer_registrations on first sign-in.
   useEffect(() => {
+    if (!isSupabaseConfigured) return;
     const { data } = supabase.auth.onAuthStateChange((event) => {
       if (event === "SIGNED_IN" || event === "USER_UPDATED") {
         buyerService.upsertRegistrationFromSession().catch(() => {
