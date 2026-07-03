@@ -1,5 +1,6 @@
 import express, { type Express, type NextFunction, type Request, type Response } from "express";
 import { corsMiddleware } from "./middleware/cors.js";
+import { tenantGuard } from "./middleware/tenant.js";
 import mlsRouter from "./routes/mls.js";
 import propertyRouter from "./routes/property.js";
 import preferencesRouter from "./routes/preferences.js";
@@ -14,10 +15,11 @@ export function createApp(): Express {
 
   app.get("/health", (_req, res) => res.json({ status: "ok" }));
 
-  // All buyer-facing endpoints are tenant-scoped
-  app.use("/:tenant/mls", mlsRouter);
-  app.use("/:tenant/property-details", propertyRouter);
-  app.use("/:tenant/buyers/preferences", preferencesRouter);
+  // All buyer-facing endpoints are tenant-scoped. tenantGuard validates the
+  // slug (shape + allowlist) once before dispatching to any route.
+  app.use("/:tenant/mls", tenantGuard, mlsRouter);
+  app.use("/:tenant/property-details", tenantGuard, propertyRouter);
+  app.use("/:tenant/buyers/preferences", tenantGuard, preferencesRouter);
 
   // 404 fallback
   app.use((req, res) => {
