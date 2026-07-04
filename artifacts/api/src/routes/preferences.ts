@@ -3,22 +3,22 @@ import { getTenantPool } from "../db/tenant.js";
 
 const router = Router({ mergeParams: true });
 
-const DEFAULTS = {
+// Baseline branding — merged UNDER the DB payload so any key not yet
+// configured falls back to a sensible default. When Tony adds new fields
+// to the JSON (fonts, spacing, hero image, etc.), they flow through
+// automatically without a code or schema change.
+const DEFAULTS: Record<string, unknown> = {
   logo: "",
   bg: "#0F2C4B",
   secondary_color: "#F59E0B",
   company_name: "Triple Diamond Realty",
-} as const;
+};
 
-// The tenant's Command DB will expose a preferences table for buyer-site
-// branding. Faisal owns the exact table/column names — override here when
-// the schema is finalized. Envs let us switch table/columns without a code
-// change if his naming differs from the assumed default.
+// The tenant's Command DB holds a single-row config table with one jsonb
+// column. Faisal owns the exact table + column names — override via env if
+// they differ from the assumed defaults.
 const TABLE = process.env.PREFERENCES_TABLE ?? "sys.buyer_preferences";
-const COL_LOGO = process.env.PREFERENCES_COL_LOGO ?? "logo";
-const COL_BG = process.env.PREFERENCES_COL_BG ?? "bg";
-const COL_SECONDARY = process.env.PREFERENCES_COL_SECONDARY ?? "secondary_color";
-const COL_COMPANY = process.env.PREFERENCES_COL_COMPANY ?? "company_name";
+const COLUMN = process.env.PREFERENCES_COLUMN ?? "preferences";
 
 router.get("/", async (req, res, next) => {
   try {
@@ -29,36 +29,29 @@ router.get("/", async (req, res, next) => {
       return res.json({ preferences: DEFAULTS });
     }
 
-    // Single-row config table. If Faisal's schema uses more than one row
-    // per tenant (e.g. org_id scoped), we add `WHERE org_id = ?` here.
-    const sql = `
-      SELECT
-        ${COL_LOGO}      AS logo,
-        ${COL_BG}        AS bg,
-        ${COL_SECONDARY} AS secondary_color,
-        ${COL_COMPANY}   AS company_name
-      FROM ${TABLE}
-      LIMIT 1
-    `;
+    const sql = `SELECT ${COLUMN} AS prefs FROM ${TABLE} LIMIT 1`;
 
     try {
       const { rows } = await pool.query(sql);
-      const row = rows[0] as
-        | { logo?: string; bg?: string; secondary_color?: string; company_name?: string }
-        | undefined;
-      if (!row) return res.json({ preferences: DEFAULTS });
+      const raw = rows[0]?.prefs as Record<string, unknown> | null | undefined;
+      // pg returns jsonb as parsed object; if it came back as a string
+      // (bytea or driver quirk), try to parse it.
+      const parsed =
+        typeof raw === "string"
+          ? ((): Record<string, unknown> => {
+              try {
+                return JSON.parse(raw) as Record<string, unknown>;
+              } catch {
+                return {};
+              }
+            })()
+          : raw ?? {};
 
       return res.json({
-        preferences: {
-          logo: row.logo ?? DEFAULTS.logo,
-          bg: row.bg ?? DEFAULTS.bg,
-          secondary_color: row.secondary_color ?? DEFAULTS.secondary_color,
-          company_name: row.company_name ?? DEFAULTS.company_name,
-        },
+        preferences: { ...DEFAULTS, ...parsed },
       });
     } catch (err) {
-      // Table doesn't exist yet, or column names differ. Fall back to
-      // defaults so TDR renders the site with baseline branding.
+      // Table doesn't exist yet, or column name differs. Return defaults.
       console.warn(
         `[preferences] tenant=${tenant} query failed, using defaults:`,
         err instanceof Error ? err.message : err,
