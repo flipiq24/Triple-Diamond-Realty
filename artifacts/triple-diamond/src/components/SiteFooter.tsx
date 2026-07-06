@@ -1,16 +1,17 @@
 import { Link } from "wouter";
-import logo from "@assets/image_1779548344914.png";
 import { Phone, Mail, MapPin, Home as HomeIcon } from "lucide-react";
+import { useTenantBranding } from "@/hooks/useTenantBranding";
 
 export default function SiteFooter() {
   const year = new Date().getFullYear();
+  const { logoUrl, companyName } = useTenantBranding();
   return (
     <footer className="bg-primary text-primary-foreground pt-16 pb-8 border-t border-primary/20">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
           <div className="md:col-span-2">
             <div className="bg-white p-2 rounded-lg inline-block mb-4">
-              <img src={logo} alt="Triple Diamond Realty" className="h-10 w-auto" />
+              <img src={logoUrl} alt={companyName} className="h-10 w-auto" />
             </div>
             <p className="text-accent font-bold text-lg mb-3">Diamonds in the Rough. Delivered Daily.</p>
             <p className="text-primary-foreground/80 text-sm max-w-md leading-relaxed">
@@ -61,16 +62,16 @@ export default function SiteFooter() {
               <span className="font-bold text-white">Equal Housing Opportunity</span>
             </div>
             <p>
-              <strong className="text-white">Triple Diamond Realty</strong> • CA DRE Broker License #[INSERT] • Responsible Broker [NAME] CA DRE #[INSERT] • [INSERT CA ADDRESS] • (909) 280-4906 • info@tdrealty.net
+              <strong className="text-white">{companyName}</strong> • CA DRE Broker License #[INSERT] • Responsible Broker [NAME] CA DRE #[INSERT] • [INSERT CA ADDRESS] • (909) 280-4906 • info@tdrealty.net
             </p>
           </div>
           <p className="text-primary-foreground/60">
-            All property information deemed reliable but not guaranteed. Properties offered AS-IS, WHERE-IS. Listings may be on-market (MLS), off-market, or held by Triple Diamond or an affiliate via equitable interest or assignment — status is disclosed on each listing. Publicly marketed listings are submitted to the MLS within one business day per the NAR Clear Cooperation Policy. Real estate investing carries substantial risk including loss of principal; no representation of profit, ARV, cap rate, cash flow, or appreciation is made. We support the Federal Fair Housing Act, the California Fair Employment and Housing Act, and the Unruh Civil Rights Act.
+            All property information deemed reliable but not guaranteed. Properties offered AS-IS, WHERE-IS. Listings may be on-market (MLS), off-market, or held by {companyName} or an affiliate via equitable interest or assignment — status is disclosed on each listing. Publicly marketed listings are submitted to the MLS within one business day per the NAR Clear Cooperation Policy. Real estate investing carries substantial risk including loss of principal; no representation of profit, ARV, cap rate, cash flow, or appreciation is made. We support the Federal Fair Housing Act, the California Fair Employment and Housing Act, and the Unruh Civil Rights Act.
           </p>
         </div>
 
         <div className="border-t border-primary-foreground/10 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-primary-foreground/60">
-          <p>© {year} Triple Diamond Realty. All rights reserved.</p>
+          <p>© {year} {companyName}. All rights reserved.</p>
           <div className="flex flex-wrap gap-x-4 gap-y-2 justify-center">
             <Link href="/terms" className="hover:text-white">Terms of Use</Link>
             <Link href="/privacy" className="hover:text-white">Privacy Policy</Link>

@@ -8,8 +8,10 @@ import { toggleFavorite } from "@/lib/favorites";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import ListingCard from "@/components/ListingCard";
+import MlsSearchAutocomplete from "@/components/MlsSearchAutocomplete";
 import { type Listing } from "@/data/listings";
 import { useMlsListings } from "@/hooks/useMlsListings";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import SearchFiltersSheet, { defaultFilters, type FilterState } from "@/components/SearchFiltersSheet";
 import QuickFilters from "@/components/QuickFilters";
 import RegisterDialog from "@/components/RegisterDialog";
@@ -54,15 +56,27 @@ export default function Search() {
 
   const priceMinNum = filters.priceMin ? parseInt(filters.priceMin) : 0;
   const priceMaxNum = filters.priceMax ? parseInt(filters.priceMax) : 1500000;
+  // Debounce the buyer's typing before it drives the MLS API. Otherwise
+  // every keystroke queues a new `/mls?...` fetch — 17 chars = 17 requests
+  // that stack up and land out-of-order. 400ms is snappy enough that the
+  // grid feels live, slow enough to collapse a rapid burst of typing into
+  // a single request.
+  const debouncedQuery = useDebouncedValue(query, 400);
+  // Only restrict to the last-24-hour "hot deals" firehose when the buyer
+  // hasn't typed a search. As soon as they search for a specific address /
+  // city / ZIP, they want ALL active listings that match — otherwise a
+  // property listed 3 days ago shows up in autocomplete but returns zero
+  // results in the grid, which is what buyers were hitting.
+  const hasQuery = debouncedQuery.trim().length > 0;
   const { listings, total, isLoading, isError, error } = useMlsListings({
     page: 1,
     pageSize: 100,
-    last_24_hours: true,
+    last_24_hours: !hasQuery,
     type: "All",
     source: "MLS",
     pricerange_from: priceMinNum,
     pricerange_to: priceMaxNum,
-    searchQuery: query || undefined,
+    searchQuery: debouncedQuery || undefined,
   });
 
   const [hoveredId, setHoveredId] = useState<string | null>(null);
@@ -339,13 +353,12 @@ export default function Search() {
             </div>
           )}
           <div className="flex flex-wrap gap-3 items-center">
-            <div className="relative w-full md:w-64 shrink-0">
-              <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
+            <div className="w-full md:w-80 shrink-0">
+              <MlsSearchAutocomplete
                 value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="City, ZIP, or address..."
-                className="pl-9 bg-muted/50"
+                onChange={setQuery}
+                onSelect={(hit) => setQuery(hit.fullstreetaddress)}
+                placeholder="City, ZIP, or address…"
               />
             </div>
 

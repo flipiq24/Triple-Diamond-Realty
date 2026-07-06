@@ -3,12 +3,12 @@ import { Phone, Mail, Menu, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useState } from "react";
-// @ts-ignore
-import logoUrl from "@assets/image_1779548344914.png";
+import { useTenantBranding } from "@/hooks/useTenantBranding";
 
 export default function SiteHeader() {
   const [location] = useLocation();
   const [isOpen, setIsOpen] = useState(false);
+  const { logoUrl, companyName } = useTenantBranding();
 
   const navLinks = [
     { href: "/", label: "Home" },
@@ -30,7 +30,7 @@ export default function SiteHeader() {
       {/* Main Navigation */}
       <div className="bg-white border-b border-border py-1 px-4 md:px-8 flex justify-between items-center">
         <Link href="/" className="flex items-center gap-2 shrink-0">
-          <img src={logoUrl} alt="Triple Diamond Realty — off-market real estate" className="h-24 md:h-28 w-auto object-contain" />
+          <img src={logoUrl} alt={`${companyName} — off-market real estate`} className="h-24 md:h-28 w-auto object-contain" />
         </Link>
 
         <nav className="hidden md:flex items-center gap-8" aria-label="Main">
@@ -50,7 +50,7 @@ export default function SiteHeader() {
             <a
               href="tel:+19092804906"
               className="hidden lg:flex items-center gap-1.5 text-sm font-bold text-primary hover:text-accent transition-colors"
-              aria-label="Call Triple Diamond Realty"
+              aria-label={`Call ${companyName}`}
             >
               <Phone className="w-4 h-4" />
               <span>(909) 280-4906</span>
@@ -69,7 +69,7 @@ export default function SiteHeader() {
           <a
             href="tel:+19092804906"
             className="w-10 h-10 flex items-center justify-center rounded-full text-primary hover:bg-muted"
-            aria-label="Call Triple Diamond Realty"
+            aria-label={`Call ${companyName}`}
           >
             <Phone className="w-5 h-5" />
           </a>
@@ -82,7 +82,7 @@ export default function SiteHeader() {
             <SheetContent side="right" className="bg-white w-[280px]">
               <div className="flex flex-col gap-6 mt-8">
                 <Link href="/" onClick={() => setIsOpen(false)}>
-                  <img src={logoUrl} alt="Triple Diamond Realty" className="h-8 w-auto mb-4" />
+                  <img src={logoUrl} alt={companyName} className="h-8 w-auto mb-4" />
                 </Link>
                 <nav className="flex flex-col gap-4 text-lg font-semibold text-primary" aria-label="Mobile">
                   {navLinks.map((link) => (

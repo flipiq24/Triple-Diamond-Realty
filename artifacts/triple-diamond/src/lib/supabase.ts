@@ -30,7 +30,13 @@ export const supabase: SupabaseClient = new Proxy({} as SupabaseClient, {
         auth: {
           persistSession: true,
           autoRefreshToken: true,
-          detectSessionInUrl: true,
+          // The magic-link `?code=...` is consumed explicitly by
+          // AuthBootstrap in App.tsx. We disable the built-in URL detector
+          // so the one-shot PKCE code isn't spent twice (it races the
+          // explicit exchange and one call would then fail with
+          // "invalid_grant", leaving buyers unverified after clicking their
+          // link).
+          detectSessionInUrl: false,
           flowType: "pkce",
         },
       });

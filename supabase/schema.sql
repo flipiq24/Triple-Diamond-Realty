@@ -81,6 +81,15 @@ create policy "buyer_registrations_self_update" on public.buyer_registrations
   using (auth.uid() = auth_user_id)
   with check (auth.uid() = auth_user_id);
 
+-- supabase-js .upsert() sends `Prefer: return=representation` by default,
+-- so PostgREST tries to SELECT the row back after the write. Without a
+-- SELECT policy the write succeeds but the response fails, and the
+-- frontend sees an error even though the row is in the table.
+drop policy if exists "buyer_registrations_self_select" on public.buyer_registrations;
+create policy "buyer_registrations_self_select" on public.buyer_registrations
+  for select to authenticated
+  using (auth.uid() = auth_user_id);
+
 -- Ebook signups: anyone can submit
 drop policy if exists "ebook_signups_public_insert" on public.ebook_signups;
 create policy "ebook_signups_public_insert" on public.ebook_signups

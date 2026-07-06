@@ -81,7 +81,11 @@ function buildQueryString(params: MlsQueryParams): string {
 
   append("page", params.page ?? 1);
   append("pageSize", params.pageSize ?? 25);
-  append("last_24_hours", params.last_24_hours ?? true);
+  // Only send when the caller explicitly asked for the hot-deals firehose.
+  // Omitting the param means "return all matching ACTIVE listings" —
+  // sending false as a string would break because URL params are strings
+  // and any non-empty string coerces to true on the API side.
+  if (params.last_24_hours) append("last_24_hours", true);
   append("type", params.type ?? "All");
   append("source", params.source ?? "MLS");
   append("pricerange_from", params.pricerange_from ?? 0);
@@ -106,6 +110,20 @@ function buildQueryString(params: MlsQueryParams): string {
 export interface PropertyPhotosResponse {
   cover_url?: string;
   photo_urls?: Array<{ objectId: number; url: string }>;
+}
+
+export interface MlsAutocompleteHit {
+  id: number;
+  listing_id: string;
+  fullstreetaddress: string;
+  city: string;
+  state: string;
+  zipcode: string;
+  list_price: number | null;
+}
+
+export interface MlsAutocompleteResponse {
+  results: MlsAutocompleteHit[];
 }
 
 export const mlsService = {
@@ -133,6 +151,15 @@ export const mlsService = {
     if (!response.ok) {
       return {};
     }
+    return response.json();
+  },
+
+  async autocomplete(q: string): Promise<MlsAutocompleteResponse> {
+    if (q.trim().length < 2) return { results: [] };
+    const response = await http.get(
+      `/mls/autocomplete?q=${encodeURIComponent(q.trim())}`,
+    );
+    if (!response.ok) return { results: [] };
     return response.json();
   },
 };

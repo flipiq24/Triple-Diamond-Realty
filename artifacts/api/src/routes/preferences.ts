@@ -26,6 +26,9 @@ router.get("/", async (req, res, next) => {
     const pool = getTenantPool(tenant);
 
     if (!pool) {
+      // Tenant not in the allowlist / no DB URL configured. This is a
+      // permanent client-side condition, so it's safe to return the
+      // baseline defaults with 200 — the frontend can cache them.
       return res.json({ preferences: DEFAULTS });
     }
 
@@ -51,12 +54,20 @@ router.get("/", async (req, res, next) => {
         preferences: { ...DEFAULTS, ...parsed },
       });
     } catch (err) {
-      // Table doesn't exist yet, or column name differs. Return defaults.
+      // Transient DB failure (cold pool timeout, network hiccup, missing
+      // table). Return 503 so the frontend surfaces isError and DOES NOT
+      // cache this response as the tenant's real branding — otherwise the
+      // buyer would see the Triple Diamond default logo for 30 minutes
+      // after a single cold-start timeout, even though the tenant has
+      // configured their own branding in Command.
       console.warn(
-        `[preferences] tenant=${tenant} query failed, using defaults:`,
+        `[preferences] tenant=${tenant} query failed:`,
         err instanceof Error ? err.message : err,
       );
-      return res.json({ preferences: DEFAULTS });
+      return res.status(503).json({
+        error: "preferences_unavailable",
+        message: "Tenant branding is temporarily unavailable. Retrying next request.",
+      });
     }
   } catch (err) {
     next(err);

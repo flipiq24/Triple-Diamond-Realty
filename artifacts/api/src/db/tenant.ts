@@ -76,7 +76,7 @@ export function getTenantPool(rawTenant: string): pg.Pool | null {
     ssl: { rejectUnauthorized: false },
     max: 3,
     idleTimeoutMillis: 30_000,
-    connectionTimeoutMillis: 10_000,
+    connectionTimeoutMillis: 20_000,
   });
 
   pool.on("error", (err) => {
