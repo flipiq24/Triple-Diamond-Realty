@@ -3,8 +3,13 @@
   "compilerOptions": {
     "outDir": "dist",
     "rootDir": ".",
-    "moduleResolution": "bundler",
-    "module": "esnext",
+    // `nodenext` follows Node's real resolution rules — critical for tsc to
+    // walk into transitive @types packages (e.g. @types/express-serve-static-core
+    // via @types/express) once code lands on a stricter host like Vercel.
+    // `bundler` mode happened to work locally but silently drops those
+    // deep type refs, so `res.status()` gets typed as `never`.
+    "moduleResolution": "nodenext",
+    "module": "nodenext",
     "target": "es2022",
     "lib": ["es2022"],
     "esModuleInterop": true,
