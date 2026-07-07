@@ -22,7 +22,17 @@ const COLUMN = process.env.PREFERENCES_COLUMN ?? "preferences";
 
 router.get("/", async (req, res, next) => {
   try {
-    const { tenant } = req.params as { tenant: string };
+    // Preferences let a caller override the tenant via `?tenant=<slug>` —
+    // useful when a deployment's domain (and thus its URL-path tenant) is
+    // locked to one slug but the branding config lives in a different
+    // tenant's DB (e.g. `buyers.command.flipiq.com` needs to read from
+    // `devcommand`'s Buyers Hook table until Command's DB is migrated).
+    // The override runs through the same slug + allowlist validation in
+    // getTenantPool, so a stray `?tenant=../etc/passwd` is still rejected.
+    const urlTenant = (req.params as { tenant: string }).tenant;
+    const queryTenant =
+      typeof req.query.tenant === "string" ? req.query.tenant.trim() : "";
+    const tenant = queryTenant || urlTenant;
     const pool = getTenantPool(tenant);
 
     if (!pool) {

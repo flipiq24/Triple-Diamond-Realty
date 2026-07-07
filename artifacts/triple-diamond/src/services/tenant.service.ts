@@ -18,9 +18,23 @@ export interface PreferencesResponse {
   preferences: TenantPreferences;
 }
 
+/**
+ * Optional override so the branding tenant can differ from the URL-path
+ * tenant. Useful when a deployment's domain (e.g. `buyers.command.flipiq.com`)
+ * is locked to one slug but we want to read Buyers Hook config from a
+ * DIFFERENT tenant's DB (e.g. `devcommand` where the config actually exists).
+ * When unset, the API falls back to the URL-path tenant like before.
+ */
+const PREFERENCES_TENANT_OVERRIDE = (
+  import.meta.env.VITE_PREFERENCES_TENANT as string | undefined
+)?.trim();
+
 export const tenantService = {
   async getPreferences(): Promise<TenantPreferences> {
-    const response = await http.get("/buyers/preferences");
+    const qs = PREFERENCES_TENANT_OVERRIDE
+      ? `?tenant=${encodeURIComponent(PREFERENCES_TENANT_OVERRIDE)}`
+      : "";
+    const response = await http.get(`/buyers/preferences${qs}`);
     if (!response.ok) {
       throw new Error(`Failed to load preferences (${response.status})`);
     }
