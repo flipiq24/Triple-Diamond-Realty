@@ -13,7 +13,9 @@ export function createApp(): Express {
   app.use(corsMiddleware);
   app.use(express.json());
 
-  app.get("/health", (_req, res) => res.json({ status: "ok" }));
+  app.get("/health", (_req: Request, res: Response) =>
+    res.json({ status: "ok" }),
+  );
 
   // All buyer-facing endpoints are tenant-scoped. tenantGuard validates the
   // slug (shape + allowlist) once before dispatching to any route.
@@ -22,7 +24,7 @@ export function createApp(): Express {
   app.use("/:tenant/buyers/preferences", tenantGuard, preferencesRouter);
 
   // 404 fallback
-  app.use((req, res) => {
+  app.use((req: Request, res: Response) => {
     res.status(404).json({ error: "Not found", path: req.path });
   });
 
