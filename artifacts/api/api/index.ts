@@ -1,11 +1,14 @@
-// Vercel serverless entry — wraps the Express app with serverless-http.
-// A single function catches all routes via vercel.json rewrites.
-import serverless from "serverless-http";
+// Vercel serverless entry.
+//
+// Vercel's Node runtime hands the function real Node
+// IncomingMessage / ServerResponse objects that Express can consume
+// directly — no adapter needed. `serverless-http` (used earlier) is meant
+// for AWS Lambda's event/context signature, and with Express 5 it was
+// hanging the function until Vercel's 30s timeout tripped
+// (FUNCTION_INVOCATION_TIMEOUT). Exporting the app itself is the standard
+// Vercel + Express pattern.
 import { createApp } from "../src/app.js";
 
 const app = createApp();
-const handler = serverless(app);
 
-export default async function (req: unknown, res: unknown) {
-  return (handler as (req: unknown, res: unknown) => Promise<unknown>)(req, res);
-}
+export default app;
