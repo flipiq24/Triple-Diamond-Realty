@@ -5,6 +5,16 @@ if (!API_BASE_URL) {
   throw new Error("VITE_API_URL is not set");
 }
 
+// Reject configs like VITE_API_URL="/api" or "api.foo.com" — those silently
+// resolve as relative paths on the FE origin and every API call ends up
+// mangled (buyers.command.flipiq.com/<garbage>). Force an absolute URL so
+// misconfigured Vercel envs fail the build instead of shipping broken.
+if (!/^https?:\/\//i.test(API_BASE_URL)) {
+  throw new Error(
+    `VITE_API_URL must be an absolute URL starting with http(s):// — got "${API_BASE_URL}"`,
+  );
+}
+
 if (!TENANT_NAME) {
   throw new Error("VITE_TENANT_NAME is not set");
 }
