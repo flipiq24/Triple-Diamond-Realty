@@ -163,14 +163,9 @@ export default function Property() {
             </div>
           </div>
           <div className="hidden md:flex flex-col gap-2 h-[500px]">
-            {[
-              { src: photos[1], label: "Kitchen" },
-              { src: photos[2], label: "Living room" },
-              { src: photos[3], label: "Bathroom" },
-            ].map((p, i) => (
+            {[photos[1], photos[2], photos[3]].map((src, i) => (
               <div key={i} className="relative flex-1 overflow-hidden">
-                <img src={p.src} alt={p.label} className="w-full h-full object-cover" />
-                <span className="absolute bottom-2 right-2 text-white font-semibold text-sm drop-shadow">{p.label}</span>
+                <img src={src} alt="" className="w-full h-full object-cover" />
               </div>
             ))}
           </div>
@@ -318,7 +313,11 @@ export default function Property() {
                 {" "}Priced at ${listing.price.toLocaleString()} (${pricePerSqft}/sqft) — investor-grade upside for the right buyer.
               </p>
 
-              {/* Interior */}
+              {/* Interior — only values we actually get from MLS. Do NOT
+                  add "Other Rooms" or "Heating and Cooling" back without
+                  wiring to a real MLS field; the previous version invented
+                  Kitchen / Living Room / Central-Evaporative / Forced-Air
+                  as if they were facts on every listing. */}
               <div className="rounded-lg border border-border overflow-hidden mb-6">
                 <div className="bg-muted/60 px-4 py-3 font-bold text-primary">Interior</div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-5">
@@ -328,27 +327,13 @@ export default function Property() {
                       <li>Bedrooms: {listing.beds}</li>
                       {listing.stories === 1 && <li>Bedrooms on main level: {listing.beds}</li>}
                     </ul>
-
-                    <h4 className="font-bold mt-5 mb-2">Bathrooms</h4>
+                  </div>
+                  <div>
+                    <h4 className="font-bold mb-2">Bathrooms</h4>
                     <ul className="text-sm text-foreground/80 space-y-1 list-disc list-inside">
                       <li>Total bathrooms: {listing.baths}</li>
                       <li>Full bathrooms: {Math.floor(listing.baths)}</li>
                       {listing.baths % 1 !== 0 && <li>Half bathrooms: 1</li>}
-                    </ul>
-                  </div>
-                  <div>
-                    <h4 className="font-bold mb-2">Other Rooms</h4>
-                    <ul className="text-sm text-foreground/80 space-y-1 list-disc list-inside">
-                      <li>Kitchen</li>
-                      <li>Living Room</li>
-                      {listing.sqft > 1500 && <li>Dining Room</li>}
-                      {listing.propertyType === "Multi-Family" && <li>Separate Unit(s)</li>}
-                    </ul>
-
-                    <h4 className="font-bold mt-5 mb-2">Heating and Cooling</h4>
-                    <ul className="text-sm text-foreground/80 space-y-1 list-disc list-inside">
-                      <li>Cooling: Central / Evaporative</li>
-                      <li>Heating: Forced Air</li>
                     </ul>
                   </div>
                 </div>
@@ -381,7 +366,7 @@ export default function Property() {
                     <li>Est. monthly: ${monthlyEst.toLocaleString()}/mo</li>
                   </ul>
                   <ul className="text-sm text-foreground/80 space-y-1 list-disc list-inside">
-                    <li>Days on Triple Diamond: {listing.daysOnMarket}</li>
+                    <li>Days on market: {listing.daysOnMarket}</li>
                     <li>Status: {statusLabel}</li>
                     <li>Deal type: {listing.dealType}</li>
                   </ul>

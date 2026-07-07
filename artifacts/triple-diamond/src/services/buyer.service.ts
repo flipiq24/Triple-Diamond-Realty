@@ -58,6 +58,20 @@ export const buyerService = {
     if (!user?.email) return;
 
     const meta = (user.user_metadata ?? {}) as Record<string, unknown>;
+
+    // Skip the upsert when the current deployment's tenant doesn't match
+    // the tenant the session was created on. Supabase is shared across every
+    // buyer site (buyers.<tenant>.flipiq.com), so a buyer who signed in on
+    // tenant A and later opens tenant B would otherwise overwrite the
+    // `tenant` column on their buyer_registrations row with B — quietly
+    // remapping them to a brokerage they never opted in to. Also keeps
+    // buyer_registrations honest for downstream analytics.
+    const sessionTenant =
+      typeof meta.tenant === "string" ? meta.tenant.toLowerCase() : null;
+    if (!sessionTenant || sessionTenant !== TENANT_NAME.toLowerCase()) {
+      return;
+    }
+
     const row = {
       auth_user_id: user.id,
       name: String(meta.name ?? ""),
