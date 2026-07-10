@@ -3,15 +3,13 @@ import { getTenantPool } from "../db/tenant.js";
 
 const router = Router({ mergeParams: true });
 
-// Baseline branding — merged UNDER the DB payload so any key not yet
-// configured falls back to a sensible default. When Tony adds new fields
-// to the JSON (fonts, spacing, hero image, etc.), they flow through
-// automatically without a code or schema change.
+// Fallback returned when the tenant's row doesn't exist yet OR the tenant
+// is out of the allowlist. Uses the sectioned shape because the frontend's
+// useTenantCustomField walks preferences.sections[*].fields[*] and treats
+// missing keys as "hide the block" — no more flat top-level fields since
+// migration 1952000000000-RestructureBuyerPreferencesToSections.
 const DEFAULTS: Record<string, unknown> = {
-  logo: "",
-  bg: "#0F2C4B",
-  secondary_color: "#F59E0B",
-  company_name: "Triple Diamond Realty",
+  sections: [],
 };
 
 // The tenant's Command DB holds a single-row config table with one jsonb
@@ -60,8 +58,13 @@ router.get("/", async (req, res, next) => {
             })()
           : raw ?? {};
 
+      // Return the DB payload verbatim (rather than merging with DEFAULTS)
+      // so we don't accidentally pollute a sectioned response with flat
+      // top-level fields. If a legacy row is still in the flat pre-1952
+      // shape, the frontend detects the missing `sections` and falls back
+      // to its own local defaults instead of rendering half a site.
       return res.json({
-        preferences: { ...DEFAULTS, ...parsed },
+        preferences: parsed && Object.keys(parsed).length > 0 ? parsed : DEFAULTS,
       });
     } catch (err) {
       // Transient DB failure (cold pool timeout, network hiccup, missing

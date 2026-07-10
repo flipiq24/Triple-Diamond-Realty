@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { useTenantPreferences } from "@/hooks/useTenantPreferences";
+import { useTenantCustomField } from "@/hooks/useTenantCustomField";
 
 /**
  * Injects live tenant branding into the document at runtime:
@@ -7,11 +8,18 @@ import { useTenantPreferences } from "@/hooks/useTenantPreferences";
  *   - --primary-foreground / --accent-foreground auto-picked for contrast
  *   - document.title switched to the tenant's company_name
  *
+ * `bg`, `secondary_color`, and `company_name` come from the Buyers Hook
+ * Branding section (or any other section, since useTenantCustomField
+ * walks all sections looking for the key).
+ *
  * Doesn't render a wrapper element — just applies side effects and passes
  * children through untouched.
  */
 export function TenantThemeProvider({ children }: { children: ReactNode }) {
-  const { preferences, isLoading, isError } = useTenantPreferences();
+  const { isLoading, isError } = useTenantPreferences();
+  const bg = useTenantCustomField("bg");
+  const secondaryColor = useTenantCustomField("secondary_color");
+  const companyName = useTenantCustomField("company_name");
 
   // Hard ceiling on how long we're willing to hide the site waiting for
   // tenant branding. If the API is dead / slow / not deployed yet, we
@@ -25,31 +33,30 @@ export function TenantThemeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const root = document.documentElement;
-    const bgTriple = hexToHslTriple(preferences.bg);
-    const accentTriple = hexToHslTriple(preferences.secondary_color);
+    const bgTriple = hexToHslTriple(bg);
+    const accentTriple = hexToHslTriple(secondaryColor);
 
     if (bgTriple) {
       root.style.setProperty("--primary", bgTriple);
       root.style.setProperty(
         "--primary-foreground",
-        contrastForeground(preferences.bg) || "0 0% 100%",
+        contrastForeground(bg) || "0 0% 100%",
       );
     }
     if (accentTriple) {
       root.style.setProperty("--accent", accentTriple);
       root.style.setProperty(
         "--accent-foreground",
-        contrastForeground(preferences.secondary_color) || "0 0% 100%",
+        contrastForeground(secondaryColor) || "0 0% 100%",
       );
     }
-  }, [preferences.bg, preferences.secondary_color]);
+  }, [bg, secondaryColor]);
 
   useEffect(() => {
-    const name = preferences.company_name;
-    if (typeof document !== "undefined" && name) {
-      document.title = `${name} — Off-Market Deals`;
+    if (typeof document !== "undefined" && companyName) {
+      document.title = `${companyName} — Off-Market Deals`;
     }
-  }, [preferences.company_name]);
+  }, [companyName]);
 
   // Cold fetch (no cached data, network pending) → block render behind a
   // full-viewport loader. Warm fetches (localStorage-cached < 30 min old)

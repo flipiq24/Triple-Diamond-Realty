@@ -3,10 +3,14 @@ import { useQuery } from "@tanstack/react-query";
 import { tenantService, type TenantPreferences } from "@/services/tenant.service";
 import defaultLogo from "@assets/image_1779548344914.png";
 
-/** Baseline branding used before the API responds AND when a key is missing */
-export const DEFAULT_PREFERENCES: Required<
-  Pick<TenantPreferences, "logo" | "bg" | "secondary_color" | "company_name">
-> = {
+/**
+ * Baseline branding used ONLY as a last-resort fallback for the visible
+ * bits (logo image and company name) when the tenant hasn't set the
+ * corresponding field in Buyers Hook yet. Everything else falls through
+ * to an empty string / "hide the block" instead of showing Triple Diamond
+ * placeholders on a foreign tenant's site.
+ */
+export const DEFAULT_PREFERENCES = {
   logo: defaultLogo,
   bg: "#0F2C4B",
   secondary_color: "#F59E0B",
@@ -80,16 +84,14 @@ export function useTenantPreferences(): UseTenantPreferencesResult {
     }
   }, [query.data, query.isError]);
 
-  const merged: TenantPreferences = {
-    ...DEFAULT_PREFERENCES,
-    ...(query.data ?? {}),
-  };
-  if (!merged.logo || merged.logo === "") {
-    merged.logo = DEFAULT_PREFERENCES.logo;
-  }
+  // Preferences shape is now `{ sections: [...] }`. No shallow flat-key
+  // merge — that mattered when we had top-level logo/bg/secondary_color/
+  // company_name fields. Callers use useTenantCustomField(...) to read
+  // by key, which walks sections and falls back to "" when missing.
+  const preferences: TenantPreferences = query.data ?? { sections: [] };
 
   return {
-    preferences: merged,
+    preferences,
     // Only expose "loading" when there truly is no data yet. When cache
     // seeded initialData, query.data is defined immediately and this
     // stays false — no loader flash for warm loads.

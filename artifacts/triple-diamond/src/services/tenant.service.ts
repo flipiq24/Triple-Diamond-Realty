@@ -1,32 +1,39 @@
 import { http } from "@/lib/http-client";
 
 /**
- * A single row in Buyers Hook's `custom_fields[]` array — how the tenant admin
- * adds arbitrary key/value pairs via Command's "Add field" UI. The buyer site
- * reads values by `key`, so key names must match exactly what components ask
- * for (see outputs/tenant-preferences-keys.md for the full canonical list).
+ * A single field inside a Buyers Hook section. Values are addressed by
+ * `key` — buyer-site components read via `useTenantCustomField(key)`
+ * which walks all sections to find the first matching key.
  */
+export type CustomFieldType = "text" | "url" | "color" | "file" | "textarea";
+
 export interface CustomField {
   id: string;
   key: string;
   label: string;
-  type: "text" | "url" | "color" | "file";
+  type: CustomFieldType;
   value: string;
+  /** Only meaningful for `type: 'textarea'` today; enforced Command-side. */
+  maxLength?: number;
+}
+
+export interface Section {
+  id: string;
+  label: string;
+  fields: CustomField[];
 }
 
 /**
- * The API's `/buyers/preferences` returns a single jsonb blob merged over
- * defaults. Known fields today are logo/bg/secondary_color/company_name +
- * custom_fields[], but the backend is jsonb — any new key Tony configures
- * flows through without a code change. Callers should treat unknown keys
- * as opaque.
+ * Sectioned preferences blob returned by the TDR API's `/buyers/preferences`
+ * (which itself proxies from Command → sys.buyer_preferences.preferences).
+ *
+ * Every configurable value — logo, colors, phone, email, DRE license,
+ * address, tagline, description, and any tenant-added field — lives inside
+ * a section. No top-level flat fields anymore (that shape was migrated
+ * away in Command 1952000000000-RestructureBuyerPreferencesToSections).
  */
 export interface TenantPreferences {
-  logo?: string;
-  bg?: string;
-  secondary_color?: string;
-  company_name?: string;
-  custom_fields?: CustomField[];
+  sections?: Section[];
   [extra: string]: unknown;
 }
 
