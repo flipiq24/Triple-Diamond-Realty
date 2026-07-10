@@ -3,6 +3,7 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import aboutImg from "@/data/images/about-team.png";
+import { useTenantBranding } from "@/hooks/useTenantBranding";
 
 import team1 from "@/data/images/team_1.jpg";
 import team2 from "@/data/images/team_2.jpg";
@@ -10,11 +11,13 @@ import team3 from "@/data/images/team_3.jpg";
 import team4 from "@/data/images/team_4.jpg";
 
 export default function About() {
+  const { companyName } = useTenantBranding();
+
   useEffect(() => {
-    document.title = "About Triple Diamond Realty | 30 Years of Off-Market Real Estate";
+    document.title = `About ${companyName} | 30 Years of Off-Market Real Estate`;
     const desc = document.querySelector('meta[name="description"]');
-    if (desc) desc.setAttribute("content", "Three decades. Thousands of properties. The most powerful off-market real estate technology on the market. Meet the team behind Triple Diamond Realty.");
-  }, []);
+    if (desc) desc.setAttribute("content", `Three decades. Thousands of properties. The most powerful off-market real estate technology on the market. Meet the team behind ${companyName}.`);
+  }, [companyName]);
 
   const team = [
     {
@@ -60,7 +63,7 @@ export default function About() {
               30 Years of Finding <br /><span className="text-accent">Diamonds in the Rough</span>
             </h1>
             <p className="text-lg md:text-xl text-primary-foreground/85 max-w-2xl mx-auto leading-relaxed">
-              Triple Diamond Realty isn't a traditional retail brokerage. We are a specialized off-market acquisitions team — three decades deep, thousands of properties closed, and powered by the most advanced deal-finding technology on the market today.
+              {companyName} isn't a traditional retail brokerage. We are a specialized off-market acquisitions team — three decades deep, thousands of properties closed, and powered by the most advanced deal-finding technology on the market today.
             </p>
           </motion.div>
         </div>
@@ -98,7 +101,7 @@ export default function About() {
               viewport={{ once: true }}
               className="relative rounded-2xl overflow-hidden shadow-2xl"
             >
-              <img src={aboutImg} alt="Triple Diamond Realty acquisitions team" className="w-full h-auto aspect-[4/3] object-cover" />
+              <img src={aboutImg} alt={`${companyName} acquisitions team`} className="w-full h-auto aspect-[4/3] object-cover" />
             </motion.div>
           </div>
         </div>

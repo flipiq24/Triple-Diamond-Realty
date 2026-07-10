@@ -4,11 +4,19 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useState } from "react";
 import { useTenantBranding } from "@/hooks/useTenantBranding";
+import { useTenantCustomFields } from "@/hooks/useTenantCustomField";
 
 export default function SiteHeader() {
   const [location] = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const { logoUrl, companyName } = useTenantBranding();
+  const cf = useTenantCustomFields();
+
+  const phone = cf.primary_phone;
+  const phoneTel = cf.primary_phone_tel;
+  const email = cf.primary_email;
+  const dre = cf.dre_broker_license;
+  const tagline = cf.tagline;
 
   const navLinks = [
     { href: "/", label: "Home" },
@@ -22,9 +30,9 @@ export default function SiteHeader() {
       <div className="bg-primary text-primary-foreground py-1.5 px-4 md:px-8 text-xs font-medium hidden sm:flex justify-between items-center">
         <div className="flex items-center gap-2">
           <Sparkles className="w-3.5 h-3.5 text-accent" aria-hidden="true" />
-          <span className="font-semibold text-white">Diamonds in the Rough. Delivered Daily.</span>
+          {tagline && <span className="font-semibold text-white">{tagline}</span>}
         </div>
-        <span className="text-primary-foreground/70">CA DRE #[INSERT]</span>
+        {dre && <span className="text-primary-foreground/70">CA DRE #{dre}</span>}
       </div>
 
       {/* Main Navigation */}
@@ -47,14 +55,16 @@ export default function SiteHeader() {
             ))}
           </ul>
           <div className="flex items-center gap-3">
-            <a
-              href="tel:+19092804906"
-              className="hidden lg:flex items-center gap-1.5 text-sm font-bold text-primary hover:text-accent transition-colors"
-              aria-label={`Call ${companyName}`}
-            >
-              <Phone className="w-4 h-4" />
-              <span>(909) 280-4906</span>
-            </a>
+            {phone && phoneTel && (
+              <a
+                href={`tel:${phoneTel}`}
+                className="hidden lg:flex items-center gap-1.5 text-sm font-bold text-primary hover:text-accent transition-colors"
+                aria-label={`Call ${companyName}`}
+              >
+                <Phone className="w-4 h-4" />
+                <span>{phone}</span>
+              </a>
+            )}
             {location !== "/search" && (
               <Link href="/search">
                 <Button className="bg-accent hover:bg-accent/90 text-accent-foreground rounded-full px-6 font-bold shadow-md shadow-accent/20">
@@ -66,13 +76,15 @@ export default function SiteHeader() {
         </nav>
 
         <div className="md:hidden flex items-center gap-1">
-          <a
-            href="tel:+19092804906"
-            className="w-10 h-10 flex items-center justify-center rounded-full text-primary hover:bg-muted"
-            aria-label={`Call ${companyName}`}
-          >
-            <Phone className="w-5 h-5" />
-          </a>
+          {phoneTel && (
+            <a
+              href={`tel:${phoneTel}`}
+              className="w-10 h-10 flex items-center justify-center rounded-full text-primary hover:bg-muted"
+              aria-label={`Call ${companyName}`}
+            >
+              <Phone className="w-5 h-5" />
+            </a>
+          )}
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="text-primary" aria-label="Open menu">
@@ -98,12 +110,16 @@ export default function SiteHeader() {
                 </nav>
                 <div className="h-px bg-border my-2" />
                 <div className="flex flex-col gap-3 text-sm text-muted-foreground">
-                  <a href="tel:+19092804906" className="flex items-center gap-2 font-semibold text-primary">
-                    <Phone className="w-4 h-4 text-accent" /> (909) 280-4906
-                  </a>
-                  <a href="mailto:info@tdrealty.net" className="flex items-center gap-2">
-                    <Mail className="w-4 h-4 text-accent" /> info@tdrealty.net
-                  </a>
+                  {phone && phoneTel && (
+                    <a href={`tel:${phoneTel}`} className="flex items-center gap-2 font-semibold text-primary">
+                      <Phone className="w-4 h-4 text-accent" /> {phone}
+                    </a>
+                  )}
+                  {email && (
+                    <a href={`mailto:${email}`} className="flex items-center gap-2">
+                      <Mail className="w-4 h-4 text-accent" /> {email}
+                    </a>
+                  )}
                 </div>
                 {location !== "/search" && (
                   <Link href="/search" onClick={() => setIsOpen(false)} className="mt-4">

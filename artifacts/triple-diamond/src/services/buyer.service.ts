@@ -1,4 +1,5 @@
 import { supabase, TENANT_NAME } from "@/lib/supabase";
+import { http } from "@/lib/http-client";
 
 export interface BuyerRegistrationPayload {
   name: string;
@@ -97,20 +98,70 @@ export const buyerService = {
   },
 
   async submitAgentContact(payload: AgentContactPayload): Promise<void> {
-    const { error } = await supabase.from("agent_contact_requests").insert({
-      property_id: payload.propertyId ?? null,
-      property_address: payload.propertyAddress ?? null,
+    // Routes through the TDR API so the tenant's configured
+    // `agent_contact_email` (via Buyers Hook) receives the inquiry — not
+    // just written to Supabase and never seen by the tenant. The API also
+    // performs the audit-write server-side, so we no longer duplicate it
+    // here.
+    const response = await http.post("/agent-contact", {
+      listing_id: payload.propertyId ?? "",
+      property_address: payload.propertyAddress ?? undefined,
       name: payload.name,
       email: payload.email,
       phone: payload.phone,
-      message: payload.message ?? null,
+      message: payload.message ?? undefined,
       is_military: payload.isMilitary ?? false,
-      tenant: TENANT_NAME,
     });
-    if (error) throw error;
+    if (!response.ok) {
+      const body = (await response.json().catch(() => null)) as {
+        message?: string;
+      } | null;
+      throw new Error(body?.message || `Contact request failed (${response.status})`);
+    }
   },
 
   async signOut(): Promise<void> {
     await supabase.auth.signOut();
+  },
+
+  // ─── Favorites (verified buyers only) ────────────────────────────
+  //
+  // Table: public.buyer_favorites (auth_user_id, tenant, listing_id).
+  // RLS restricts a buyer to their own rows. We store only the listing_id;
+  // the full property record lives in mls.listings and is fetched on demand.
+
+  async listFavorites(): Promise<string[]> {
+    const { data, error } = await supabase
+      .from("buyer_favorites")
+      .select("listing_id")
+      .eq("tenant", TENANT_NAME);
+    if (error) throw error;
+    return (data ?? []).map((r) => r.listing_id as string);
+  },
+
+  async addFavorite(listingId: string): Promise<void> {
+    const { data: session } = await supabase.auth.getSession();
+    const userId = session.session?.user?.id;
+    if (!userId) throw new Error("Sign in to save favorites");
+    const { error } = await supabase
+      .from("buyer_favorites")
+      .insert({
+        auth_user_id: userId,
+        tenant: TENANT_NAME,
+        listing_id: listingId,
+      });
+    // Ignore the unique-constraint violation so double-clicking Save on
+    // the same row never surfaces as a UI error — the second insert is a
+    // no-op, the buyer's intent is already satisfied.
+    if (error && error.code !== "23505") throw error;
+  },
+
+  async removeFavorite(listingId: string): Promise<void> {
+    const { error } = await supabase
+      .from("buyer_favorites")
+      .delete()
+      .eq("tenant", TENANT_NAME)
+      .eq("listing_id", listingId);
+    if (error) throw error;
   },
 };

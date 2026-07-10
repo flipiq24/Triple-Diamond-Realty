@@ -49,6 +49,7 @@ export interface MlsQueryParams {
   page?: number;
   pageSize?: number;
   last_24_hours?: boolean;
+  last_week?: boolean;
   type?: "All" | "New" | "Viewed";
   source?: string;
   pricerange_from?: number;
@@ -86,6 +87,9 @@ function buildQueryString(params: MlsQueryParams): string {
   // sending false as a string would break because URL params are strings
   // and any non-empty string coerces to true on the API side.
   if (params.last_24_hours) append("last_24_hours", true);
+  // Homepage "This Week's Top Deals" strip uses last_week; the API prefers
+  // last_24_hours when both are set.
+  if (params.last_week) append("last_week", true);
   append("type", params.type ?? "All");
   append("source", params.source ?? "MLS");
   append("pricerange_from", params.pricerange_from ?? 0);

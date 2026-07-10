@@ -1,16 +1,32 @@
 import { http } from "@/lib/http-client";
 
 /**
+ * A single row in Buyers Hook's `custom_fields[]` array — how the tenant admin
+ * adds arbitrary key/value pairs via Command's "Add field" UI. The buyer site
+ * reads values by `key`, so key names must match exactly what components ask
+ * for (see outputs/tenant-preferences-keys.md for the full canonical list).
+ */
+export interface CustomField {
+  id: string;
+  key: string;
+  label: string;
+  type: "text" | "url" | "color" | "file";
+  value: string;
+}
+
+/**
  * The API's `/buyers/preferences` returns a single jsonb blob merged over
- * defaults. Known fields today are logo/bg/secondary_color/company_name,
- * but the backend is jsonb — any new key Tony configures will flow through
- * without a code change. Callers should treat unknown keys as opaque.
+ * defaults. Known fields today are logo/bg/secondary_color/company_name +
+ * custom_fields[], but the backend is jsonb — any new key Tony configures
+ * flows through without a code change. Callers should treat unknown keys
+ * as opaque.
  */
 export interface TenantPreferences {
   logo?: string;
   bg?: string;
   secondary_color?: string;
   company_name?: string;
+  custom_fields?: CustomField[];
   [extra: string]: unknown;
 }
 

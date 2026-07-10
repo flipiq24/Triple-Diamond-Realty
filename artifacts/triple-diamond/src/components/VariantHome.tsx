@@ -3,16 +3,26 @@ import { Building2, TrendingUp, Cpu, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import ListingCard from "@/components/ListingCard";
-import { listings } from "@/data/listings";
 import heroBg from "@/data/images/hero-bg.png";
 import SeoHead from "@/components/SeoHead";
 import AuthorityStrip from "@/components/AuthorityStrip";
 import SearchBarBlock from "@/components/SearchBarBlock";
 import type { VariantConfig } from "@/data/variants";
+import { useMlsListings } from "@/hooks/useMlsListings";
 
 export default function VariantHome({ config, cityName }: { config: VariantConfig; cityName?: string }) {
   const [, setLocation] = useLocation();
-  const featuredListings = listings.slice(0, 3);
+
+  // "This Week's Top Deals" — real MLS from the past 7 days, newest first,
+  // capped at 3 for the strip. Replaces a static mock array that was
+  // showing the same three fake listings on every tenant's homepage.
+  const { listings: weekListings } = useMlsListings({
+    last_week: true,
+    pageSize: 3,
+    sortColumn: "list_date",
+    sortOrder: "DESC",
+  });
+  const featuredListings = weekListings.slice(0, 3);
 
   const h1Lead = cityName ? `${cityName} ${config.h1Lead}` : config.h1Lead;
   const meta = cityName
@@ -117,13 +127,19 @@ export default function VariantHome({ config, cityName }: { config: VariantConfi
               See All Deals <ArrowRight className="ml-2 w-4 h-4" />
             </Button>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featuredListings.map((listing, i) => (
-              <motion.div key={listing.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}>
-                <ListingCard listing={listing} />
-              </motion.div>
-            ))}
-          </div>
+          {featuredListings.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {featuredListings.map((listing, i) => (
+                <motion.div key={listing.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}>
+                  <ListingCard listing={listing} />
+                </motion.div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12 text-muted-foreground">
+              <p>No new deals this week — check back Monday, or browse the full feed.</p>
+            </div>
+          )}
         </div>
       </section>
 

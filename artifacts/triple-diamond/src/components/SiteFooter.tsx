@@ -1,10 +1,49 @@
 import { Link } from "wouter";
 import { Phone, Mail, MapPin, Home as HomeIcon } from "lucide-react";
 import { useTenantBranding } from "@/hooks/useTenantBranding";
+import { useTenantCustomFields } from "@/hooks/useTenantCustomField";
 
 export default function SiteFooter() {
   const year = new Date().getFullYear();
   const { logoUrl, companyName } = useTenantBranding();
+  const cf = useTenantCustomFields();
+
+  const phone = cf.primary_phone;
+  const phoneTel = cf.primary_phone_tel;
+  const email = cf.primary_email;
+  const tagline = cf.tagline;
+  const marketingDescription = cf.marketing_description;
+  const dre = cf.dre_broker_license;
+  const responsibleBroker = cf.responsible_broker_name;
+  const responsibleBrokerDre = cf.responsible_broker_dre;
+  const addressLine1 = cf.office_address_line1;
+  const addressCity = cf.office_address_city;
+  const addressState = cf.office_address_state;
+  const addressZip = cf.office_address_zip;
+  const serviceArea = cf.service_area;
+
+  const addressCombined = [
+    addressLine1,
+    [addressCity, addressState, addressZip].filter(Boolean).join(", "),
+  ]
+    .filter(Boolean)
+    .join(" • ");
+
+  const licenseLine = [
+    `${companyName}`,
+    dre ? `CA DRE Broker License #${dre}` : null,
+    responsibleBroker && responsibleBrokerDre
+      ? `Responsible Broker ${responsibleBroker} CA DRE #${responsibleBrokerDre}`
+      : responsibleBroker
+        ? `Responsible Broker ${responsibleBroker}`
+        : null,
+    addressCombined || null,
+    phone || null,
+    email || null,
+  ]
+    .filter(Boolean)
+    .join(" • ");
+
   return (
     <footer className="bg-primary text-primary-foreground pt-16 pb-8 border-t border-primary/20">
       <div className="container mx-auto px-4">
@@ -13,10 +52,14 @@ export default function SiteFooter() {
             <div className="bg-white p-2 rounded-lg inline-block mb-4">
               <img src={logoUrl} alt={companyName} className="h-10 w-auto" />
             </div>
-            <p className="text-accent font-bold text-lg mb-3">Diamonds in the Rough. Delivered Daily.</p>
-            <p className="text-primary-foreground/80 text-sm max-w-md leading-relaxed">
-              The off-market real estate brokerage. 30 years sourcing handyman specials, fixer-uppers, foreclosures, BRRRR rentals, 1031 replacements, and wholesale assignments — powered by the most advanced deal-finding technology in the market today.
-            </p>
+            {tagline && (
+              <p className="text-accent font-bold text-lg mb-3">{tagline}</p>
+            )}
+            {marketingDescription && (
+              <p className="text-primary-foreground/80 text-sm max-w-md leading-relaxed">
+                {marketingDescription}
+              </p>
+            )}
           </div>
 
           <div>
@@ -36,39 +79,54 @@ export default function SiteFooter() {
           <div>
             <h2 className="font-bold text-lg mb-4 text-white">Contact</h2>
             <ul className="space-y-3 text-sm text-primary-foreground/80">
-              <li className="flex items-start gap-3">
-                <Phone className="w-4 h-4 mt-0.5 text-accent" aria-hidden="true" />
-                <a href="tel:+19092804906" className="hover:text-accent">(909) 280-4906</a>
-              </li>
-              <li className="flex items-start gap-3">
-                <Mail className="w-4 h-4 mt-0.5 text-accent" aria-hidden="true" />
-                <a href="mailto:info@tdrealty.net" className="hover:text-accent">info@tdrealty.net</a>
-              </li>
-              <li className="flex items-start gap-3">
-                <MapPin className="w-4 h-4 mt-0.5 text-accent" aria-hidden="true" />
-                <span>[INSERT CA ADDRESS]<br/>Serving all of California</span>
-              </li>
+              {phone && phoneTel && (
+                <li className="flex items-start gap-3">
+                  <Phone className="w-4 h-4 mt-0.5 text-accent" aria-hidden="true" />
+                  <a href={`tel:${phoneTel}`} className="hover:text-accent">{phone}</a>
+                </li>
+              )}
+              {email && (
+                <li className="flex items-start gap-3">
+                  <Mail className="w-4 h-4 mt-0.5 text-accent" aria-hidden="true" />
+                  <a href={`mailto:${email}`} className="hover:text-accent">{email}</a>
+                </li>
+              )}
+              {(addressLine1 || serviceArea) && (
+                <li className="flex items-start gap-3">
+                  <MapPin className="w-4 h-4 mt-0.5 text-accent" aria-hidden="true" />
+                  <span>
+                    {addressLine1 && <>{addressLine1}<br/></>}
+                    {(addressCity || addressState || addressZip) && (
+                      <>{[addressCity, addressState, addressZip].filter(Boolean).join(", ")}<br/></>
+                    )}
+                    {serviceArea && <>Serving all of {serviceArea}</>}
+                  </span>
+                </li>
+              )}
             </ul>
           </div>
         </div>
 
-        {/* California Compliance Block */}
-        <div className="border-t border-primary-foreground/10 pt-6 mb-6 text-xs text-primary-foreground/80 leading-relaxed">
-          <div className="flex flex-col md:flex-row md:items-center gap-4 mb-3">
-            <div className="flex items-center gap-2 shrink-0">
-              <div className="w-8 h-8 border-2 border-white rounded flex items-center justify-center" aria-hidden="true">
-                <HomeIcon className="w-4 h-4 text-white" />
+        {/* Compliance block — assembled from custom fields; hidden if the required license info is absent */}
+        {(dre || responsibleBroker) && (
+          <div className="border-t border-primary-foreground/10 pt-6 mb-6 text-xs text-primary-foreground/80 leading-relaxed">
+            <div className="flex flex-col md:flex-row md:items-center gap-4 mb-3">
+              <div className="flex items-center gap-2 shrink-0">
+                <div className="w-8 h-8 border-2 border-white rounded flex items-center justify-center" aria-hidden="true">
+                  <HomeIcon className="w-4 h-4 text-white" />
+                </div>
+                <span className="font-bold text-white">Equal Housing Opportunity</span>
               </div>
-              <span className="font-bold text-white">Equal Housing Opportunity</span>
+              <p>
+                <strong className="text-white">{companyName}</strong>
+                {licenseLine.startsWith(companyName) ? licenseLine.slice(companyName.length) : ` • ${licenseLine}`}
+              </p>
             </div>
-            <p>
-              <strong className="text-white">{companyName}</strong> • CA DRE Broker License #[INSERT] • Responsible Broker [NAME] CA DRE #[INSERT] • [INSERT CA ADDRESS] • (909) 280-4906 • info@tdrealty.net
+            <p className="text-primary-foreground/60">
+              All property information deemed reliable but not guaranteed. Properties offered AS-IS, WHERE-IS. Listings may be on-market (MLS), off-market, or held by {companyName} or an affiliate via equitable interest or assignment — status is disclosed on each listing. Publicly marketed listings are submitted to the MLS within one business day per the NAR Clear Cooperation Policy. Real estate investing carries substantial risk including loss of principal; no representation of profit, ARV, cap rate, cash flow, or appreciation is made. We support the Federal Fair Housing Act, the California Fair Employment and Housing Act, and the Unruh Civil Rights Act.
             </p>
           </div>
-          <p className="text-primary-foreground/60">
-            All property information deemed reliable but not guaranteed. Properties offered AS-IS, WHERE-IS. Listings may be on-market (MLS), off-market, or held by {companyName} or an affiliate via equitable interest or assignment — status is disclosed on each listing. Publicly marketed listings are submitted to the MLS within one business day per the NAR Clear Cooperation Policy. Real estate investing carries substantial risk including loss of principal; no representation of profit, ARV, cap rate, cash flow, or appreciation is made. We support the Federal Fair Housing Act, the California Fair Employment and Housing Act, and the Unruh Civil Rights Act.
-          </p>
-        </div>
+        )}
 
         <div className="border-t border-primary-foreground/10 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-primary-foreground/60">
           <p>© {year} {companyName}. All rights reserved.</p>

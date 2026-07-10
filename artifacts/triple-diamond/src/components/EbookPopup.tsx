@@ -6,47 +6,92 @@ import { Label } from "@/components/ui/label";
 import { BookOpen, Download, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { buyerService } from "@/services/buyer.service";
-import ebookCover from "@assets/ChatGPT_Image_May_23,_2026,_01_01_41_PM_1779566515114.png";
+import { useTenantBranding } from "@/hooks/useTenantBranding";
+import { useTenantCustomFields } from "@/hooks/useTenantCustomField";
 
 const KEY = "tdr_ebook_popup_v1";
-const EBOOK_PDF_PATH = `/${encodeURIComponent("YOU CAN'T STEAL IN SLOW MOTION How to Compete and Win Against the Pros By Tony Diaz")}.pdf`;
 
+/**
+ * Lead-magnet popup. Fully tenant-configurable via Buyers Hook custom_fields:
+ *
+ *   ebook_enabled   → "true" to show, anything else hides the popup entirely
+ *   ebook_cover_url → book cover image URL (left panel)
+ *   ebook_pdf_url   → the PDF the user gets after submitting
+ *   ebook_title     → bold title text
+ *   ebook_teaser    → subtitle under the title
+ *
+ * Popup hides when `ebook_enabled` isn't literally "true" — so a tenant that
+ * hasn't configured a book at all sees no popup, and toggling off is a
+ * single-field edit in Command's UI (no code change).
+ */
 export default function EbookPopup() {
+  const { companyName } = useTenantBranding();
+  const cf = useTenantCustomFields();
+
+  const ebookEnabled = cf.ebook_enabled?.toLowerCase() === "true";
+  const ebookCover = cf.ebook_cover_url;
+  const ebookPdf = cf.ebook_pdf_url;
+  const ebookTitle = cf.ebook_title;
+  const ebookTeaser = cf.ebook_teaser;
+
   const [open, setOpen] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
+    // Never open if the tenant hasn't configured the ebook.
+    if (!ebookEnabled || !ebookPdf || !ebookCover) return;
     try {
       if (localStorage.getItem(KEY)) return;
-    } catch { return; }
+    } catch {
+      return;
+    }
     const t = setTimeout(() => setOpen(true), 1500);
     return () => clearTimeout(t);
-  }, []);
+  }, [ebookEnabled, ebookPdf, ebookCover]);
+
+  // Hard-hide if the tenant hasn't configured the popup — render nothing
+  // so the Dialog doesn't even mount.
+  if (!ebookEnabled || !ebookPdf || !ebookCover) return null;
 
   const dismiss = () => {
-    try { localStorage.setItem(KEY, JSON.stringify({ dismissedAt: Date.now() })); } catch {}
+    try {
+      localStorage.setItem(KEY, JSON.stringify({ dismissedAt: Date.now() }));
+    } catch {
+      /* ignore quota */
+    }
     setOpen(false);
   };
 
-  const [submitting, setSubmitting] = useState(false);
-
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !email || !phone) { toast.error("Please fill in all fields"); return; }
+    if (!name || !email || !phone) {
+      toast.error("Please fill in all fields");
+      return;
+    }
     setSubmitting(true);
     try {
       await buyerService.submitEbookSignup({ name, email, phone });
       try {
-        localStorage.setItem(KEY, JSON.stringify({ name, email, phone, claimedAt: Date.now() }));
-      } catch { /* ignore quota errors */ }
+        localStorage.setItem(
+          KEY,
+          JSON.stringify({ name, email, phone, claimedAt: Date.now() }),
+        );
+      } catch {
+        /* ignore quota errors */
+      }
       setSubmitted(true);
-      toast.success("Your ebook is ready", { description: "Download will start in a moment." });
-      window.open(EBOOK_PDF_PATH, "_blank", "noopener");
+      toast.success("Your ebook is ready", {
+        description: "Download will start in a moment.",
+      });
+      window.open(ebookPdf, "_blank", "noopener");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Could not submit. Please try again.");
+      toast.error(
+        err instanceof Error ? err.message : "Could not submit. Please try again.",
+      );
     } finally {
       setSubmitting(false);
     }
@@ -60,7 +105,7 @@ export default function EbookPopup() {
           <div className="bg-black flex items-center justify-center p-6 md:p-8">
             <img
               src={ebookCover}
-              alt="You Can't Steal in Slow Motion — A Real Estate Investor's Guide to Finding Deals Like a Pro, by Tony Diaz"
+              alt={ebookTitle || `${companyName} ebook cover`}
               className="w-full max-w-xs h-auto rounded shadow-2xl ring-1 ring-accent/40"
             />
           </div>
@@ -76,7 +121,11 @@ export default function EbookPopup() {
                   Get your free ebook
                 </DialogTitle>
                 <DialogDescription className="text-sm text-foreground/80 mb-5">
-                  <strong>"You Can't Steal in Slow Motion"</strong> — 32 years and 1,100 flips of lessons on finding off-market deals like a pro. We'll email you the download link.
+                  {ebookTitle && <strong>"{ebookTitle}"</strong>}
+                  {ebookTitle && ebookTeaser ? " — " : null}
+                  {ebookTeaser}
+                  {(ebookTitle || ebookTeaser) ? " " : null}
+                  We'll email you the download link.
                 </DialogDescription>
 
                 <form onSubmit={submit} className="space-y-3">
@@ -108,7 +157,7 @@ export default function EbookPopup() {
                     No thanks
                   </button>
                   <p className="text-[10px] text-muted-foreground leading-relaxed">
-                    By submitting, you agree to receive the download link and occasional emails/texts from Triple Diamond Realty.
+                    By submitting, you agree to receive the download link and occasional emails/texts from {companyName}.
                     Reply STOP to opt out. Consent is not a condition of purchase.
                   </p>
                 </form>
@@ -121,7 +170,7 @@ export default function EbookPopup() {
                   Thanks <strong>{name}</strong> — if the download didn't start automatically, click below.
                 </p>
                 <a
-                  href={EBOOK_PDF_PATH}
+                  href={ebookPdf}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center gap-2 w-full h-11 px-4 rounded-full bg-accent hover:bg-accent/90 text-white font-bold transition-colors"

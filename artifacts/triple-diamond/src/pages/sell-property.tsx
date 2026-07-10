@@ -7,11 +7,18 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import SeoHead from "@/components/SeoHead";
 import { toast } from "sonner";
+import { useTenantBranding } from "@/hooks/useTenantBranding";
+import { useTenantCustomFields } from "@/hooks/useTenantCustomField";
 
 type Market = "on" | "off" | "";
 type Role = "seller" | "wholesaler" | "agent" | "";
 
 export default function SellProperty() {
+  const { companyName } = useTenantBranding();
+  const cf = useTenantCustomFields();
+  const tenantPhone = cf.primary_phone;
+  const tenantPhoneTel = cf.primary_phone_tel;
+
   const [step, setStep] = useState(1);
   const [market, setMarket] = useState<Market>("");
   const [role, setRole] = useState<Role>("");
@@ -46,17 +53,20 @@ export default function SellProperty() {
   if (market === "on") {
     return (
       <div className="w-full bg-white">
-        <SeoHead title="Sell a Property — Triple Diamond Realty" description="List your off-market deal with Triple Diamond Realty." path="/sell-property" />
+        <SeoHead title={`Sell a Property — ${companyName}`} description={`List your off-market deal with ${companyName}.`} path="/sell-property" />
         <div className="container mx-auto px-4 py-16 max-w-2xl text-center">
           <h1 className="text-4xl font-extrabold text-primary mb-4">On-MLS listings aren't accepted here</h1>
           <p className="text-lg text-foreground/80 mb-6">
             We do <strong>not</strong> allow people to post for free if the property is already on the MLS.
-            Triple Diamond is built for <strong>off-market deals</strong> only — pocket listings, wholesale assignments,
+            {" "}{companyName} is built for <strong>off-market deals</strong> only — pocket listings, wholesale assignments,
             and pre-market opportunities.
           </p>
           <p className="text-base text-muted-foreground mb-8">
-            If your property is already listed on the MLS, work with your existing listing agent or contact us
-            directly at <a href="tel:9092804906" className="underline text-primary">(909) 280-4906</a> to discuss buyer-side options.
+            If your property is already listed on the MLS, work with your existing listing agent
+            {tenantPhone && tenantPhoneTel ? (
+              <> or contact us directly at <a href={`tel:${tenantPhoneTel}`} className="underline text-primary">{tenantPhone}</a></>
+            ) : null}
+            {" "}to discuss buyer-side options.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Button onClick={() => setMarket("")} variant="outline" className="rounded-full">
@@ -75,7 +85,7 @@ export default function SellProperty() {
   if (submitted) {
     return (
       <div className="w-full bg-white">
-        <SeoHead title="Property Submitted — Triple Diamond Realty" description="" path="/sell-property" />
+        <SeoHead title={`Property Submitted — ${companyName}`} description="" path="/sell-property" />
         <div className="container mx-auto px-4 py-16 max-w-2xl text-center">
           <CheckCircle2 className="w-16 h-16 text-green-500 mx-auto mb-4" />
           <h1 className="text-4xl font-extrabold text-primary mb-3">You're in! 🎉</h1>
@@ -83,7 +93,7 @@ export default function SellProperty() {
             Thanks {name.split(" ")[0]}. We've received your property at <strong>{address}</strong>.
           </p>
           <p className="text-base text-muted-foreground mb-8">
-            A Triple Diamond buyer-rep will text or call {phone} within 1 business day to verify details and
+            A {companyName} buyer-rep will text or call {phone} within 1 business day to verify details and
             push your deal out to our active buyer list. There is <strong>no cost</strong> to you.
           </p>
           <Link href="/">
@@ -97,7 +107,7 @@ export default function SellProperty() {
   return (
     <div className="w-full bg-white">
       <SeoHead
-        title="Sell a Property — Triple Diamond Realty"
+        title={`Sell a Property — ${companyName}`}
         description="Have an off-market property? Post it free and connect with serious cash buyers."
         path="/sell-property"
       />

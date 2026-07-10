@@ -6,8 +6,16 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { useTenantBranding } from "@/hooks/useTenantBranding";
+import { useTenantCustomFields } from "@/hooks/useTenantCustomField";
 
 export default function DoNotSell() {
+  const { companyName } = useTenantBranding();
+  const cf = useTenantCustomFields();
+  const phone = cf.primary_phone;
+  const phoneTel = cf.primary_phone_tel;
+  const privacyEmail = cf.privacy_email;
+
   const [submitting, setSubmitting] = useState(false);
   const [requestType, setRequestType] = useState("opt_out");
   const [consent, setConsent] = useState(false);
@@ -30,7 +38,7 @@ export default function DoNotSell() {
   return (
     <div className="w-full bg-white">
       <SeoHead
-        title="Do Not Sell or Share My Personal Information | Triple Diamond Realty"
+        title={`Do Not Sell or Share My Personal Information | ${companyName}`}
         description="Submit a California CCPA/CPRA request to opt out of the sale or sharing of your personal information, request access, deletion, or correction."
         path="/do-not-sell"
       />
@@ -114,7 +122,10 @@ export default function DoNotSell() {
           </Button>
 
           <p className="text-xs text-muted-foreground">
-            You may also submit a request by emailing <a href="mailto:privacy@tdrealty.net" className="text-accent">privacy@tdrealty.net</a> or calling <a href="tel:+19092804906" className="text-accent">(909) 280-4906</a>. We honor the Global Privacy Control (GPC) browser signal as a valid opt-out of sale and sharing.
+            You may also submit a request
+            {privacyEmail ? (<> by emailing <a href={`mailto:${privacyEmail}`} className="text-accent">{privacyEmail}</a></>) : null}
+            {phone && phoneTel ? (<> or calling <a href={`tel:${phoneTel}`} className="text-accent">{phone}</a></>) : null}
+            . We honor the Global Privacy Control (GPC) browser signal as a valid opt-out of sale and sharing.
           </p>
         </form>
       </section>

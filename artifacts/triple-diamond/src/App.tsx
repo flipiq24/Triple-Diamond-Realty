@@ -26,21 +26,9 @@ import EbookPopup from "@/components/EbookPopup";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import { buyerService } from "@/services/buyer.service";
 import { TenantThemeProvider } from "@/components/TenantThemeProvider";
+import GlobalJsonLd from "@/components/GlobalJsonLd";
 
 const queryClient = new QueryClient();
-
-const globalLd = {
-  "@context": "https://schema.org",
-  "@type": "RealEstateAgent",
-  name: "Triple Diamond Realty",
-  url: "https://tripledimondrealty.com",
-  telephone: "(909) 280-4906",
-  email: "info@tdrealty.net",
-  areaServed: "California",
-  description:
-    "30 years finding off-market, handyman special, foreclosure, BRRRR, and 1031 investment properties across California.",
-  slogan: "Diamonds in the Rough. Delivered Daily.",
-};
 
 function Router() {
   return (
@@ -196,13 +184,13 @@ function App() {
     <HelmetProvider>
       <Helmet>
         <html lang="en" />
-        <script type="application/ld+json">{JSON.stringify(globalLd)}</script>
       </Helmet>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
             <AuthBootstrap />
             <TenantThemeProvider>
+              <GlobalJsonLd />
               <Router />
             </TenantThemeProvider>
           </WouterRouter>

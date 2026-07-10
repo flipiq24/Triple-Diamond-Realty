@@ -13,6 +13,9 @@ import L from "leaflet";
 import SeoHead from "@/components/SeoHead";
 import RegisterDialog from "@/components/RegisterDialog";
 import { useBuyerVerified } from "@/hooks/useBuyerVerified";
+import { useFavorites } from "@/hooks/useFavorites";
+import { useTenantCustomFields } from "@/hooks/useTenantCustomField";
+import { useTenantBranding } from "@/hooks/useTenantBranding";
 import { Lock, ShieldCheck, Calculator, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
 import DealCalculatorDialog from "@/components/DealCalculatorDialog";
@@ -30,10 +33,19 @@ export default function Property() {
   const id = params?.id;
   const { listing, photos: apiPhotos, isLoading, isError, error } = useMlsProperty(id);
   const [photoIdx, setPhotoIdx] = useState(0);
-  const [saved, setSaved] = useState(false);
+  const { isFavorite, toggleFavorite } = useFavorites();
+  // Property-page save button is wired to the shared favorites store so the
+  // "My Favorites" popover on /search stays in sync. Prior local useState
+  // was a bug — saves from here never made it into the popover.
+  const saved = id ? isFavorite(id) : false;
   const [showMessage, setShowMessage] = useState(false);
   const [registerOpen, setRegisterOpen] = useState(false);
   const { verified } = useBuyerVerified();
+  const { companyName } = useTenantBranding();
+  const cf = useTenantCustomFields();
+  const tenantPhone = cf.primary_phone;
+  const tenantPhoneTel = cf.primary_phone_tel;
+  const tenantEmail = cf.primary_email;
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -99,7 +111,7 @@ export default function Property() {
         message,
       });
       toast.success("Request sent!", {
-        description: "A Triple Diamond agent will reach out within 1 business day.",
+        description: `A ${companyName} agent will reach out within 1 business day.`,
       });
       setName(""); setEmail(""); setPhone(""); setMessage(""); setShowMessage(false);
     } catch (err) {
@@ -119,7 +131,7 @@ export default function Property() {
   return (
     <div className="w-full bg-white">
       <SeoHead
-        title={`${verified ? `${listing.street}, ` : ""}${listing.city}, ${listing.state}${verified ? ` ${listing.zip}` : ""} | Triple Diamond Realty`}
+        title={`${verified ? `${listing.street}, ` : ""}${listing.city}, ${listing.state}${verified ? ` ${listing.zip}` : ""} | ${companyName}`}
         description={`${listing.beds} bd, ${listing.baths} ba, ${listing.sqft.toLocaleString()} sqft ${listing.propertyType} — $${listing.price.toLocaleString()}. ${listing.description ?? ""}`}
         path={`/property/${listing.id}`}
       />
@@ -201,8 +213,9 @@ export default function Property() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setSaved((s) => !s)}
+                  onClick={() => id && toggleFavorite(id)}
                   className="gap-2"
+                  disabled={!id}
                 >
                   <Heart className={`w-4 h-4 ${saved ? "fill-accent text-accent" : ""}`} />
                   {saved ? "Saved" : "Save"}
@@ -282,7 +295,7 @@ export default function Property() {
                 <Calendar className="w-5 h-5 text-primary mt-0.5" />
                 <div>
                   <div className="font-bold text-foreground">{listing.daysOnMarket} days</div>
-                  <div className="text-xs text-muted-foreground">{listing.status === "Just Sold" ? "Sold" : "On Triple Diamond"}</div>
+                  <div className="text-xs text-muted-foreground">{listing.status === "Just Sold" ? "Sold" : "Days on market"}</div>
                 </div>
               </div>
               <div className="flex items-start gap-2">
@@ -307,7 +320,7 @@ export default function Property() {
                 <Home className="w-6 h-6" /> Property details
               </h2>
               <p className="text-foreground/90 leading-relaxed mb-6">
-                {listing.description ?? "Off-market opportunity sourced direct by the Triple Diamond team."}
+                {listing.description ?? `Off-market opportunity sourced direct by the ${companyName} team.`}
                 {" "}This {listing.propertyType.toLowerCase()} sits on a {listing.lotSqft.toLocaleString()} sqft lot in {listing.city}.
                 Built in {listing.yearBuilt}, offering {listing.beds} bedrooms and {listing.baths} bathrooms across {listing.sqft.toLocaleString()} sqft of living space.
                 {" "}Priced at ${listing.price.toLocaleString()} (${pricePerSqft}/sqft) — investor-grade upside for the right buyer.
@@ -382,7 +395,7 @@ export default function Property() {
                   <div className="text-muted-foreground">{listing.brokerageDRE}</div>
                   <div className="mt-3 text-[11px] text-muted-foreground leading-relaxed">
                     Information deemed reliable but not guaranteed. Listing information provided
-                    courtesy of the listing brokerage; Triple Diamond Realty may act as a cooperating
+                    courtesy of the listing brokerage; {companyName} may act as a cooperating
                     broker. Buyer to verify all material facts. Equal Housing Opportunity.
                   </div>
                 </div>
@@ -471,17 +484,27 @@ export default function Property() {
                 </Button>
 
                 <p className="text-[11px] text-muted-foreground leading-relaxed pt-1">
-                  By proceeding, you consent to receive calls and texts at the number you provided, including marketing by autodialer and prerecorded and artificial voice, from Triple Diamond Realty about your inquiry and other home-related matters (including buying and selling a home), but not as a condition of any purchase.
+                  By proceeding, you consent to receive calls and texts at the number you provided, including marketing by autodialer and prerecorded and artificial voice, from {companyName} about your inquiry and other home-related matters (including buying and selling a home), but not as a condition of any purchase.
                 </p>
               </form>
 
               <div className="mt-5 pt-5 border-t border-border space-y-2">
-                <a href="tel:9092804906" className="flex items-center gap-2 text-sm font-semibold text-primary hover:text-accent">
-                  <Phone className="w-4 h-4" /> (909) 280-4906
-                </a>
-                <a href="mailto:info@tdrealty.net" className="flex items-center gap-2 text-sm font-semibold text-primary hover:text-accent">
-                  <Mail className="w-4 h-4" /> info@tdrealty.net
-                </a>
+                {tenantPhone && tenantPhoneTel && (
+                  <a
+                    href={`tel:${tenantPhoneTel}`}
+                    className="flex items-center gap-2 text-sm font-semibold text-primary hover:text-accent"
+                  >
+                    <Phone className="w-4 h-4" /> {tenantPhone}
+                  </a>
+                )}
+                {tenantEmail && (
+                  <a
+                    href={`mailto:${tenantEmail}`}
+                    className="flex items-center gap-2 text-sm font-semibold text-primary hover:text-accent"
+                  >
+                    <Mail className="w-4 h-4" /> {tenantEmail}
+                  </a>
+                )}
               </div>
             </div>
           </aside>

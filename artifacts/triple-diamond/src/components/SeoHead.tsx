@@ -1,4 +1,5 @@
 import { Helmet } from "react-helmet-async";
+import { useTenantCustomField } from "@/hooks/useTenantCustomField";
 
 type FaqItem = { q: string; a: string };
 
@@ -10,10 +11,18 @@ interface Props {
   faq?: FaqItem[];
 }
 
-const SITE_URL = "https://tripledimondrealty.com";
-
 export default function SeoHead({ title, description, keywords, path = "/", faq }: Props) {
-  const url = `${SITE_URL}${path}`;
+  // Prefer the tenant-configured company_url so each brokerage owns their
+  // own canonical + og:url. Fall back to whatever origin the buyer site is
+  // being served from — never to a hardcoded Triple Diamond domain
+  // (previously did, which was silently torpedoing tenant SEO by pointing
+  // every deployment's canonical at tripledimondrealty.com).
+  const configuredUrl = useTenantCustomField("company_url").trim();
+  const runtimeOrigin =
+    typeof window !== "undefined" ? window.location.origin : "";
+  const siteUrl = (configuredUrl || runtimeOrigin).replace(/\/$/, "");
+  const url = `${siteUrl}${path}`;
+
   const faqLd = faq && faq.length
     ? {
         "@context": "https://schema.org",

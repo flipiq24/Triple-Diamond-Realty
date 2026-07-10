@@ -4,6 +4,7 @@ import { tenantGuard } from "./middleware/tenant.js";
 import mlsRouter from "./routes/mls.js";
 import propertyRouter from "./routes/property.js";
 import preferencesRouter from "./routes/preferences.js";
+import agentContactRouter from "./routes/agent-contact.js";
 
 export function createApp(): Express {
   const app = express();
@@ -22,6 +23,7 @@ export function createApp(): Express {
   app.use("/:tenant/mls", tenantGuard, mlsRouter);
   app.use("/:tenant/property-details", tenantGuard, propertyRouter);
   app.use("/:tenant/buyers/preferences", tenantGuard, preferencesRouter);
+  app.use("/:tenant/agent-contact", tenantGuard, agentContactRouter);
 
   // 404 fallback
   app.use((req: Request, res: Response) => {

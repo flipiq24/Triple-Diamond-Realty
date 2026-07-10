@@ -101,3 +101,43 @@ drop policy if exists "agent_contact_requests_public_insert" on public.agent_con
 create policy "agent_contact_requests_public_insert" on public.agent_contact_requests
   for insert to anon, authenticated
   with check (true);
+
+-- =============================================================
+-- 4. Buyer favorites (verified buyers only, cross-device)
+-- =============================================================
+-- Only stores the listing identifier — the actual property data lives in
+-- mls.listings on the shared property-data DB and is looked up on demand.
+create table if not exists public.buyer_favorites (
+  id            uuid primary key default gen_random_uuid(),
+  auth_user_id  uuid not null references auth.users(id) on delete cascade,
+  tenant        text not null,
+  listing_id    text not null,
+  created_at    timestamptz not null default now(),
+  unique (auth_user_id, tenant, listing_id)
+);
+
+create index if not exists buyer_favorites_user_tenant_idx
+  on public.buyer_favorites (auth_user_id, tenant);
+
+alter table public.buyer_favorites enable row level security;
+
+-- SELECT own rows (needed for return=representation on insert AND for the
+-- initial list-fetch after sign-in).
+drop policy if exists "buyer_favorites_self_read" on public.buyer_favorites;
+create policy "buyer_favorites_self_read" on public.buyer_favorites
+  for select to authenticated
+  using (auth.uid() = auth_user_id);
+
+-- INSERT own rows.
+drop policy if exists "buyer_favorites_self_insert" on public.buyer_favorites;
+create policy "buyer_favorites_self_insert" on public.buyer_favorites
+  for insert to authenticated
+  with check (auth.uid() = auth_user_id);
+
+-- DELETE own rows.
+drop policy if exists "buyer_favorites_self_delete" on public.buyer_favorites;
+create policy "buyer_favorites_self_delete" on public.buyer_favorites
+  for delete to authenticated
+  using (auth.uid() = auth_user_id);
+
+notify pgrst, 'reload schema';

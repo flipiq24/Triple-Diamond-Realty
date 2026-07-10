@@ -14,6 +14,13 @@ const querySchema = z.object({
     .union([z.boolean(), z.string()])
     .optional()
     .transform((v) => v === true || v === "true"),
+  // "This Week's Top Deals" strip on the homepage passes last_week=true.
+  // If both last_24_hours AND last_week are set, last_24_hours wins
+  // (narrower window). Same "true"/"false" string handling as above.
+  last_week: z
+    .union([z.boolean(), z.string()])
+    .optional()
+    .transform((v) => v === true || v === "true"),
   pricerange_from: z.coerce.number().min(0).optional(),
   pricerange_to: z.coerce.number().min(0).optional(),
   sqft_from: z.coerce.number().min(0).optional(),
@@ -169,7 +176,11 @@ router.get("/", async (req, res, next) => {
         `%${full}%`,
       );
     }
-    if (q.last_24_hours) wb.add("list_date >= (current_date - interval '1 day')");
+    if (q.last_24_hours) {
+      wb.add("list_date >= (current_date - interval '1 day')");
+    } else if (q.last_week) {
+      wb.add("list_date >= (current_date - interval '7 day')");
+    }
 
     const whereSql = wb.sql();
     const params = wb.values();
