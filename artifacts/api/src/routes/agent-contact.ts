@@ -2,6 +2,20 @@ import { Router } from "express";
 import { z } from "zod";
 import { getTenantPool } from "../db/tenant.js";
 
+/**
+ * Minimal shape we consume off `fetch()`. Named to avoid resolving to
+ * whichever `Response` type TypeScript happens to find in the ambient
+ * environment (Vercel's build has occasionally picked a version that's
+ * missing `.ok`/`.text`/`.status`, causing the TDR API build to fail
+ * even though the same code compiles locally). This keeps us decoupled
+ * from that resolution.
+ */
+interface HttpResponseLike {
+  ok: boolean;
+  status: number;
+  text(): Promise<string>;
+}
+
 const router = Router({ mergeParams: true });
 
 /**
@@ -140,7 +154,7 @@ async function sendResendEmail(opts: {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) return { ok: false, error: "RESEND_API_KEY not configured" };
   try {
-    const res = await fetch("https://api.resend.com/emails", {
+    const res = (await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${apiKey}`,
@@ -154,7 +168,7 @@ async function sendResendEmail(opts: {
         html: opts.html,
         reply_to: opts.replyTo ? [opts.replyTo] : undefined,
       }),
-    });
+    })) as HttpResponseLike;
     if (!res.ok) {
       const detail = await res.text().catch(() => "");
       return { ok: false, error: `resend ${res.status}: ${detail.slice(0, 200)}` };
@@ -181,7 +195,7 @@ async function writeSupabaseAudit(payload: {
     return { ok: false, error: "SUPABASE_URL/ANON_KEY not configured" };
   }
   try {
-    const res = await fetch(
+    const res = (await fetch(
       `${url.replace(/\/$/, "")}/rest/v1/agent_contact_requests`,
       {
         method: "POST",
@@ -202,7 +216,7 @@ async function writeSupabaseAudit(payload: {
           tenant: payload.tenant,
         }),
       },
-    );
+    )) as HttpResponseLike;
     if (!res.ok) {
       const detail = await res.text().catch(() => "");
       return {
