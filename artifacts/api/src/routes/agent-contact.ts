@@ -46,12 +46,21 @@ const bodySchema = z.object({
 const TABLE = process.env.PREFERENCES_TABLE ?? "sys.buyer_preferences";
 const COLUMN = process.env.PREFERENCES_COLUMN ?? "preferences";
 
-interface BuyersHookCustomField {
+interface BuyersHookField {
   key?: string;
   value?: string;
 }
 
-/** Read a specific custom_fields[] entry from the tenant's Buyers Hook row. */
+interface BuyersHookSection {
+  fields?: BuyersHookField[];
+}
+
+/**
+ * Read a specific field value from the tenant's Buyers Hook row by key.
+ * Post migration 1952 the shape is `{ sections: [{ fields: [{key,value}] }] }`.
+ * First hit across all sections wins, matching the frontend's
+ * `useTenantCustomField` walk order.
+ */
 async function readTenantCustomField(
   tenant: string,
   key: string,
@@ -67,12 +76,16 @@ async function readTenantCustomField(
       typeof prefs === "string"
         ? (JSON.parse(prefs) as Record<string, unknown>)
         : prefs ?? {};
-    const fields = parsed?.custom_fields as BuyersHookCustomField[] | undefined;
-    if (!Array.isArray(fields)) return null;
-    const hit = fields.find((f) => f?.key === key);
-    return typeof hit?.value === "string" && hit.value.trim()
-      ? hit.value.trim()
-      : null;
+    const sections = parsed?.sections as BuyersHookSection[] | undefined;
+    if (!Array.isArray(sections)) return null;
+    for (const section of sections) {
+      const fields = Array.isArray(section?.fields) ? section.fields : [];
+      const hit = fields.find((f) => f?.key === key);
+      if (hit && typeof hit.value === "string" && hit.value.trim()) {
+        return hit.value.trim();
+      }
+    }
+    return null;
   } catch (err) {
     console.warn(
       `[agent-contact] failed reading ${key} for tenant=${tenant}:`,

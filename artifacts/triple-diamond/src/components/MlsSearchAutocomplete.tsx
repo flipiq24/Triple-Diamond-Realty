@@ -12,6 +12,16 @@ interface MlsSearchAutocompleteProps {
   onSelect: (hit: MlsAutocompleteHit) => void;
   placeholder?: string;
   className?: string;
+  // Overrides the built-in Input classes when set (used by the hero variant
+  // which wants a big pill-shaped input instead of the compact search-page one).
+  inputClassName?: string;
+  // Hide the built-in left search icon + right clear button. Callers (e.g. the
+  // hero) render their own affordances.
+  hideDecorations?: boolean;
+  // Fires on Enter when no dropdown row is highlighted, or when the raw string
+  // should be submitted regardless of dropdown state. The hero uses this to
+  // route to /search?q=<raw> even if the buyer never picked an autocomplete row.
+  onSubmit?: (value: string) => void;
 }
 
 /**
@@ -26,6 +36,9 @@ export default function MlsSearchAutocomplete({
   onSelect,
   placeholder = "City, ZIP, or address…",
   className = "",
+  inputClassName,
+  hideDecorations = false,
+  onSubmit,
 }: MlsSearchAutocompleteProps) {
   const [results, setResults] = useState<MlsAutocompleteHit[]>([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -85,7 +98,9 @@ export default function MlsSearchAutocomplete({
       ref={containerRef}
       className={`relative w-full ${className}`}
     >
-      <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+      {!hideDecorations && (
+        <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+      )}
       <Input
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -93,6 +108,19 @@ export default function MlsSearchAutocomplete({
           if (results.length > 0) setIsOpen(true);
         }}
         onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            if (isOpen && highlight >= 0 && results[highlight]) {
+              e.preventDefault();
+              commit(results[highlight]);
+              return;
+            }
+            if (onSubmit) {
+              e.preventDefault();
+              setIsOpen(false);
+              onSubmit(value);
+              return;
+            }
+          }
           if (!isOpen) return;
           if (e.key === "ArrowDown") {
             e.preventDefault();
@@ -100,39 +128,35 @@ export default function MlsSearchAutocomplete({
           } else if (e.key === "ArrowUp") {
             e.preventDefault();
             setHighlight((h) => Math.max(h - 1, 0));
-          } else if (e.key === "Enter") {
-            if (highlight >= 0 && results[highlight]) {
-              e.preventDefault();
-              commit(results[highlight]);
-            }
           } else if (e.key === "Escape") {
             setIsOpen(false);
             setHighlight(-1);
           }
         }}
         placeholder={placeholder}
-        className="pl-9 pr-9 bg-muted/50"
+        className={inputClassName ?? "pl-9 pr-9 bg-muted/50"}
       />
-      {loading ? (
-        <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground animate-spin" />
-      ) : value ? (
-        <button
-          type="button"
-          onClick={() => {
-            onChange("");
-            setResults([]);
-            setIsOpen(false);
-            setHighlight(-1);
-          }}
-          className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-muted"
-          aria-label="Clear"
-        >
-          <X className="w-3.5 h-3.5 text-muted-foreground" />
-        </button>
-      ) : null}
+      {!hideDecorations &&
+        (loading ? (
+          <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground animate-spin" />
+        ) : value ? (
+          <button
+            type="button"
+            onClick={() => {
+              onChange("");
+              setResults([]);
+              setIsOpen(false);
+              setHighlight(-1);
+            }}
+            className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-muted"
+            aria-label="Clear"
+          >
+            <X className="w-3.5 h-3.5 text-muted-foreground" />
+          </button>
+        ) : null)}
 
       {isOpen && results.length > 0 && (
-        <div className="absolute z-50 mt-1 left-0 right-0 bg-white rounded-lg border border-border shadow-lg overflow-hidden">
+        <div className="absolute z-50 mt-1 left-0 right-0 bg-white rounded-lg border border-border shadow-lg overflow-hidden text-left">
           <ul className="max-h-80 overflow-y-auto">
             {results.map((hit, i) => (
               <li
@@ -167,7 +191,7 @@ export default function MlsSearchAutocomplete({
       )}
 
       {isOpen && !loading && results.length === 0 && value.trim().length >= 2 && (
-        <div className="absolute z-50 mt-1 left-0 right-0 bg-white rounded-lg border border-border shadow-lg px-4 py-3 text-sm text-muted-foreground">
+        <div className="absolute z-50 mt-1 left-0 right-0 bg-white rounded-lg border border-border shadow-lg px-4 py-3 text-sm text-muted-foreground text-left">
           No matches for "{value}"
         </div>
       )}

@@ -12,7 +12,7 @@ export default function SiteFooter() {
   const phoneTel = cf.primary_phone_tel;
   const email = cf.primary_email;
   const tagline = cf.tagline;
-  const marketingDescription = cf.marketing_description;
+  const marketingDescription = cf.description;
   const dre = cf.dre_broker_license;
   const responsibleBroker = cf.responsible_broker_name;
   const responsibleBrokerDre = cf.responsible_broker_dre;

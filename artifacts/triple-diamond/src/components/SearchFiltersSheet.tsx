@@ -33,6 +33,11 @@ export type FilterState = {
   garage: string; // "any" | "1" | "2" | "3"
   stories: "any" | "single" | "multi";
   priceReduced: boolean;
+  // Calendar range against mls.listings.list_date. Empty string = unset.
+  // Both empty = server falls through to last_24_hours firehose (default
+  // homepage behavior).
+  listedFrom: string;
+  listedTo: string;
 };
 
 export const defaultFilters: FilterState = {
@@ -57,6 +62,8 @@ export const defaultFilters: FilterState = {
   garage: "any",
   stories: "any",
   priceReduced: false,
+  listedFrom: "",
+  listedTo: "",
 };
 
 const ALL_HOME_TYPES: PropertyType[] = ["Single Family", "Condo", "Townhome", "Multi-Family", "Mobile", "Land", "Farm"];
@@ -231,6 +238,67 @@ export default function SearchFiltersSheet({ filters, setFilters, resultCount, o
               />
               Price reduced
             </label>
+          </section>
+
+          <Separator />
+
+          {/* Listed date range */}
+          <section>
+            <h3 className="font-bold text-primary mb-3">Listed date</h3>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs text-muted-foreground">From</Label>
+                <Input
+                  type="date"
+                  value={filters.listedFrom}
+                  onChange={(e) => update("listedFrom", e.target.value)}
+                />
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">To</Label>
+                <Input
+                  type="date"
+                  value={filters.listedTo}
+                  onChange={(e) => update("listedTo", e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2 mt-3">
+              {([
+                { l: "Today", days: 0 },
+                { l: "Last 7 days", days: 7 },
+                { l: "Last 30 days", days: 30 },
+                { l: "Last 90 days", days: 90 },
+              ] as const).map((q) => (
+                <button
+                  key={q.l}
+                  type="button"
+                  onClick={() => {
+                    const today = new Date();
+                    const from = new Date(today);
+                    from.setDate(from.getDate() - q.days);
+                    const iso = (d: Date) => d.toISOString().slice(0, 10);
+                    update("listedFrom", iso(from));
+                    update("listedTo", iso(today));
+                  }}
+                  className="text-xs px-3 py-1 rounded-full border border-border hover:border-primary hover:bg-primary/5 transition"
+                >
+                  {q.l}
+                </button>
+              ))}
+              {(filters.listedFrom || filters.listedTo) && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    update("listedFrom", "");
+                    update("listedTo", "");
+                  }}
+                  className="text-xs px-3 py-1 rounded-full text-red-600 hover:bg-red-50 transition"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
           </section>
 
           <Separator />

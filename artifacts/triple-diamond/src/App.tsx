@@ -18,6 +18,11 @@ import CityPage from "@/pages/city";
 import Property from "@/pages/property";
 import SellProperty from "@/pages/sell-property";
 import CompWithAI from "@/pages/comp-with-ai";
+import LoginPage from "@/pages/login";
+import SignupPage from "@/pages/signup";
+import AccountSettingsPage from "@/pages/account-settings";
+import MyAdsPage from "@/pages/my-ads";
+import SavedPropertiesPage from "@/pages/saved-properties";
 import { HomeA, HomeB, HomeC, HomeD, HomeE, HomeF } from "@/pages/variant-home";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
@@ -61,6 +66,11 @@ function Router() {
           <Route path="/disclosures" component={Disclosures} />
           <Route path="/accessibility" component={Accessibility} />
           <Route path="/do-not-sell" component={DoNotSell} />
+          <Route path="/login" component={LoginPage} />
+          <Route path="/signup" component={SignupPage} />
+          <Route path="/account/settings" component={AccountSettingsPage} />
+          <Route path="/account/my-ads" component={MyAdsPage} />
+          <Route path="/account/saved" component={SavedPropertiesPage} />
           <Route component={NotFound} />
         </Switch>
       </main>

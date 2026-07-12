@@ -17,6 +17,7 @@ import QuickFilters from "@/components/QuickFilters";
 import RegisterDialog from "@/components/RegisterDialog";
 import { useBuyerVerified } from "@/hooks/useBuyerVerified";
 import { useFavorites } from "@/hooks/useFavorites";
+import { useTenantBranding } from "@/hooks/useTenantBranding";
 import { motion } from "framer-motion";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
@@ -68,14 +69,21 @@ export default function Search() {
   // property listed 3 days ago shows up in autocomplete but returns zero
   // results in the grid, which is what buyers were hitting.
   const hasQuery = debouncedQuery.trim().length > 0;
+  const hasDateRange = !!(filters.listedFrom || filters.listedTo);
   const { listings, total, isLoading, isError, error } = useMlsListings({
     page: 1,
     pageSize: 100,
-    last_24_hours: !hasQuery,
+    // Only apply the 24-hour firehose when the buyer has neither typed a
+    // query nor picked an explicit listed-date range. Once they narrow
+    // by either signal, they want the full matching catalog, not just
+    // the last day's listings.
+    last_24_hours: !hasQuery && !hasDateRange,
     type: "All",
     source: "MLS",
     pricerange_from: priceMinNum,
     pricerange_to: priceMaxNum,
+    list_date_from: filters.listedFrom || undefined,
+    list_date_to: filters.listedTo || undefined,
     searchQuery: debouncedQuery || undefined,
   });
 
@@ -83,6 +91,7 @@ export default function Search() {
   const [selectedCenter, setSelectedCenter] = useState<[number, number] | null>(null);
   const markerRefs = useRef<Record<string, LeafletMarker | null>>({});
   const { verified } = useBuyerVerified();
+  const { companyName } = useTenantBranding();
   const { favorites } = useFavorites();
   const [favoritesOnly, setFavoritesOnly] = useState(false);
   const { boxes: buyBoxes, remove: removeBuyBox } = useBuyBoxes();
@@ -151,8 +160,8 @@ export default function Search() {
   };
 
   useEffect(() => {
-    document.title = "Search Deals — Triple Diamond Realty";
-  }, []);
+    document.title = `Search Deals — ${companyName}`;
+  }, [companyName]);
 
   const updateUrl = (newView: "list" | "map") => {
     setView(newView);
@@ -261,6 +270,7 @@ export default function Search() {
     if (filters.hoaMax) n++;
     if (filters.garage !== "any") n++;
     if (filters.stories !== "any") n++;
+    if (filters.listedFrom || filters.listedTo) n++;
     return n;
   }, [filters]);
 

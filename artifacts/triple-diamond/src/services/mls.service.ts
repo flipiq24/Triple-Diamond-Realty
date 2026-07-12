@@ -58,6 +58,10 @@ export interface MlsQueryParams {
   sqft_to?: number;
   yearbuilt_from?: number;
   yearbuilt_to?: number;
+  // Calendar range against mls.listings.list_date. YYYY-MM-DD strings.
+  // Takes precedence over last_24_hours / last_week on the API side.
+  list_date_from?: string;
+  list_date_to?: string;
   cities?: string[];
   zipcodes?: string[];
   counties?: string[];
@@ -98,6 +102,8 @@ function buildQueryString(params: MlsQueryParams): string {
   append("sqft_to", params.sqft_to);
   append("yearbuilt_from", params.yearbuilt_from);
   append("yearbuilt_to", params.yearbuilt_to);
+  append("list_date_from", params.list_date_from);
+  append("list_date_to", params.list_date_to);
   append("searchQuery", params.searchQuery);
   append("sortColumn", params.sortColumn);
   append("sortOrder", params.sortOrder);
@@ -130,6 +136,57 @@ export interface MlsAutocompleteResponse {
   results: MlsAutocompleteHit[];
 }
 
+export interface CompRecord {
+  r_id: number | string;
+  fullstreetaddress: string | null;
+  city: string | null;
+  state: string | null;
+  zipcode: string | null;
+  latitude: number | string | null;
+  longitude: number | string | null;
+  listprice: number | string | null;
+  closeprice: number | string | null;
+  bedroomstotal: number | null;
+  bathstotal: number | null;
+  buildingsize: number | null;
+  yearbuilt: number | null;
+  listingstatus: string | null;
+  listingdate: string | null;
+  pendingdate: string | null;
+  closingdate: string | null;
+  dom: number | null;
+  distance: number | string | null;
+}
+
+export interface CompsResponse {
+  subject: {
+    id: string;
+    r_id: number | string;
+    latitude: number;
+    longitude: number;
+    bedroomstotal: number | null;
+    bathstotal: number | null;
+    buildingsize: number | null;
+    listprice: number | null;
+  };
+  appliedFilters: {
+    radius_miles: number;
+    bed_tolerance: number | null;
+    bath_tolerance: number | null;
+    sqft_tolerance_pct: number | null;
+    limit: number;
+  };
+  comps: CompRecord[];
+}
+
+export interface CompsQueryParams {
+  radius_miles?: number;
+  limit?: number;
+  bed_tolerance?: number;
+  bath_tolerance?: number;
+  sqft_tolerance_pct?: number;
+}
+
 export const mlsService = {
   async getHotDeals(params: MlsQueryParams = {}): Promise<MlsResponse> {
     const query = buildQueryString(params);
@@ -154,6 +211,29 @@ export const mlsService = {
     const response = await http.get(`/property-details/${rId}/photos`);
     if (!response.ok) {
       return {};
+    }
+    return response.json();
+  },
+
+  async getComps(
+    subjectId: string | number,
+    params: CompsQueryParams = {},
+  ): Promise<CompsResponse> {
+    const qs = new URLSearchParams();
+    if (params.radius_miles !== undefined)
+      qs.append("radius_miles", String(params.radius_miles));
+    if (params.limit !== undefined) qs.append("limit", String(params.limit));
+    if (params.bed_tolerance !== undefined)
+      qs.append("bed_tolerance", String(params.bed_tolerance));
+    if (params.bath_tolerance !== undefined)
+      qs.append("bath_tolerance", String(params.bath_tolerance));
+    if (params.sqft_tolerance_pct !== undefined)
+      qs.append("sqft_tolerance_pct", String(params.sqft_tolerance_pct));
+    const suffix = qs.toString() ? `?${qs.toString()}` : "";
+    const response = await http.get(`/comps/${subjectId}${suffix}`);
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.error || error.message || "Failed to fetch comps");
     }
     return response.json();
   },

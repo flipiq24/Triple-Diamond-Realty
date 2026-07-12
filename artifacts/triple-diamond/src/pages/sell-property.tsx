@@ -1,6 +1,15 @@
-import { useState } from "react";
-import { Link } from "wouter";
-import { CheckCircle2, Upload, ArrowRight, ArrowLeft, Tag, ShieldCheck, Users } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Link, useLocation } from "wouter";
+import {
+  CheckCircle2,
+  Upload,
+  ArrowRight,
+  ArrowLeft,
+  Tag,
+  ShieldCheck,
+  Users,
+  Link as LinkIcon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,11 +18,14 @@ import SeoHead from "@/components/SeoHead";
 import { toast } from "sonner";
 import { useTenantBranding } from "@/hooks/useTenantBranding";
 import { useTenantCustomFields } from "@/hooks/useTenantCustomField";
+import { useBuyerVerified } from "@/hooks/useBuyerVerified";
+import { buyerService, type SellSellerRole } from "@/services/buyer.service";
 
 type Market = "on" | "off" | "";
-type Role = "seller" | "wholesaler" | "agent" | "";
 
 export default function SellProperty() {
+  const [, setLocation] = useLocation();
+  const { verified, buyer, loading: verifying } = useBuyerVerified();
   const { companyName } = useTenantBranding();
   const cf = useTenantCustomFields();
   const tenantPhone = cf.primary_phone;
@@ -21,7 +33,7 @@ export default function SellProperty() {
 
   const [step, setStep] = useState(1);
   const [market, setMarket] = useState<Market>("");
-  const [role, setRole] = useState<Role>("");
+  const [role, setRole] = useState<SellSellerRole | "">("");
   const [hasContract, setHasContract] = useState<"yes" | "no" | "">("");
   const [address, setAddress] = useState("");
   const [askingPrice, setAskingPrice] = useState("");
@@ -31,7 +43,19 @@ export default function SellProperty() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [photos, setPhotos] = useState<File[]>([]);
+  const [photoLink, setPhotoLink] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  // Prefill contact fields from the signed-in buyer's profile so they don't
+  // retype what we already have. They can override before submit.
+  useEffect(() => {
+    if (verified && buyer) {
+      setName((n) => n || buyer.name);
+      setEmail((e) => e || buyer.email);
+      setPhone((p) => p || buyer.phone);
+    }
+  }, [verified, buyer]);
 
   const skipContractQuestion = role === "seller";
 
@@ -39,14 +63,45 @@ export default function SellProperty() {
     if (e.target.files) setPhotos(Array.from(e.target.files));
   };
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!verified) {
+      toast.error("Please log in to post a property", {
+        description: "We tie ads to your account so you can manage them from My Ads.",
+      });
+      setLocation("/login?next=" + encodeURIComponent("/sell-property"));
+      return;
+    }
+    if (!role) {
+      toast.error("Select your role in step 1");
+      return;
+    }
     if (!name || !email || !phone) {
       toast.error("Please fill in your contact info");
       return;
     }
-    setSubmitted(true);
-    window.scrollTo(0, 0);
+    setSubmitting(true);
+    try {
+      await buyerService.createSellPropertyListing({
+        sellerRole: role,
+        hasContract: hasContract === "" ? null : hasContract,
+        address,
+        askingPrice: askingPrice ? Number(askingPrice) : null,
+        description,
+        showingInstructions,
+        photoFiles: photos,
+        photoLink,
+        name,
+        email,
+        phone,
+      });
+      setSubmitted(true);
+      window.scrollTo(0, 0);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not post your property");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   // ON-market blocker
@@ -88,7 +143,7 @@ export default function SellProperty() {
         <SeoHead title={`Property Submitted — ${companyName}`} description="" path="/sell-property" />
         <div className="container mx-auto px-4 py-16 max-w-2xl text-center">
           <CheckCircle2 className="w-16 h-16 text-green-500 mx-auto mb-4" />
-          <h1 className="text-4xl font-extrabold text-primary mb-3">You're in! 🎉</h1>
+          <h1 className="text-4xl font-extrabold text-primary mb-3">You're in!</h1>
           <p className="text-lg text-foreground/80 mb-2">
             Thanks {name.split(" ")[0]}. We've received your property at <strong>{address}</strong>.
           </p>
@@ -96,9 +151,14 @@ export default function SellProperty() {
             A {companyName} buyer-rep will text or call {phone} within 1 business day to verify details and
             push your deal out to our active buyer list. There is <strong>no cost</strong> to you.
           </p>
-          <Link href="/">
-            <Button className="rounded-full bg-primary text-white">Back to home</Button>
-          </Link>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Link href="/account/my-ads">
+              <Button className="rounded-full bg-primary text-white">Go to My Ads</Button>
+            </Link>
+            <Link href="/">
+              <Button variant="outline" className="rounded-full">Back to home</Button>
+            </Link>
+          </div>
         </div>
       </div>
     );
@@ -128,6 +188,22 @@ export default function SellProperty() {
       </section>
 
       <div className="container mx-auto px-4 py-12 max-w-2xl">
+        {/* Login nudge banner */}
+        {!verifying && !verified && (
+          <div className="mb-6 rounded-xl bg-accent/10 border border-accent/30 p-4 text-sm flex flex-wrap items-center gap-3">
+            <span className="text-foreground/80 flex-1">
+              You'll need a free buyer account to post a property so you can manage
+              it from <strong>My Ads</strong> later.
+            </span>
+            <Link href={"/login?next=" + encodeURIComponent("/sell-property")}>
+              <Button size="sm" className="bg-accent text-white">Log in</Button>
+            </Link>
+            <Link href={"/signup?next=" + encodeURIComponent("/sell-property")}>
+              <Button size="sm" variant="outline">Sign up</Button>
+            </Link>
+          </div>
+        )}
+
         {/* Step indicator */}
         <div className="flex items-center justify-between mb-8">
           {[1, 2, 3].map((n) => (
@@ -179,7 +255,7 @@ export default function SellProperty() {
                         { v: "seller", l: "Seller", d: "I own the property" },
                         { v: "wholesaler", l: "Wholesaler", d: "I have it under contract" },
                         { v: "agent", l: "Agent", d: "Off-market pocket listing" },
-                      ] as { v: Role; l: string; d: string }[]).map((r) => (
+                      ] as { v: SellSellerRole; l: string; d: string }[]).map((r) => (
                         <button
                           key={r.v}
                           type="button"
@@ -243,17 +319,34 @@ export default function SellProperty() {
                   <Input id="price" value={askingPrice} onChange={(e) => setAskingPrice(e.target.value.replace(/\D/g, ""))} className="pl-7" placeholder="350,000" required />
                 </div>
               </div>
+
               <div>
                 <Label htmlFor="photos" className="font-bold">Pictures</Label>
+                <p className="text-xs text-muted-foreground mb-2">
+                  Upload from your device, or paste a shared link (Google Drive,
+                  Dropbox, iCloud). Either or both is fine.
+                </p>
                 <label htmlFor="photos" className="block border-2 border-dashed border-border rounded-xl p-6 text-center cursor-pointer hover:border-primary transition-colors">
                   <Upload className="w-6 h-6 mx-auto text-muted-foreground mb-2" />
                   <div className="text-sm font-semibold text-foreground">
                     {photos.length > 0 ? `${photos.length} photo${photos.length > 1 ? "s" : ""} selected` : "Click to upload photos"}
                   </div>
-                  <div className="text-xs text-muted-foreground">JPG, PNG, HEIC</div>
+                  <div className="text-xs text-muted-foreground">JPG, PNG, HEIC — up to ~10 MB each</div>
                   <input id="photos" type="file" accept="image/*" multiple className="hidden" onChange={handlePhotos} />
                 </label>
+
+                <div className="relative mt-3">
+                  <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                  <Input
+                    value={photoLink}
+                    onChange={(e) => setPhotoLink(e.target.value)}
+                    className="pl-9"
+                    placeholder="…or paste a photos link (Google Drive, Dropbox, etc.)"
+                    type="url"
+                  />
+                </div>
               </div>
+
               <div>
                 <Label htmlFor="desc" className="font-bold">Description</Label>
                 <Textarea id="desc" rows={4} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Beds, baths, sqft, condition, repairs needed, ARV if known..." />
@@ -309,11 +402,15 @@ export default function SellProperty() {
               </div>
 
               <div className="flex gap-3">
-                <Button type="button" variant="outline" onClick={() => setStep(2)} className="rounded-full">
+                <Button type="button" variant="outline" onClick={() => setStep(2)} className="rounded-full" disabled={submitting}>
                   <ArrowLeft className="w-4 h-4 mr-2" /> Back
                 </Button>
-                <Button type="submit" className="flex-1 h-12 bg-accent hover:bg-accent/90 text-white font-bold rounded-full">
-                  Post my property — free
+                <Button
+                  type="submit"
+                  disabled={submitting}
+                  className="flex-1 h-12 bg-accent hover:bg-accent/90 text-white font-bold rounded-full"
+                >
+                  {submitting ? "Posting…" : "Post my property — free"}
                 </Button>
               </div>
             </div>

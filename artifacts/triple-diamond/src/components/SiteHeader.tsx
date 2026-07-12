@@ -1,22 +1,47 @@
 import { Link, useLocation } from "wouter";
-import { Phone, Mail, Menu, Sparkles } from "lucide-react";
+import { Phone, Mail, Menu, Sparkles, User, LogOut, Heart, ListOrdered, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useState } from "react";
+import { toast } from "sonner";
 import { useTenantBranding } from "@/hooks/useTenantBranding";
 import { useTenantCustomFields } from "@/hooks/useTenantCustomField";
+import { useBuyerVerified } from "@/hooks/useBuyerVerified";
+import { buyerService } from "@/services/buyer.service";
 
 export default function SiteHeader() {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const { logoUrl, companyName } = useTenantBranding();
   const cf = useTenantCustomFields();
+  const { verified, buyer } = useBuyerVerified();
 
   const phone = cf.primary_phone;
   const phoneTel = cf.primary_phone_tel;
   const email = cf.primary_email;
   const dre = cf.dre_broker_license;
   const tagline = cf.tagline;
+
+  const initials = (buyer?.name || buyer?.email || "?")
+    .split(/\s+/)
+    .map((s) => s[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
+  const handleSignOut = async () => {
+    await buyerService.signOut();
+    toast.success("Signed out");
+    setLocation("/");
+  };
 
   const navLinks = [
     { href: "/", label: "Home" },
@@ -69,6 +94,52 @@ export default function SiteHeader() {
               <Link href="/search">
                 <Button className="bg-accent hover:bg-accent/90 text-accent-foreground rounded-full px-6 font-bold shadow-md shadow-accent/20">
                   Find Deals
+                </Button>
+              </Link>
+            )}
+            {verified ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className="w-10 h-10 rounded-full bg-primary text-white font-bold text-sm flex items-center justify-center hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-accent"
+                    aria-label="Account menu"
+                  >
+                    {initials}
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel className="truncate">
+                    {buyer?.name || buyer?.email}
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href="/account/settings" className="cursor-pointer">
+                      <Settings className="w-4 h-4 mr-2" /> Account settings
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/account/saved" className="cursor-pointer">
+                      <Heart className="w-4 h-4 mr-2" /> Saved properties
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/account/my-ads" className="cursor-pointer">
+                      <ListOrdered className="w-4 h-4 mr-2" /> My ads
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={handleSignOut}
+                    className="text-red-600 focus:text-red-600 cursor-pointer"
+                  >
+                    <LogOut className="w-4 h-4 mr-2" /> Sign out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Link href="/login">
+                <Button variant="outline" className="rounded-full px-5 font-semibold">
+                  <User className="w-4 h-4 mr-2" /> Log in
                 </Button>
               </Link>
             )}
@@ -127,6 +198,54 @@ export default function SiteHeader() {
                       Find Deals
                     </Button>
                   </Link>
+                )}
+                <div className="h-px bg-border my-1" />
+                {verified ? (
+                  <>
+                    <Link
+                      href="/account/settings"
+                      onClick={() => setIsOpen(false)}
+                      className="flex items-center gap-2 text-sm font-semibold text-primary"
+                    >
+                      <Settings className="w-4 h-4 text-accent" /> Account settings
+                    </Link>
+                    <Link
+                      href="/account/saved"
+                      onClick={() => setIsOpen(false)}
+                      className="flex items-center gap-2 text-sm font-semibold text-primary"
+                    >
+                      <Heart className="w-4 h-4 text-accent" /> Saved properties
+                    </Link>
+                    <Link
+                      href="/account/my-ads"
+                      onClick={() => setIsOpen(false)}
+                      className="flex items-center gap-2 text-sm font-semibold text-primary"
+                    >
+                      <ListOrdered className="w-4 h-4 text-accent" /> My ads
+                    </Link>
+                    <button
+                      onClick={() => {
+                        setIsOpen(false);
+                        handleSignOut();
+                      }}
+                      className="flex items-center gap-2 text-sm font-semibold text-red-600 text-left"
+                    >
+                      <LogOut className="w-4 h-4" /> Sign out
+                    </button>
+                  </>
+                ) : (
+                  <div className="flex flex-col gap-2">
+                    <Link href="/login" onClick={() => setIsOpen(false)}>
+                      <Button variant="outline" className="w-full rounded-full font-semibold">
+                        <User className="w-4 h-4 mr-2" /> Log in
+                      </Button>
+                    </Link>
+                    <Link href="/signup" onClick={() => setIsOpen(false)}>
+                      <Button className="w-full bg-primary text-white rounded-full font-semibold">
+                        Sign up
+                      </Button>
+                    </Link>
+                  </div>
                 )}
               </div>
             </SheetContent>

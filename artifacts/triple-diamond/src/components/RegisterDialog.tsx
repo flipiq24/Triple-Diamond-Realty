@@ -7,6 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Mail, ShieldCheck, ArrowRight } from "lucide-react";
 import { buyerService } from "@/services/buyer.service";
 import { toast } from "sonner";
+import { useTenantBranding } from "@/hooks/useTenantBranding";
 
 type Step = "register" | "sent";
 
@@ -19,6 +20,7 @@ export default function RegisterDialog({
   onOpenChange: (o: boolean) => void;
   onVerified?: () => void;
 }) {
+  const { companyName } = useTenantBranding();
   const [step, setStep] = useState<Step>("register");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -125,7 +127,7 @@ export default function RegisterDialog({
                   Authorization to receive texts and emails:
                 </strong>{" "}
                 By checking this box and clicking "Send magic link", I expressly
-                authorize Triple Diamond Realty and its agents and brokerages
+                authorize {companyName} and its agents and brokerages
                 to contact me at the email and phone number provided —
                 including by autodialer, prerecorded voice, SMS/MMS, and email
                 — about properties, off-market deals, and related real-estate

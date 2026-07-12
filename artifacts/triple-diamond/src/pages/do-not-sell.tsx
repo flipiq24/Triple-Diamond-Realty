@@ -8,6 +8,9 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useTenantBranding } from "@/hooks/useTenantBranding";
 import { useTenantCustomFields } from "@/hooks/useTenantCustomField";
+import { buyerService } from "@/services/buyer.service";
+
+type CcpaRequestType = "opt_out" | "know" | "delete" | "correct" | "limit";
 
 export default function DoNotSell() {
   const { companyName } = useTenantBranding();
@@ -17,22 +20,51 @@ export default function DoNotSell() {
   const privacyEmail = cf.privacy_email;
 
   const [submitting, setSubmitting] = useState(false);
-  const [requestType, setRequestType] = useState("opt_out");
+  const [requestType, setRequestType] = useState<CcpaRequestType>("opt_out");
   const [consent, setConsent] = useState(false);
 
-  const onSubmit = (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!consent) {
       toast.error("Please confirm the verification statement.");
       return;
     }
+    const form = e.currentTarget as HTMLFormElement;
+    const data = new FormData(form);
+    const name = String(data.get("name") ?? "").trim();
+    const email = String(data.get("email") ?? "").trim();
+    const phoneField = String(data.get("phone") ?? "").trim();
+    const state = String(data.get("state") ?? "").trim();
+    const details = String(data.get("details") ?? "").trim();
+    if (!name || !email) {
+      toast.error("Name and email are required.");
+      return;
+    }
     setSubmitting(true);
-    setTimeout(() => {
-      setSubmitting(false);
-      (e.target as HTMLFormElement).reset();
+    try {
+      await buyerService.submitCcpaRequest({
+        name,
+        email,
+        phone: phoneField || undefined,
+        state: state || undefined,
+        requestType,
+        details: details || undefined,
+      });
+      form.reset();
       setConsent(false);
-      toast.success("Request received. We will respond within 45 days as required by California law.");
-    }, 600);
+      setRequestType("opt_out");
+      toast.success(
+        "Request received. We will respond within 45 days as required by California law.",
+      );
+    } catch (err) {
+      toast.error(
+        err instanceof Error
+          ? err.message
+          : "Could not submit your request — please try again.",
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -74,7 +106,7 @@ export default function DoNotSell() {
 
           <div className="space-y-3">
             <Label>Request type <span className="text-accent">*</span></Label>
-            <RadioGroup value={requestType} onValueChange={setRequestType} className="grid gap-2">
+            <RadioGroup value={requestType} onValueChange={(v) => setRequestType(v as CcpaRequestType)} className="grid gap-2">
               <Label className="flex items-start gap-3 p-3 rounded-lg border border-border cursor-pointer">
                 <RadioGroupItem value="opt_out" className="mt-1" />
                 <span><strong className="text-primary">Opt out of sale or sharing</strong> of my personal information.</span>

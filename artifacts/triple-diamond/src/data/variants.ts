@@ -22,7 +22,7 @@ export const variants: Record<"a" | "b" | "c" | "d" | "e" | "f", VariantConfig> 
     subCopy:
       "Delivered to your inbox based on your buying criteria. Off-market and MLS fixers — real comps, real ARV, real margin.",
     meta: {
-      title: "Fixer-Upper & Handyman Special Listings | Triple Diamond Realty",
+      title: "Fixer-Upper & Handyman Special Listings | {{brand}}",
       description:
         "Off-market and MLS fixer-uppers. Real comps, real ARV, real margin.",
       keywords:
@@ -46,7 +46,7 @@ export const variants: Record<"a" | "b" | "c" | "d" | "e" | "f", VariantConfig> 
     subCopy:
       "Sourced direct, before they hit the MLS. Exclusive off-market investment properties — direct-to-seller pipeline, no bidding wars.",
     meta: {
-      title: "Off-Market Real Estate Deals | Triple Diamond Realty",
+      title: "Off-Market Real Estate Deals | {{brand}}",
       description:
         "Exclusive off-market investment properties. Direct-to-seller pipeline, no bidding wars.",
       keywords:
@@ -70,7 +70,7 @@ export const variants: Record<"a" | "b" | "c" | "d" | "e" | "f", VariantConfig> 
     subCopy:
       "Cap rate, rent, and refi-ready ARV on every listing. Rental properties built for cash flow and BRRRR — real rents, real cap rates, real ARV.",
     meta: {
-      title: "BRRRR & Cash-Flow Rental Properties | Triple Diamond Realty",
+      title: "BRRRR & Cash-Flow Rental Properties | {{brand}}",
       description:
         "Rental properties built for cash flow and BRRRR. Real rents, real cap rates, real ARV.",
       keywords:
@@ -94,7 +94,7 @@ export const variants: Record<"a" | "b" | "c" | "d" | "e" | "f", VariantConfig> 
     subCopy:
       "Locked up, priced for margin, ready to move. Assignable wholesale contracts — locked-up deals with margin built in.",
     meta: {
-      title: "Wholesale Real Estate & Assignment Contracts | Triple Diamond Realty",
+      title: "Wholesale Real Estate & Assignment Contracts | {{brand}}",
       description:
         "Assignable wholesale contracts. Locked-up deals with margin built in.",
       keywords:
@@ -102,7 +102,7 @@ export const variants: Record<"a" | "b" | "c" | "d" | "e" | "f", VariantConfig> 
     },
     faq: [
       { q: "What is an assignment contract?", a: "An assignment is a real estate contract in which the original buyer (assignor) transfers their right to purchase a property to another buyer (assignee) for a fee, before closing." },
-      { q: "Do you disclose your equitable interest?", a: "Yes. When Triple Diamond Realty or an affiliate holds an equitable interest or assignment, that status is disclosed on the listing. We comply with all applicable state and federal real estate disclosure requirements." },
+      { q: "Do you disclose your equitable interest?", a: "Yes. When {{brand}} or an affiliate holds an equitable interest or assignment, that status is disclosed on the listing. We comply with all applicable state and federal real estate disclosure requirements." },
       { q: "Are wholesale assignments legal?", a: "Assignment of real estate contracts is generally legal when properly disclosed and structured. State-specific rules apply; certain jurisdictions impose additional disclosure requirements on quick resales of residential property." },
       { q: "Who is an assignment deal best for?", a: "Cash buyers and hard-money pre-approved investors who can close quickly and take properties as-is. Assignment fees are paid at closing in addition to the contract price." },
       { q: "How fast can I close an assignment?", a: "Most assignments close in 7 to 21 days depending on funding source, title, and any contingencies in the original contract." },
@@ -118,14 +118,14 @@ export const variants: Record<"a" | "b" | "c" | "d" | "e" | "f", VariantConfig> 
     subCopy:
       "Close on your timeline. Defer your gain. Pre-vetted 1031 replacement inventory — close on your 45/180-day timeline.",
     meta: {
-      title: "1031 Exchange Replacement Properties | Triple Diamond Realty",
+      title: "1031 Exchange Replacement Properties | {{brand}}",
       description:
         "Pre-vetted 1031 replacement inventory. Close on your 45/180-day timeline.",
       keywords:
         "1031 exchange properties, 1031 replacement property, like-kind exchange, 1031 eligible, NNN 1031, DST 1031 alternatives",
     },
     disclaimer:
-      "Triple Diamond Realty is a licensed real estate brokerage and does not provide tax, legal, or accounting advice. Confirm 1031 eligibility and timelines with your CPA and Qualified Intermediary.",
+      "{{brand}} is a licensed real estate brokerage and does not provide tax, legal, or accounting advice. Confirm 1031 eligibility and timelines with your CPA and Qualified Intermediary.",
     faq: [
       { q: "What is a 1031 exchange?", a: "A 1031 exchange (IRC §1031) allows investors to defer capital gains tax by exchanging one investment property for another like-kind investment property within IRS deadlines." },
       { q: "How does the 45-day identification rule work?", a: "From the close of the relinquished property, the taxpayer has 45 calendar days to formally identify replacement property in writing to the Qualified Intermediary, and 180 days total to close." },
@@ -144,7 +144,7 @@ export const variants: Record<"a" | "b" | "c" | "d" | "e" | "f", VariantConfig> 
     subCopy:
       "Every Monday we publish a tight Focus List of the strongest deals across our pipeline — fixers, off-market, cash-flow, wholesale, and 1031-ready inventory — ranked by margin, condition, and speed-to-close. No noise. Just the deals worth your time.",
     meta: {
-      title: "The Focus List — Best Off-Market Deals This Week | Triple Diamond Realty",
+      title: "The Focus List — Best Off-Market Deals This Week | {{brand}}",
       description:
         "Our weekly Focus List — hand-picked, ranked, and underwritten. The strongest off-market and fixer deals in California this week.",
       keywords:

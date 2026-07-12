@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { type Listing } from "@/data/listings";
 import { useBuyerVerified } from "@/hooks/useBuyerVerified";
 import { buyerService } from "@/services/buyer.service";
+import { useTenantBranding } from "@/hooks/useTenantBranding";
 
 export default function EmailAgentDialog({
   listing,
@@ -23,6 +24,7 @@ export default function EmailAgentDialog({
   onOpenChange?: (o: boolean) => void;
 }) {
   const { verified } = useBuyerVerified();
+  const { companyName } = useTenantBranding();
   const locationLabel = verified
     ? `${listing.street}, ${listing.city}, ${listing.state} ${listing.zip}`
     : `${listing.city}, ${listing.state}`;
@@ -107,7 +109,7 @@ export default function EmailAgentDialog({
           <label className="flex items-start gap-2 text-xs text-muted-foreground">
             <Checkbox className="mt-0.5" defaultChecked />
             <span>
-              By submitting, I consent to be contacted by Triple Diamond Realty and the listing brokerage about this and similar properties.
+              By submitting, I consent to be contacted by {companyName} and the listing brokerage about this and similar properties.
               Not a solicitation if already represented by a broker.
             </span>
           </label>

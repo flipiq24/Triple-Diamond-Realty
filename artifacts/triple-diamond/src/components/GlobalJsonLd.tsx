@@ -20,7 +20,7 @@ export default function GlobalJsonLd() {
   const phone = cf.primary_phone;
   const email = cf.primary_email;
   const areaServed = cf.service_area;
-  const description = cf.marketing_description;
+  const description = cf.description;
   const slogan = cf.tagline;
 
   const payload: Record<string, unknown> = {

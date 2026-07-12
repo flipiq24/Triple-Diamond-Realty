@@ -5,9 +5,11 @@ import { Input } from "@/components/ui/input";
 import SeoHead from "@/components/SeoHead";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useTenantBranding } from "@/hooks/useTenantBranding";
 
 export default function CompWithAI() {
   const [email, setEmail] = useState("");
+  const { companyName } = useTenantBranding();
 
   const notify = (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,7 +21,7 @@ export default function CompWithAI() {
   return (
     <div className="w-full bg-white">
       <SeoHead
-        title="Comp with AI — Coming Soon — Triple Diamond Realty"
+        title={`Comp with AI — Coming Soon — ${companyName}`}
         description="AI-powered comp analysis is launching soon."
         path="/comp-with-ai"
       />

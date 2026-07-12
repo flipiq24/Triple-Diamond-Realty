@@ -27,6 +27,20 @@ const querySchema = z.object({
   sqft_to: z.coerce.number().min(0).optional(),
   yearbuilt_from: z.coerce.number().min(1800).optional(),
   yearbuilt_to: z.coerce.number().min(1800).optional(),
+  // Calendar-based list_date range. ISO date strings (YYYY-MM-DD) or full
+  // ISO timestamps. Used by the search page's "Listed after / before"
+  // filter and by the homepage top-deals strip once the buyer picks a
+  // custom range. Takes precedence over last_24_hours / last_week when set.
+  list_date_from: z
+    .string()
+    .datetime({ offset: true })
+    .or(z.string().regex(/^\d{4}-\d{2}-\d{2}$/))
+    .optional(),
+  list_date_to: z
+    .string()
+    .datetime({ offset: true })
+    .or(z.string().regex(/^\d{4}-\d{2}-\d{2}$/))
+    .optional(),
   state: z.string().length(2).optional(),
   city: z.string().optional(),
   searchQuery: z.string().optional(),
@@ -176,10 +190,22 @@ router.get("/", async (req, res, next) => {
         `%${full}%`,
       );
     }
-    if (q.last_24_hours) {
-      wb.add("list_date >= (current_date - interval '1 day')");
-    } else if (q.last_week) {
-      wb.add("list_date >= (current_date - interval '7 day')");
+    // Explicit calendar range wins over the convenience aliases so a caller
+    // that passes both a range AND last_24_hours gets the range they asked
+    // for. `list_date_to` includes rows listed on the same day by extending
+    // the upper bound to the end of that date (< date + 1 day).
+    if (q.list_date_from) {
+      wb.add("list_date >= ?::date", q.list_date_from);
+    }
+    if (q.list_date_to) {
+      wb.add("list_date < (?::date + interval '1 day')", q.list_date_to);
+    }
+    if (!q.list_date_from && !q.list_date_to) {
+      if (q.last_24_hours) {
+        wb.add("list_date >= (current_date - interval '1 day')");
+      } else if (q.last_week) {
+        wb.add("list_date >= (current_date - interval '7 day')");
+      }
     }
 
     const whereSql = wb.sql();

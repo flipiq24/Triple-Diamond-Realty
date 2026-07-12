@@ -9,9 +9,11 @@ import AuthorityStrip from "@/components/AuthorityStrip";
 import SearchBarBlock from "@/components/SearchBarBlock";
 import type { VariantConfig } from "@/data/variants";
 import { useMlsListings } from "@/hooks/useMlsListings";
+import { useTenantBranding } from "@/hooks/useTenantBranding";
 
 export default function VariantHome({ config, cityName }: { config: VariantConfig; cityName?: string }) {
   const [, setLocation] = useLocation();
+  const { companyName } = useTenantBranding();
 
   // "This Week's Top Deals" — real MLS from the past 7 days, newest first,
   // capped at 3 for the strip. Replaces a static mock array that was
@@ -24,18 +26,29 @@ export default function VariantHome({ config, cityName }: { config: VariantConfi
   });
   const featuredListings = weekListings.slice(0, 3);
 
+  // variants.ts uses "{{brand}}" as a placeholder in SEO titles, FAQ answers,
+  // and disclaimers so the same variant file can serve any tenant. Interpolate
+  // here at render time using the tenant's companyName.
+  const brand = (s: string) => s.replaceAll("{{brand}}", companyName);
+  const faqBranded = config.faq.map((f) => ({ q: brand(f.q), a: brand(f.a) }));
+  const subCopyBranded = brand(config.subCopy);
+
   const h1Lead = cityName ? `${cityName} ${config.h1Lead}` : config.h1Lead;
   const meta = cityName
     ? {
-        title: `${cityName} ${config.meta.title}`,
-        description: `${cityName} — ${config.meta.description}`,
+        title: brand(`${cityName} ${config.meta.title}`),
+        description: `${cityName} — ${brand(config.meta.description)}`,
         keywords: `${cityName.toLowerCase()} ${config.meta.keywords}`,
       }
-    : config.meta;
+    : {
+        title: brand(config.meta.title),
+        description: brand(config.meta.description),
+        keywords: config.meta.keywords,
+      };
 
   return (
     <div className="w-full">
-      <SeoHead title={meta.title} description={meta.description} keywords={meta.keywords} path={cityName ? `/california/${cityName.toLowerCase().replace(/\s+/g, "-")}` : config.path} faq={config.faq} />
+      <SeoHead title={meta.title} description={meta.description} keywords={meta.keywords} path={cityName ? `/california/${cityName.toLowerCase().replace(/\s+/g, "-")}` : config.path} faq={faqBranded} />
 
       {/* Hero */}
       <section className="relative bg-primary pt-24 pb-48 px-4 overflow-hidden">
@@ -54,7 +67,7 @@ export default function VariantHome({ config, cityName }: { config: VariantConfi
               <span className="text-accent inline-block mt-2">{config.h1Accent}</span>
             </h1>
             <h2 className="text-xl md:text-2xl text-white/90 font-semibold max-w-2xl mx-auto mb-4">{config.subHeadline}</h2>
-            <p className="text-base md:text-lg text-primary-foreground/80 max-w-2xl mx-auto mb-10 leading-relaxed">{config.subCopy}</p>
+            <p className="text-base md:text-lg text-primary-foreground/80 max-w-2xl mx-auto mb-10 leading-relaxed">{subCopyBranded}</p>
           </motion.div>
 
           <SearchBarBlock />
@@ -69,7 +82,7 @@ export default function VariantHome({ config, cityName }: { config: VariantConfi
       <section className="py-24 bg-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">Why Investors Choose Triple Diamond Realty</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">Why Investors Choose {companyName}</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">Three decades of relationships. The state's most advanced on and off-market deal engine. Real properties, real numbers, real margin — delivered to you real time.</p>
           </div>
 

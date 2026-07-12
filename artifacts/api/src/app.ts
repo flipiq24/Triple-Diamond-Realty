@@ -3,8 +3,11 @@ import { corsMiddleware } from "./middleware/cors.js";
 import { tenantGuard } from "./middleware/tenant.js";
 import mlsRouter from "./routes/mls.js";
 import propertyRouter from "./routes/property.js";
+import compsRouter from "./routes/comps.js";
 import preferencesRouter from "./routes/preferences.js";
 import agentContactRouter from "./routes/agent-contact.js";
+import sellPropertyNotifyRouter from "./routes/sell-property-notify.js";
+import doNotSellRouter from "./routes/do-not-sell.js";
 
 export function createApp(): Express {
   const app = express();
@@ -22,8 +25,11 @@ export function createApp(): Express {
   // slug (shape + allowlist) once before dispatching to any route.
   app.use("/:tenant/mls", tenantGuard, mlsRouter);
   app.use("/:tenant/property-details", tenantGuard, propertyRouter);
+  app.use("/:tenant/comps", tenantGuard, compsRouter);
   app.use("/:tenant/buyers/preferences", tenantGuard, preferencesRouter);
   app.use("/:tenant/agent-contact", tenantGuard, agentContactRouter);
+  app.use("/:tenant/sell-property-notify", tenantGuard, sellPropertyNotifyRouter);
+  app.use("/:tenant/do-not-sell", tenantGuard, doNotSellRouter);
 
   // 404 fallback
   app.use((req: Request, res: Response) => {

@@ -1,17 +1,27 @@
 import { useMemo, useState, type ReactNode } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
-import { BarChart3, MapPin } from "lucide-react";
+import { BarChart3, MapPin, Loader2 } from "lucide-react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
-import { listings, type Listing, type ListingStatus } from "@/data/listings";
+import type { Listing } from "@/data/listings";
+import { useComps } from "@/hooks/useComps";
+import type { CompRecord } from "@/services/mls.service";
 
 type CompStatus = "Active" | "Pending" | "Sold";
 
-type Comp = Listing & {
+type Comp = {
+  id: string;
   compStatus: CompStatus;
   soldPrice: number;
   soldOrListedDate: string;
   distance: string;
+  lat: number;
+  lng: number;
+  city: string;
+  state: string;
+  beds: number;
+  baths: number;
+  sqft: number;
 };
 
 const statusColor: Record<CompStatus, string> = {
@@ -36,6 +46,70 @@ function compIcon(status: CompStatus) {
   });
 }
 
+function toNumber(v: unknown, fallback = 0): number {
+  if (v === null || v === undefined || v === "") return fallback;
+  const n = typeof v === "number" ? v : Number(v);
+  return Number.isFinite(n) ? n : fallback;
+}
+
+function mapStatus(raw: string | null | undefined): CompStatus {
+  const s = String(raw ?? "").toLowerCase();
+  if (s.includes("pending") || s.includes("back up")) return "Pending";
+  if (s.includes("sold") || s.includes("closed")) return "Sold";
+  return "Active";
+}
+
+// "6 wk ago" / "1 mo ago" / "Listed 4 d" / "Pending 3 wk" — matches the tone
+// of the old mock strings so the UI keeps its shorthand feel.
+function relativeAge(iso: string | null, prefix?: string): string {
+  if (!iso) return prefix ?? "";
+  const then = new Date(iso).getTime();
+  if (!Number.isFinite(then)) return prefix ?? "";
+  const days = Math.max(0, Math.round((Date.now() - then) / 86_400_000));
+  let core: string;
+  if (days < 7) core = `${days} d`;
+  else if (days < 60) core = `${Math.round(days / 7)} wk`;
+  else if (days < 730) core = `${Math.round(days / 30)} mo`;
+  else core = `${Math.round(days / 365)} y`;
+  if (prefix === "ago") return `${core} ago`;
+  if (prefix) return `${prefix} ${core}`;
+  return core;
+}
+
+function toComp(row: CompRecord): Comp | null {
+  const lat = toNumber(row.latitude, NaN);
+  const lng = toNumber(row.longitude, NaN);
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+
+  const status = mapStatus(row.listingstatus);
+  const price =
+    toNumber(row.closeprice, 0) > 0
+      ? toNumber(row.closeprice)
+      : toNumber(row.listprice);
+
+  const when =
+    status === "Sold"
+      ? relativeAge(row.closingdate, "ago")
+      : status === "Pending"
+        ? relativeAge(row.pendingdate, "Pending")
+        : relativeAge(row.listingdate, "Listed");
+
+  return {
+    id: String(row.r_id),
+    compStatus: status,
+    soldPrice: price,
+    soldOrListedDate: when || "—",
+    distance: toNumber(row.distance).toFixed(1),
+    lat,
+    lng,
+    city: row.city ?? "",
+    state: row.state ?? "",
+    beds: toNumber(row.bedroomstotal),
+    baths: toNumber(row.bathstotal),
+    sqft: toNumber(row.buildingsize),
+  };
+}
+
 export default function RunCompsDialog({
   listing,
   trigger,
@@ -43,34 +117,17 @@ export default function RunCompsDialog({
   listing: Listing;
   trigger?: ReactNode;
 }) {
+  const [open, setOpen] = useState(false);
+  // Only fetch once the dialog has been opened — avoids one API hit per
+  // Run Comps button in a listing grid.
+  const { data, isLoading, isError, error } = useComps(open ? listing.id : undefined);
+
   const allComps = useMemo<Comp[]>(() => {
-    const pool = listings.filter((l) => l.id !== listing.id);
-    const sameCity = pool.filter((l) => l.city === listing.city);
-    const chosen = (sameCity.length >= 6 ? sameCity : pool).slice(0, 9);
-    return chosen.map((l, i) => {
-      const mapStatus: CompStatus =
-        l.status === "Pending" ? "Pending" : l.status === "Just Sold" ? "Sold" : "Active";
-      // For sold comps invent a sold price near the list price
-      const soldPrice = mapStatus === "Sold" ? Math.round(l.price * (0.96 + (i % 5) * 0.02)) : l.price;
-      // Offset coords slightly so pins don't stack on subject
-      const distance = (0.2 + (i % 6) * 0.35).toFixed(1);
-      return {
-        ...l,
-        // Shift comp pins around subject within ~1.5 miles
-        lat: listing.lat + ((i % 3) - 1) * 0.01 + (i * 0.0007),
-        lng: listing.lng + (((i + 1) % 3) - 1) * 0.012 - (i * 0.0009),
-        compStatus: mapStatus,
-        soldPrice,
-        soldOrListedDate:
-          mapStatus === "Sold"
-            ? ["2 wk ago", "1 mo ago", "6 wk ago", "3 mo ago"][i % 4]
-            : mapStatus === "Pending"
-            ? ["Pending 1 wk", "Pending 3 wk", "Pending 5 wk"][i % 3]
-            : ["Listed 4 d", "Listed 2 wk", "Listed 1 mo"][i % 3],
-        distance,
-      };
-    });
-  }, [listing.id, listing.city, listing.lat, listing.lng]);
+    if (!data?.comps) return [];
+    return data.comps
+      .map(toComp)
+      .filter((c): c is Comp => c !== null);
+  }, [data]);
 
   const [statusFilter, setStatusFilter] = useState<CompStatus | "All">("All");
 
@@ -88,6 +145,7 @@ export default function RunCompsDialog({
   const summary = useMemo(() => {
     const soldOnly = allComps.filter((c) => c.compStatus === "Sold");
     const pool = soldOnly.length > 0 ? soldOnly : allComps;
+    if (pool.length === 0) return { avgPpsf: 0, avgPrice: 0, estArv: 0 };
     const avgPpsf = Math.round(
       pool.reduce((s, c) => s + c.soldPrice / Math.max(c.sqft, 1), 0) / pool.length
     );
@@ -105,8 +163,12 @@ export default function RunCompsDialog({
     { key: "Sold", label: "Sold", count: counts.Sold, dot: statusColor.Sold },
   ];
 
+  const emptyMsg = isError
+    ? error?.message || "Couldn't load comps."
+    : `No ${statusFilter === "All" ? "" : statusFilter.toLowerCase() + " "}comps in this area.`;
+
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="max-w-6xl p-0 overflow-hidden max-h-[92vh] flex flex-col">
         <div className="bg-primary text-primary-foreground px-6 py-4 shrink-0">
@@ -128,15 +190,21 @@ export default function RunCompsDialog({
           </div>
           <div className="rounded-lg bg-white border border-border p-3 text-center">
             <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Avg sold $/sqft</div>
-            <div className="text-base font-extrabold text-primary">${summary.avgPpsf}</div>
+            <div className="text-base font-extrabold text-primary">
+              {summary.avgPpsf > 0 ? `$${summary.avgPpsf}` : "—"}
+            </div>
           </div>
           <div className="rounded-lg bg-white border border-border p-3 text-center">
             <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Avg sold price</div>
-            <div className="text-base font-extrabold text-primary">{fmt(summary.avgPrice)}</div>
+            <div className="text-base font-extrabold text-primary">
+              {summary.avgPrice > 0 ? fmt(summary.avgPrice) : "—"}
+            </div>
           </div>
           <div className="rounded-lg bg-accent/10 border border-accent/30 p-3 text-center">
             <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Est. ARV</div>
-            <div className="text-base font-extrabold text-primary">{fmt(summary.estArv)}</div>
+            <div className="text-base font-extrabold text-primary">
+              {summary.estArv > 0 ? fmt(summary.estArv) : "—"}
+            </div>
           </div>
         </div>
 
@@ -204,7 +272,14 @@ export default function RunCompsDialog({
             </MapContainer>
           </div>
 
-          <div className="overflow-auto min-h-0">
+          <div className="overflow-auto min-h-0 relative">
+            {isLoading && (
+              <div className="absolute inset-0 flex items-center justify-center bg-white/70 z-10">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="w-4 h-4 animate-spin" /> Loading comps…
+                </div>
+              </div>
+            )}
             <table className="w-full text-sm">
               <thead className="text-[10px] uppercase tracking-wider text-muted-foreground sticky top-0 bg-white border-b border-border">
                 <tr>
@@ -242,10 +317,10 @@ export default function RunCompsDialog({
                     <td className="text-right py-2 pl-2 pr-4 text-muted-foreground whitespace-nowrap">{c.soldOrListedDate}</td>
                   </tr>
                 ))}
-                {visible.length === 0 && (
+                {!isLoading && visible.length === 0 && (
                   <tr>
                     <td colSpan={5} className="text-center text-sm text-muted-foreground py-8">
-                      No {statusFilter.toLowerCase()} comps in this area.
+                      {emptyMsg}
                     </td>
                   </tr>
                 )}
@@ -255,11 +330,9 @@ export default function RunCompsDialog({
         </div>
 
         <div className="px-6 py-2 text-[11px] text-muted-foreground leading-relaxed border-t border-border shrink-0">
-          Comp data shown for illustration. Triple Diamond Realty pulls live MLS comps for verified buyers — request a full CMA from your buyer's agent.
+          Comps pulled from the live MLS index. For a full CMA, request one from your buyer's agent.
         </div>
       </DialogContent>
     </Dialog>
   );
 }
-
-void (null as unknown as ListingStatus);

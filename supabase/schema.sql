@@ -140,4 +140,114 @@ create policy "buyer_favorites_self_delete" on public.buyer_favorites
   for delete to authenticated
   using (auth.uid() = auth_user_id);
 
+-- =============================================================
+-- 4b. CCPA / CPRA privacy requests (do-not-sell page)
+-- =============================================================
+-- Legally-required durable record of every California privacy request
+-- (opt-out / know / delete / correct / limit). Row can be inserted anon
+-- so an unverified visitor can still submit — tenants poll or dashboard
+-- these rows from the admin side.
+create table if not exists public.ccpa_requests (
+  id            uuid primary key default gen_random_uuid(),
+  name          text not null,
+  email         text not null,
+  phone         text,
+  state         text,
+  request_type  text not null,
+  details       text,
+  tenant        text not null,
+  created_at    timestamptz not null default now()
+);
+
+create index if not exists ccpa_requests_tenant_idx
+  on public.ccpa_requests (tenant);
+create index if not exists ccpa_requests_email_idx
+  on public.ccpa_requests (email);
+
+alter table public.ccpa_requests enable row level security;
+
+drop policy if exists "ccpa_requests_public_insert" on public.ccpa_requests;
+create policy "ccpa_requests_public_insert" on public.ccpa_requests
+  for insert to anon, authenticated
+  with check (true);
+
+-- =============================================================
+-- 5. Sell-property listings ("My Ads")
+-- =============================================================
+-- Rows for the buyer-submitted sell-property form. RLS scopes reads/writes
+-- to the submitting buyer. Photos are uploaded to the `sell-property-photos`
+-- storage bucket and referenced here via photo_urls[]; buyers can
+-- alternatively (or additionally) paste an external photo_link.
+create table if not exists public.sell_property_listings (
+  id                    uuid primary key default gen_random_uuid(),
+  auth_user_id          uuid not null references auth.users(id) on delete cascade,
+  tenant                text not null,
+  on_market             text not null default 'off',
+  seller_role           text not null,
+  has_contract          text,
+  address               text not null,
+  asking_price          numeric,
+  description           text,
+  showing_instructions  text,
+  photo_urls            text[] not null default '{}',
+  photo_link            text,
+  name                  text not null,
+  email                 text not null,
+  phone                 text not null,
+  status                text not null default 'pending', -- pending | live | archived
+  created_at            timestamptz not null default now(),
+  updated_at            timestamptz not null default now()
+);
+
+create index if not exists sell_property_listings_user_tenant_idx
+  on public.sell_property_listings (auth_user_id, tenant);
+
+alter table public.sell_property_listings enable row level security;
+
+drop policy if exists "sell_property_listings_self_read" on public.sell_property_listings;
+create policy "sell_property_listings_self_read" on public.sell_property_listings
+  for select to authenticated
+  using (auth.uid() = auth_user_id);
+
+drop policy if exists "sell_property_listings_self_insert" on public.sell_property_listings;
+create policy "sell_property_listings_self_insert" on public.sell_property_listings
+  for insert to authenticated
+  with check (auth.uid() = auth_user_id);
+
+drop policy if exists "sell_property_listings_self_delete" on public.sell_property_listings;
+create policy "sell_property_listings_self_delete" on public.sell_property_listings
+  for delete to authenticated
+  using (auth.uid() = auth_user_id);
+
+-- =============================================================
+-- 6. Storage bucket for sell-property photos
+-- =============================================================
+-- The bucket is public so image URLs render on the "My Ads" page and in the
+-- tenant notification email without pre-signing every read. Uploads are
+-- gated by RLS to the buyer's own path prefix `<tenant>/<user_id>/<...>`.
+insert into storage.buckets (id, name, public)
+values ('sell-property-photos', 'sell-property-photos', true)
+on conflict (id) do nothing;
+
+drop policy if exists "sell_property_photos_public_read" on storage.objects;
+create policy "sell_property_photos_public_read" on storage.objects
+  for select to anon, authenticated
+  using (bucket_id = 'sell-property-photos');
+
+drop policy if exists "sell_property_photos_owner_insert" on storage.objects;
+create policy "sell_property_photos_owner_insert" on storage.objects
+  for insert to authenticated
+  with check (
+    bucket_id = 'sell-property-photos'
+    and (storage.foldername(name))[2] = auth.uid()::text
+  );
+
+drop policy if exists "sell_property_photos_owner_delete" on storage.objects;
+create policy "sell_property_photos_owner_delete" on storage.objects
+  for delete to authenticated
+  using (
+    bucket_id = 'sell-property-photos'
+    and (storage.foldername(name))[2] = auth.uid()::text
+  );
+
 notify pgrst, 'reload schema';
