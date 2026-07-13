@@ -11,6 +11,7 @@ import { type Listing } from "@/data/listings";
 import { useBuyerVerified } from "@/hooks/useBuyerVerified";
 import { buyerService } from "@/services/buyer.service";
 import { useTenantBranding } from "@/hooks/useTenantBranding";
+import { useTenantCustomFields } from "@/hooks/useTenantCustomField";
 
 export default function EmailAgentDialog({
   listing,
@@ -25,6 +26,8 @@ export default function EmailAgentDialog({
 }) {
   const { verified } = useBuyerVerified();
   const { companyName } = useTenantBranding();
+  const cf = useTenantCustomFields();
+  const tenantEmail = cf.primary_email;
   const locationLabel = verified
     ? `${listing.street}, ${listing.city}, ${listing.state} ${listing.zip}`
     : `${listing.city}, ${listing.state}`;
@@ -132,10 +135,14 @@ export default function EmailAgentDialog({
                 <Phone className="w-3.5 h-3.5" /> Agent phone unlocks after verification
               </span>
             )}
-            <span className="text-muted-foreground">·</span>
-            <a href="mailto:info@tdrealty.net" className="flex items-center gap-1 font-semibold text-primary hover:text-accent">
-              <Mail className="w-3.5 h-3.5" /> info@tdrealty.net
-            </a>
+            {tenantEmail && (
+              <>
+                <span className="text-muted-foreground">·</span>
+                <a href={`mailto:${tenantEmail}`} className="flex items-center gap-1 font-semibold text-primary hover:text-accent">
+                  <Mail className="w-3.5 h-3.5" /> {tenantEmail}
+                </a>
+              </>
+            )}
           </div>
         </form>
       </DialogContent>

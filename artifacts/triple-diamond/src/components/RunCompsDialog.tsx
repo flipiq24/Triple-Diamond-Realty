@@ -216,7 +216,8 @@ export default function RunCompsDialog({
               <button
                 key={t.key}
                 onClick={() => setStatusFilter(t.key)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border transition-colors ${
+                disabled={isLoading}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
                   active
                     ? "bg-primary text-white border-primary"
                     : "bg-white text-foreground border-border hover:border-primary/50"

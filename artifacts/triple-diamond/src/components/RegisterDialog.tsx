@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "wouter";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -133,8 +134,8 @@ export default function RegisterDialog({
                 — about properties, off-market deals, and related real-estate
                 services. Consent is not a condition of any purchase. Message
                 and data rates may apply. Reply STOP to opt out. See our{" "}
-                <a href="/privacy" className="underline text-primary">Privacy Policy</a>{" "}
-                and <a href="/terms" className="underline text-primary">Terms</a>.
+                <Link href="/privacy" className="underline text-primary">Privacy Policy</Link>{" "}
+                and <Link href="/terms" className="underline text-primary">Terms</Link>.
                 Equal Housing Opportunity.
               </span>
             </label>

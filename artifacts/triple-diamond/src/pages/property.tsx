@@ -40,7 +40,7 @@ export default function Property() {
   const saved = id ? isFavorite(id) : false;
   const [showMessage, setShowMessage] = useState(false);
   const [registerOpen, setRegisterOpen] = useState(false);
-  const { verified } = useBuyerVerified();
+  const { verified, buyer } = useBuyerVerified();
   const { companyName } = useTenantBranding();
   const cf = useTenantCustomFields();
   const tenantPhone = cf.primary_phone;
@@ -50,10 +50,22 @@ export default function Property() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [message, setMessage] = useState("");
+  const [isMilitary, setIsMilitary] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [id]);
+
+  // Prefill contact fields for signed-in buyers so they don't retype what
+  // we already have. Mirrors the pattern used on /sell-property.
+  useEffect(() => {
+    if (verified && buyer) {
+      setName((n) => n || buyer.name);
+      setEmail((e) => e || buyer.email);
+      setPhone((p) => p || buyer.phone);
+    }
+  }, [verified, buyer]);
 
   if (isLoading) {
     return (
@@ -101,6 +113,7 @@ export default function Property() {
       toast.error("Please fill in name, email, and phone");
       return;
     }
+    setSubmitting(true);
     try {
       await buyerService.submitAgentContact({
         propertyId: listing.id,
@@ -109,13 +122,16 @@ export default function Property() {
         email,
         phone,
         message,
+        isMilitary,
       });
       toast.success("Request sent!", {
         description: `A ${companyName} agent will reach out within 1 business day.`,
       });
-      setName(""); setEmail(""); setPhone(""); setMessage(""); setShowMessage(false);
+      setName(""); setEmail(""); setPhone(""); setMessage(""); setShowMessage(false); setIsMilitary(false);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not send. Try again.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -213,7 +229,15 @@ export default function Property() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => id && toggleFavorite(id)}
+                  onClick={() => {
+                    if (!id) return;
+                    if (!verified) {
+                      setRegisterOpen(true);
+                      return;
+                    }
+                    toggleFavorite(id);
+                  }}
+                  aria-label={saved ? "Unsave property" : "Save property"}
                   className="gap-2"
                   disabled={!id}
                 >
@@ -227,6 +251,7 @@ export default function Property() {
                     navigator.clipboard?.writeText(window.location.href);
                     toast("Link copied");
                   }}
+                  aria-label="Share property"
                   className="gap-2"
                 >
                   <Share2 className="w-4 h-4" /> Share
@@ -268,7 +293,23 @@ export default function Property() {
               <span className="text-sm">
                 Est. <strong>${monthlyEst.toLocaleString()}/mo</strong>
               </span>
-              <Button variant="outline" size="sm" className="rounded-full text-xs">
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-full text-xs"
+                onClick={() => {
+                  // Route pre-approval interest through the same contact form
+                  // we already have on this page. Pre-fill the message so the
+                  // buyer-rep sees intent, then jump to the form.
+                  setMessage(
+                    `I'd like to get pre-approved for ${listing.street ?? listing.city}, ${listing.city}, ${listing.state}. Please connect me with a lender.`,
+                  );
+                  setShowMessage(true);
+                  document
+                    .getElementById("name")
+                    ?.scrollIntoView({ behavior: "smooth", block: "center" });
+                }}
+              >
                 Get pre-approved
               </Button>
             </div>
@@ -476,11 +517,19 @@ export default function Property() {
                 )}
 
                 <label className="flex items-center gap-2 text-sm pt-1">
-                  <Checkbox /> I've served in the U.S. military
+                  <Checkbox
+                    checked={isMilitary}
+                    onCheckedChange={(v) => setIsMilitary(v === true)}
+                  />{" "}
+                  I've served in the U.S. military
                 </label>
 
-                <Button type="submit" className="w-full h-12 bg-accent hover:bg-accent/90 text-white font-bold rounded-full">
-                  Email agent
+                <Button
+                  type="submit"
+                  disabled={submitting}
+                  className="w-full h-12 bg-accent hover:bg-accent/90 text-white font-bold rounded-full"
+                >
+                  {submitting ? "Sending…" : "Email agent"}
                 </Button>
 
                 <p className="text-[11px] text-muted-foreground leading-relaxed pt-1">
