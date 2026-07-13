@@ -94,7 +94,7 @@ export default function AccountSettingsPage() {
         title={`Account Settings — ${companyName}`}
         description="Update your buyer profile — name, phone, and communication preferences."
       />
-      <div className="max-w-3xl mx-auto px-4 py-10">
+      <div className="max-w-6xl mx-auto px-4 py-10">
         <header className="mb-8">
           <h1 className="text-3xl font-extrabold text-primary flex items-center gap-2">
             <User className="w-7 h-7 text-accent" /> Account

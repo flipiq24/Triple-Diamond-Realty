@@ -17,7 +17,10 @@ export default function DoNotSell() {
   const cf = useTenantCustomFields();
   const phone = cf.primary_phone;
   const phoneTel = cf.primary_phone_tel;
-  const privacyEmail = cf.privacy_email;
+  // Single tenant email served via the preferences endpoint — same key the
+  // backend uses to route the CCPA email in /:tenant/do-not-sell. Falls back
+  // to primary_email if the tenant only has that filled in.
+  const contactEmail = cf.agent_contact_email || cf.primary_email;
 
   const [submitting, setSubmitting] = useState(false);
   const [requestType, setRequestType] = useState<CcpaRequestType>("opt_out");
@@ -155,7 +158,7 @@ export default function DoNotSell() {
 
           <p className="text-xs text-muted-foreground">
             You may also submit a request
-            {privacyEmail ? (<> by emailing <a href={`mailto:${privacyEmail}`} className="text-accent">{privacyEmail}</a></>) : null}
+            {contactEmail ? (<> by emailing <a href={`mailto:${contactEmail}`} className="text-accent">{contactEmail}</a></>) : null}
             {phone && phoneTel ? (<> or calling <a href={`tel:${phoneTel}`} className="text-accent">{phone}</a></>) : null}
             . We honor the Global Privacy Control (GPC) browser signal as a valid opt-out of sale and sharing.
           </p>

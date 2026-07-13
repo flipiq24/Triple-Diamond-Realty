@@ -136,7 +136,6 @@ export default function SiteFooter() {
             <Link href="/disclosures" className="hover:text-white">Disclosures</Link>
             <Link href="/accessibility" className="hover:text-white">Accessibility</Link>
             <Link href="/do-not-sell" className="hover:text-white font-semibold text-accent">Do Not Sell or Share My Personal Info</Link>
-            <a href="/sitemap.xml" className="hover:text-white">Sitemap</a>
           </div>
         </div>
       </div>

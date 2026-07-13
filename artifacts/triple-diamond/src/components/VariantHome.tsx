@@ -79,25 +79,88 @@ export default function VariantHome({ config, cityName }: { config: VariantConfi
       <AuthorityStrip />
 
       {/* Value Props */}
-      <section className="py-24 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">Why Investors Choose {companyName}</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">Three decades of relationships. The state's most advanced on and off-market deal engine. Real properties, real numbers, real margin — delivered to you real time.</p>
+      <section className="py-24 bg-gradient-to-b from-white to-muted/20">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-16 max-w-3xl mx-auto">
+            <div className="inline-flex items-center gap-2 bg-accent/10 border border-accent/30 rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-accent mb-5">
+              <span className="w-1.5 h-1.5 rounded-full bg-accent" /> Why {companyName}
+            </div>
+            <h2 className="text-3xl md:text-5xl font-extrabold text-primary mb-5 tracking-tight leading-[1.1]">
+              Built for investors who care about <span className="text-accent">the numbers</span>.
+            </h2>
+            <p className="text-lg text-muted-foreground leading-relaxed">
+              Three decades of relationships. The state's most advanced on
+              and off-market deal engine. Real properties, real numbers,
+              real margin — delivered in real time.
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
             {[
-              { icon: Building2, title: "On + Off-Market Inventory", body: "MLS, pre-market, and pocket listings — all in one feed." },
-              { icon: Cpu, title: "Proprietary Sourcing", body: "Direct-to-seller pipeline built over 30 years." },
-              { icon: TrendingUp, title: "Real Numbers", body: "Comps, ARV, and rehab scope on every listing." },
+              {
+                icon: Building2,
+                title: "On + Off-Market Inventory",
+                body: "MLS, pre-market, and pocket listings — all in one feed.",
+                stat: "1 feed",
+                statLabel: "everywhere else = 5+",
+              },
+              {
+                icon: Cpu,
+                title: "Proprietary Sourcing",
+                body: "Direct-to-seller pipeline built over 30 years of relationships.",
+                stat: "30+ yrs",
+                statLabel: "seller relationships",
+              },
+              {
+                icon: TrendingUp,
+                title: "Real Numbers",
+                body: "Comps, ARV, and rehab scope surfaced on every listing.",
+                stat: "Every",
+                statLabel: "listing, no guesses",
+              },
             ].map((prop, i) => (
-              <motion.article key={i} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }} className="p-6 rounded-2xl bg-muted/30 border border-border">
-                <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-6">
-                  <prop.icon className="w-6 h-6 text-primary" aria-hidden="true" />
+              <motion.article
+                key={i}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-80px" }}
+                transition={{ delay: i * 0.1, duration: 0.5 }}
+                className="group relative bg-white rounded-2xl border border-border overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 hover:border-accent/40 transition-all duration-300"
+              >
+                {/* Accent stripe at top — grows on hover */}
+                <div className="absolute inset-x-0 top-0 h-1 bg-accent scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-500" />
+
+                {/* Big translucent number in the corner */}
+                <span
+                  aria-hidden="true"
+                  className="absolute top-4 right-5 text-6xl font-black text-primary/5 group-hover:text-accent/15 transition-colors leading-none select-none"
+                >
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+
+                <div className="relative p-8">
+                  {/* Icon in an accent-tinted rounded square */}
+                  <div className="w-14 h-14 rounded-2xl bg-accent/10 flex items-center justify-center mb-6 group-hover:bg-accent/20 group-hover:scale-105 transition-all">
+                    <prop.icon className="w-7 h-7 text-accent" aria-hidden="true" />
+                  </div>
+
+                  <h3 className="text-2xl font-extrabold text-primary mb-3 tracking-tight">
+                    {prop.title}
+                  </h3>
+                  <p className="text-muted-foreground leading-relaxed mb-6">
+                    {prop.body}
+                  </p>
+
+                  {/* Stat footer — separates the "why" from the "proof" */}
+                  <div className="pt-5 border-t border-dashed border-border flex items-baseline gap-2">
+                    <span className="text-3xl font-black text-primary tracking-tight">
+                      {prop.stat}
+                    </span>
+                    <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
+                      {prop.statLabel}
+                    </span>
+                  </div>
                 </div>
-                <h3 className="text-xl font-bold text-primary mb-2">{prop.title}</h3>
-                <p className="text-muted-foreground leading-relaxed">{prop.body}</p>
               </motion.article>
             ))}
           </div>
@@ -130,7 +193,7 @@ export default function VariantHome({ config, cityName }: { config: VariantConfi
 
       {/* Featured Deals */}
       <section className="py-24 bg-white">
-        <div className="container mx-auto px-4">
+        <div className="max-w-7xl mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center mb-12 gap-6">
             <div>
               <h2 className="text-3xl md:text-4xl font-bold text-primary mb-2">{cityName ? `${cityName}-Area Top Deals` : "This Week's Top Deals"}</h2>
@@ -156,12 +219,18 @@ export default function VariantHome({ config, cityName }: { config: VariantConfi
         </div>
       </section>
 
-      {/* Final CTA */}
-      <section id="footer" className="py-24 bg-primary text-center px-4 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-5" style={{ backgroundImage: "radial-gradient(circle at 2px 2px, white 1px, transparent 0)", backgroundSize: "32px 32px" }} />
-        <div className="container mx-auto relative z-10">
-          <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-10">Ready to find your next diamond in the rough?</h2>
-          <Button className="bg-accent hover:bg-accent/90 text-white rounded-full font-bold px-10 h-14 text-lg shadow-[0_0_20px_rgba(245,158,11,0.5)]" onClick={() => setLocation("/search")}>Start Searching Now</Button>
+      {/* Final CTA — minimal */}
+      <section id="footer" className="py-24 px-4 bg-primary text-center">
+        <div className="container mx-auto max-w-2xl">
+          <h2 className="text-3xl md:text-4xl font-light text-white/95 tracking-tight leading-[1.2] mb-8">
+            Your next deal is <span className="italic font-serif text-accent">one search</span> away.
+          </h2>
+          <Button
+            onClick={() => setLocation("/search")}
+            className="bg-accent hover:bg-accent/90 text-white rounded-full font-semibold px-8 h-12 text-sm tracking-wide"
+          >
+            Start searching
+          </Button>
         </div>
       </section>
     </div>

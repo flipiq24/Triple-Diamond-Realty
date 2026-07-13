@@ -83,7 +83,7 @@ export default function MyAdsPage() {
         title={`My Ads — ${companyName}`}
         description="Manage the off-market properties you've submitted."
       />
-      <div className="max-w-4xl mx-auto px-4 py-10">
+      <div className="max-w-6xl mx-auto px-4 py-10">
         <header className="mb-8 flex items-start justify-between gap-4 flex-wrap">
           <div>
             <h1 className="text-3xl font-extrabold text-primary flex items-center gap-2">

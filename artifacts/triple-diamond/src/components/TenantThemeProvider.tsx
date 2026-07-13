@@ -20,6 +20,7 @@ export function TenantThemeProvider({ children }: { children: ReactNode }) {
   const bg = useTenantCustomField("bg");
   const secondaryColor = useTenantCustomField("secondary_color");
   const companyName = useTenantCustomField("company_name");
+  const logoUrl = useTenantCustomField("logo");
 
   // Hard ceiling on how long we're willing to hide the site waiting for
   // tenant branding. If the API is dead / slow / not deployed yet, we
@@ -58,6 +59,37 @@ export function TenantThemeProvider({ children }: { children: ReactNode }) {
     }
   }, [companyName]);
 
+  // Swap the browser tab favicon to the tenant's logo. Runs after preferences
+  // hydrate — we intentionally leave the static /favicon.svg in index.html so
+  // the initial paint isn't blank while preferences load. A quick head-swap
+  // once the URL is known is cheap and doesn't refetch the whole page.
+  useEffect(() => {
+    if (typeof document === "undefined" || !logoUrl) return;
+
+    // Guess the mime type from the extension; browsers accept SVG/PNG/JPG/ICO
+    // interchangeably for icons but the correct type helps some readers.
+    const ext = logoUrl.split("?")[0].split(".").pop()?.toLowerCase();
+    const mime =
+      ext === "svg" ? "image/svg+xml" :
+      ext === "png" ? "image/png" :
+      ext === "ico" ? "image/x-icon" :
+      ext === "jpg" || ext === "jpeg" ? "image/jpeg" :
+      "";
+
+    // Replace every existing rel=icon link so we don't leave stale entries
+    // behind (index.html ships with one; we own it from here on).
+    const existing = document.head.querySelectorAll<HTMLLinkElement>(
+      "link[rel~='icon']",
+    );
+    existing.forEach((l) => l.parentNode?.removeChild(l));
+
+    const link = document.createElement("link");
+    link.rel = "icon";
+    if (mime) link.type = mime;
+    link.href = logoUrl;
+    document.head.appendChild(link);
+  }, [logoUrl]);
+
   // Cold fetch (no cached data, network pending) → block render behind a
   // full-viewport loader. Warm fetches (localStorage-cached < 30 min old)
   // return isLoading=false immediately and skip this branch entirely, so
@@ -68,45 +100,31 @@ export function TenantThemeProvider({ children }: { children: ReactNode }) {
 }
 
 /**
- * Beautiful full-viewport loader shown ONCE on first paint when no cached
- * preferences exist yet. Uses neutral colors (we don't know the tenant's
- * brand yet — that's literally what we're loading) with a subtle
- * conic-gradient spinner + soft breathe animation.
+ * Full-viewport loader shown ONCE on first paint when no cached preferences
+ * exist yet. Matches the Command app's boot spinner exactly — a 40px orange
+ * ring on a white background, no text, no wordmark. Keeps the boot / mount
+ * transition visually continuous with the rest of the FlipIQ product suite.
  */
 function TenantLoader() {
   return (
-    <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-white gap-6">
-      <div className="relative w-16 h-16">
-        <div
-          className="absolute inset-0 rounded-full opacity-90"
-          style={{
-            background:
-              "conic-gradient(from 0deg, transparent 0deg, rgba(15,44,75,0.9) 300deg, rgba(15,44,75,0) 360deg)",
-            animation: "tenant-loader-spin 1s linear infinite",
-            mask: "radial-gradient(circle, transparent 50%, black 51%)",
-            WebkitMask:
-              "radial-gradient(circle, transparent 50%, black 51%)",
-          }}
-        />
-        <div
-          className="absolute inset-2 rounded-full"
-          style={{
-            background:
-              "radial-gradient(circle, rgba(15,44,75,0.08) 0%, transparent 70%)",
-            animation: "tenant-loader-pulse 1.6s ease-in-out infinite",
-          }}
-        />
-      </div>
-      <p className="text-sm font-medium text-slate-500 tracking-wide">
-        Loading…
-      </p>
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-white">
+      <div
+        aria-hidden="true"
+        style={{
+          width: 40,
+          height: 40,
+          border: "3px solid rgba(249, 115, 22, 0.18)",
+          borderTopColor: "#F97316",
+          borderRadius: "50%",
+          animation: "tenant-loader-spin 1s linear infinite",
+        }}
+      />
       <style>{`
         @keyframes tenant-loader-spin {
           to { transform: rotate(360deg); }
         }
-        @keyframes tenant-loader-pulse {
-          0%, 100% { opacity: 0.4; transform: scale(0.85); }
-          50%      { opacity: 1;   transform: scale(1.05); }
+        @media (prefers-reduced-motion: reduce) {
+          [data-tenant-loader] { animation-duration: 3s !important; }
         }
       `}</style>
     </div>
