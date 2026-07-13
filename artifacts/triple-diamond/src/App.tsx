@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Switch, Route, Router as WouterRouter } from "wouter";
+import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HelmetProvider, Helmet } from "react-helmet-async";
 import { toast } from "sonner";
@@ -35,9 +35,29 @@ import GlobalJsonLd from "@/components/GlobalJsonLd";
 
 const queryClient = new QueryClient();
 
+/**
+ * Scroll the window to top on every route change. Wouter (like most SPA
+ * routers) preserves the previous page's scroll position when the next
+ * page mounts — for content pages that's disorienting (you land in the
+ * middle of the About page after clicking a footer link).
+ *
+ * Skips scrolling when the URL carries a `#hash` — pages that handle
+ * their own fragment-scroll (e.g. Privacy jumping to #cookies) get to
+ * do it themselves without us fighting them.
+ */
+function ScrollToTop() {
+  const [location] = useLocation();
+  useEffect(() => {
+    if (window.location.hash) return;
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [location]);
+  return null;
+}
+
 function Router() {
   return (
     <div className="min-h-[100dvh] flex flex-col font-sans">
+      <ScrollToTop />
       <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[10000] focus:bg-accent focus:text-white focus:px-3 focus:py-2 focus:rounded">Skip to content</a>
       <SiteHeader />
       <main id="main" className="flex-1">

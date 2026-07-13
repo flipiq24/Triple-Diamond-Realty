@@ -21,6 +21,10 @@ export function TenantThemeProvider({ children }: { children: ReactNode }) {
   const secondaryColor = useTenantCustomField("secondary_color");
   const companyName = useTenantCustomField("company_name");
   const logoUrl = useTenantCustomField("logo");
+  // Optional purpose-made square icon. If a tenant uploads one, we skip the
+  // canvas-normalization step and hand the URL straight to the browser —
+  // gives the sharpest favicon possible.
+  const iconUrl = useTenantCustomField("icon") || useTenantCustomField("favicon");
 
   // Hard ceiling on how long we're willing to hide the site waiting for
   // tenant branding. If the API is dead / slow / not deployed yet, we
@@ -59,36 +63,107 @@ export function TenantThemeProvider({ children }: { children: ReactNode }) {
     }
   }, [companyName]);
 
-  // Swap the browser tab favicon to the tenant's logo. Runs after preferences
-  // hydrate — we intentionally leave the static /favicon.svg in index.html so
-  // the initial paint isn't blank while preferences load. A quick head-swap
-  // once the URL is known is cheap and doesn't refetch the whole page.
+  // Swap the browser tab favicon to the tenant's icon (or logo, normalized).
+  //
+  // Wide company logos get pixelated when the browser squishes them into a
+  // 16×16/32×32 favicon slot. To avoid that, we:
+  //   1. Prefer an explicit square `icon`/`favicon` preference if the tenant
+  //      set one — hand that URL straight to the browser.
+  //   2. Otherwise, render the wide `logo` onto a 128×128 canvas centered
+  //      with white padding (aspect-fit), export as PNG data URL, and use
+  //      THAT as the favicon. Browsers now downscale from a clean square
+  //      instead of a rectangular source.
+  //
+  // Falls back to the raw logo URL if canvas rendering fails (CORS on a
+  // cross-origin image, image load error, etc.) — still better than blank.
   useEffect(() => {
-    if (typeof document === "undefined" || !logoUrl) return;
+    if (typeof document === "undefined") return;
 
-    // Guess the mime type from the extension; browsers accept SVG/PNG/JPG/ICO
-    // interchangeably for icons but the correct type helps some readers.
-    const ext = logoUrl.split("?")[0].split(".").pop()?.toLowerCase();
-    const mime =
-      ext === "svg" ? "image/svg+xml" :
-      ext === "png" ? "image/png" :
-      ext === "ico" ? "image/x-icon" :
-      ext === "jpg" || ext === "jpeg" ? "image/jpeg" :
-      "";
+    const setFavicon = (href: string, mime?: string) => {
+      const existing = document.head.querySelectorAll<HTMLLinkElement>(
+        "link[rel~='icon']",
+      );
+      existing.forEach((l) => l.parentNode?.removeChild(l));
+      const link = document.createElement("link");
+      link.rel = "icon";
+      if (mime) link.type = mime;
+      link.href = href;
+      document.head.appendChild(link);
+    };
 
-    // Replace every existing rel=icon link so we don't leave stale entries
-    // behind (index.html ships with one; we own it from here on).
-    const existing = document.head.querySelectorAll<HTMLLinkElement>(
-      "link[rel~='icon']",
-    );
-    existing.forEach((l) => l.parentNode?.removeChild(l));
+    const mimeFromUrl = (url: string): string => {
+      const ext = url.split("?")[0].split(".").pop()?.toLowerCase();
+      return ext === "svg"
+        ? "image/svg+xml"
+        : ext === "png"
+          ? "image/png"
+          : ext === "ico"
+            ? "image/x-icon"
+            : ext === "jpg" || ext === "jpeg"
+              ? "image/jpeg"
+              : "";
+    };
 
-    const link = document.createElement("link");
-    link.rel = "icon";
-    if (mime) link.type = mime;
-    link.href = logoUrl;
-    document.head.appendChild(link);
-  }, [logoUrl]);
+    // Path 1: explicit square icon — trust the tenant, use as-is.
+    if (iconUrl) {
+      setFavicon(iconUrl, mimeFromUrl(iconUrl));
+      return;
+    }
+
+    if (!logoUrl) return;
+
+    // Path 2: SVG logo — SVGs scale losslessly, no canvas normalization needed.
+    if (mimeFromUrl(logoUrl) === "image/svg+xml") {
+      setFavicon(logoUrl, "image/svg+xml");
+      return;
+    }
+
+    // Path 3: raster logo (PNG/JPG) — normalize into a 128×128 square PNG.
+    let cancelled = false;
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      if (cancelled) return;
+      try {
+        const SIZE = 128;
+        const canvas = document.createElement("canvas");
+        canvas.width = SIZE;
+        canvas.height = SIZE;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) throw new Error("no 2d context");
+        // White backdrop so transparent logos don't render as gray checker on
+        // dark browser themes.
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, SIZE, SIZE);
+        // Aspect-fit: contain within a small margin so the mark has breathing
+        // room instead of touching the edges of the tab icon.
+        const PADDING = 8;
+        const target = SIZE - PADDING * 2;
+        const scale = Math.min(target / img.width, target / img.height);
+        const w = img.width * scale;
+        const h = img.height * scale;
+        const dx = (SIZE - w) / 2;
+        const dy = (SIZE - h) / 2;
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = "high";
+        ctx.drawImage(img, dx, dy, w, h);
+        setFavicon(canvas.toDataURL("image/png"), "image/png");
+      } catch {
+        // Canvas failed (usually CORS-tainted image). Give the browser the
+        // raw URL so the tab isn't blank — pixelated is better than empty.
+        setFavicon(logoUrl, mimeFromUrl(logoUrl));
+      }
+    };
+    img.onerror = () => {
+      if (cancelled) return;
+      setFavicon(logoUrl, mimeFromUrl(logoUrl));
+    };
+    img.src = logoUrl;
+
+    return () => {
+      cancelled = true;
+    };
+  }, [iconUrl, logoUrl]);
 
   // Cold fetch (no cached data, network pending) → block render behind a
   // full-viewport loader. Warm fetches (localStorage-cached < 30 min old)

@@ -1,8 +1,19 @@
+import { useEffect } from "react";
 import LegalPage from "@/components/LegalPage";
 import { useTenantBranding } from "@/hooks/useTenantBranding";
 import { useTenantCustomFields } from "@/hooks/useTenantCustomField";
 
 export default function Privacy() {
+  // wouter's <Link> doesn't scroll fragments into view — handle it here so
+  // CookieConsent's "Manage Preferences" (→ /privacy#cookies) actually lands
+  // on section 4. rAF so we scroll after the DOM mounts.
+  useEffect(() => {
+    const hash = window.location.hash.replace(/^#/, "");
+    if (!hash) return;
+    requestAnimationFrame(() => {
+      document.getElementById(hash)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }, []);
   const { companyName } = useTenantBranding();
   const cf = useTenantCustomFields();
   const phone = cf.primary_phone;
