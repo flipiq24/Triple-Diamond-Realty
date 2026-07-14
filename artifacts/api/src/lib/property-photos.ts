@@ -154,16 +154,3 @@ export async function loadDataFeedPhotos(property: {
   }
 }
 
-/**
- * Regex for URLs we know are unreachable from any client outside Command's
- * whitelisted infra — CRMLS media servers return 403 to buyer browsers,
- * Vercel functions, local dev, etc. Filtering these lets the ladder fall
- * through to Street View instead of shipping guaranteed-broken <img> tags.
- */
-const CRMLS_HOSTNAME_RE = /(^|:\/\/)([a-z0-9-]+\.)?crmls\.org(\/|$)/i;
-
-export function stripUnreachable(photos: PhotoItem[]): PhotoItem[] {
-  return photos
-    .filter((p) => !CRMLS_HOSTNAME_RE.test(p.url))
-    .map((p, i) => ({ ...p, objectId: i + 1 }));
-}

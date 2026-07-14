@@ -9,7 +9,6 @@ import {
   loadDataFeedPhotos,
   loadRawDataPhotos,
   loadUploadedPhotos,
-  stripUnreachable,
   type PhotoItem,
 } from "../lib/property-photos.js";
 
@@ -76,12 +75,13 @@ router.get("/:id", async (req, res, next) => {
  *   1. DataFeed API — live gallery pointers
  *   2. `idx.raw_data_photos` — Command's ingest-time cache
  *   3. `idx.uploadimages` — legacy FDW rows
- *   4. Street View via our proxy — always terminal, never empty when the
- *      property has a usable address
+ *   4. Street View via our proxy — terminal fallback when the tenant DB
+ *      has nothing (rare — most CRMLS listings have DataFeed entries)
  *
- * URLs that resolve to `media.crmls.org` are stripped after tiers 1-3 so the
- * ladder falls through to Street View rather than shipping 403-guaranteed
- * URLs to the browser.
+ * CRMLS media URLs (`media.crmls.org`) are returned as-is. Those pass
+ * through Command's ingest verbatim and CRMLS geo-restricts them to US
+ * traffic — the browser only sees them if the buyer / dev is US-based
+ * (or on a US VPN). Vercel functions run in US regions, so prod is fine.
  */
 router.get("/:id/photos", async (req, res, next) => {
   try {
@@ -129,7 +129,6 @@ router.get("/:id/photos", async (req, res, next) => {
     let photos: PhotoItem[] = await loadDataFeedPhotos(rawData);
     if (photos.length === 0) photos = await loadRawDataPhotos(tenantPool, rawData.r_id);
     if (photos.length === 0) photos = await loadUploadedPhotos(tenantPool, rawData.r_id);
-    photos = stripUnreachable(photos);
 
     if (photos.length === 0) {
       const address = buildAddressString({
