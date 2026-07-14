@@ -16,6 +16,11 @@ const allowlist = (process.env.TENANT_ALLOWLIST ?? "")
 // URL template with {tenant} placeholder. Example:
 //   postgresql://ftdba:pw@host/{tenant}pes
 // The tenant slug (from the URL path) is substituted at request time.
+//
+// A template WITHOUT `{tenant}` is treated as a static URL used for every
+// tenant slug — useful in staging when only one tenant DB is provisioned
+// and every buyer site should read from that same DB regardless of its
+// URL path. Explicit `DATABASE_URL_<TENANT>` overrides still win.
 const template = process.env.TENANT_DB_URL_TEMPLATE;
 
 // Regex: tenant slug can only be lowercase letters, digits, hyphen, underscore
@@ -32,11 +37,10 @@ function resolveUrl(tenant: string): string | null {
 
   // 2. Template-based (the common case)
   if (template) {
+    // No {tenant} placeholder → treat as a static URL for all tenants.
+    // Intentional (single-tenant staging / DB-consolidation modes); no warn.
     if (!template.includes("{tenant}")) {
-      console.warn(
-        "[tenant] TENANT_DB_URL_TEMPLATE is set but has no {tenant} placeholder",
-      );
-      return null;
+      return template;
     }
     return template.replace(/\{tenant\}/g, tenant);
   }

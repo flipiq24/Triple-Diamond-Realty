@@ -21,7 +21,6 @@ export interface AgentContactPayload {
   email: string;
   phone: string;
   message?: string;
-  isMilitary?: boolean;
 }
 
 export type SellSellerRole = "seller" | "wholesaler" | "agent";
@@ -224,7 +223,6 @@ export const buyerService = {
       email: payload.email,
       phone: payload.phone,
       message: payload.message ?? undefined,
-      is_military: payload.isMilitary ?? false,
     });
     if (!response.ok) {
       const body = (await response.json().catch(() => null)) as {

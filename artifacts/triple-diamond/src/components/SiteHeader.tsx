@@ -124,7 +124,7 @@ export default function SiteHeader() {
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link href="/account/my-ads" className="cursor-pointer">
-                      <ListOrdered className="w-4 h-4 mr-2" /> My ads
+                      <ListOrdered className="w-4 h-4 mr-2" /> My listings
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
@@ -221,7 +221,7 @@ export default function SiteHeader() {
                       onClick={() => setIsOpen(false)}
                       className="flex items-center gap-2 text-sm font-semibold text-primary"
                     >
-                      <ListOrdered className="w-4 h-4 text-accent" /> My ads
+                      <ListOrdered className="w-4 h-4 text-accent" /> My listings
                     </Link>
                     <button
                       onClick={() => {

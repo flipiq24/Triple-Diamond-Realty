@@ -67,7 +67,7 @@ export default function SellProperty() {
     e.preventDefault();
     if (!verified) {
       toast.error("Please log in to post a property", {
-        description: "We tie ads to your account so you can manage them from My Ads.",
+        description: "We tie listings to your account so you can manage them from My Listings.",
       });
       setLocation("/login?next=" + encodeURIComponent("/sell-property"));
       return;
@@ -153,7 +153,7 @@ export default function SellProperty() {
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link href="/account/my-ads">
-              <Button className="rounded-full bg-primary text-white">Go to My Ads</Button>
+              <Button className="rounded-full bg-primary text-white">Go to My Listings</Button>
             </Link>
             <Link href="/">
               <Button variant="outline" className="rounded-full">Back to home</Button>
@@ -193,7 +193,7 @@ export default function SellProperty() {
           <div className="mb-6 rounded-xl bg-accent/10 border border-accent/30 p-4 text-sm flex flex-wrap items-center gap-3">
             <span className="text-foreground/80 flex-1">
               You'll need a free buyer account to post a property so you can manage
-              it from <strong>My Ads</strong> later.
+              it from <strong>My Listings</strong> later.
             </span>
             <Link href={"/login?next=" + encodeURIComponent("/sell-property")}>
               <Button size="sm" className="bg-accent text-white">Log in</Button>

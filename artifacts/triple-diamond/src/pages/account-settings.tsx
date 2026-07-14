@@ -117,7 +117,7 @@ export default function AccountSettingsPage() {
           </Link>
           <Link href="/account/my-ads">
             <Button variant="outline">
-              <ListOrdered className="w-4 h-4 mr-2" /> My Ads
+              <ListOrdered className="w-4 h-4 mr-2" /> My Listings
             </Button>
           </Link>
         </nav>

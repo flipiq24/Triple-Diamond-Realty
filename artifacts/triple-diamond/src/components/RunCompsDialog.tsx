@@ -118,9 +118,10 @@ export default function RunCompsDialog({
   trigger?: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
-  // Only fetch once the dialog has been opened — avoids one API hit per
-  // Run Comps button in a listing grid.
-  const { data, isLoading, isError, error } = useComps(open ? listing.id : undefined);
+  // The property page also calls useComps(id) so the fetch is already in
+  // flight (or cached) by the time this dialog opens. React Query dedupes
+  // by queryKey — no double request.
+  const { data, isLoading, isError, error } = useComps(listing.id);
 
   const allComps = useMemo<Comp[]>(() => {
     if (!data?.comps) return [];

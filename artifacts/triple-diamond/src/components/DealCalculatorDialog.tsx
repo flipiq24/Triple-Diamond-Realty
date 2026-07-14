@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, type ReactNode } from "react";
+import { useState, useMemo, useEffect, useRef, type ReactNode } from "react";
 import {
   Dialog,
   DialogContent,
@@ -9,8 +9,10 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Calculator, DollarSign, Edit } from "lucide-react";
+import { Calculator, DollarSign, Loader2 } from "lucide-react";
 import { type Listing } from "@/data/listings";
+import { useComps } from "@/hooks/useComps";
+import type { CompRecord } from "@/services/mls.service";
 
 /* ─────────────────────────────────────────────────────────────────────────────
  *  Admin-configurable knobs (ported from ARV IQ WDA)
@@ -81,6 +83,47 @@ function getMarketHint(rehabType: string): string {
   }
 }
 
+/* ─── ARV from comps (blended formula ported from ARV IQ) ───
+ * final = (subjectSqft × avgCompPricePerSqft + avgCompPrice) / 2
+ * Per-comp price: closeprice if sold/closed, else listprice.
+ */
+function toNum(v: unknown): number | null {
+  if (v === null || v === undefined || v === "") return null;
+  const n = typeof v === "number" ? v : Number(v);
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+
+function priceForComp(c: CompRecord): number | null {
+  const status = String(c.listingstatus ?? "").toLowerCase();
+  const close = toNum(c.closeprice);
+  const list = toNum(c.listprice);
+  if (status.includes("closed") || status.includes("sold")) {
+    return close ?? list;
+  }
+  return list;
+}
+
+function computeArvFromComps(
+  comps: CompRecord[] | undefined,
+  subjectSqft: number
+): number | null {
+  if (!comps || comps.length === 0 || subjectSqft <= 0) return null;
+
+  const prices: number[] = [];
+  const ppsfs: number[] = [];
+  for (const c of comps) {
+    const price = priceForComp(c);
+    const sqft = toNum(c.buildingsize);
+    if (price != null) prices.push(price);
+    if (price != null && sqft != null) ppsfs.push(price / sqft);
+  }
+  if (prices.length === 0 || ppsfs.length === 0) return null;
+
+  const avgPrice = prices.reduce((a, b) => a + b, 0) / prices.length;
+  const avgPpsf = ppsfs.reduce((a, b) => a + b, 0) / ppsfs.length;
+  return Math.round((subjectSqft * avgPpsf + avgPrice) / 2);
+}
+
 /* ═════════════════════════════════════════════════════════════════════════════
  *  Component
  * ═══════════════════════════════════════════════════════════════════════════ */
@@ -93,16 +136,36 @@ export default function DealCalculatorDialog({
 }) {
   const buildingSize = listing.sqft || 1500;
 
+  /* ─── Comps (shared cache with property page and Run Comps dialog) ─── */
+  const { data: compsData, isLoading: compsLoading } = useComps(listing.id);
+  const compsArv = useMemo(
+    () => computeArvFromComps(compsData?.comps, buildingSize),
+    [compsData, buildingSize]
+  );
+
   /* ─── State ─── */
-  const [arvInput, setArvInput] = useState(listing.price);
+  const [arvInput, setArvInput] = useState(compsArv ?? listing.price);
   const [repairCost, setRepairCost] = useState(0);
   const [assignmentFee, setAssignmentFee] = useState(15_000);
   const [selectedRoi, setSelectedRoi] = useState(12);
 
-  const [userQuality, setUserQuality] = useState(() => qualityFromARV(listing.price));
+  const [userQuality, setUserQuality] = useState(() =>
+    qualityFromARV(compsArv ?? listing.price)
+  );
   const [userBucket, setUserBucket] = useState(() => bucketFromYear(listing.yearBuilt));
   const [selectedCondition, setSelectedCondition] = useState("Fair");
   const [rehabType, setRehabType] = useState("Moderate");
+
+  // Track whether the user has manually edited ARV; if they haven't, we keep
+  // syncing ARV with the comps-derived value as it becomes available.
+  const arvUserEdited = useRef(false);
+
+  /* Auto-populate ARV once comps arrive (unless user has edited) */
+  useEffect(() => {
+    if (!arvUserEdited.current && compsArv != null) {
+      setArvInput(compsArv);
+    }
+  }, [compsArv]);
 
   /* Auto-update quality when ARV changes */
   useEffect(() => {
@@ -166,16 +229,32 @@ export default function DealCalculatorDialog({
             <div className="rounded-lg border p-4 col-span-2 space-y-3">
               <div>
                 <Label className="text-sm font-medium">After Repair Value (ARV)</Label>
-                <p className="text-xs text-muted-foreground mt-0.5 mb-1.5">
-                  Calculated from selected comps
+                <p className="text-xs text-muted-foreground mt-0.5 mb-1.5 flex items-center gap-1.5">
+                  {compsLoading ? (
+                    <>
+                      <Loader2 className="h-3 w-3 animate-spin" /> Loading comps…
+                    </>
+                  ) : compsArv != null ? (
+                    <>Calculated from {compsData?.comps?.length ?? 0} comps</>
+                  ) : (
+                    <>No comps available — enter ARV manually</>
+                  )}
                 </p>
-                <div className="">
+                <div className="relative">
                   <Input
                     type="number"
                     value={arvInput}
-                    onChange={(e) => setArvInput(Number(e.target.value) || 0)}
+                    disabled={compsLoading && !arvUserEdited.current}
+                    onChange={(e) => {
+                      arvUserEdited.current = true;
+                      setArvInput(Number(e.target.value) || 0);
+                    }}
                   />
-                 
+                  {compsLoading && !arvUserEdited.current && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-background/60 rounded-md">
+                      <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                    </div>
+                  )}
                 </div>
               </div>
 

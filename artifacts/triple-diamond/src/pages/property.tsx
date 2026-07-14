@@ -2,11 +2,11 @@ import { useState, useEffect } from "react";
 import { useRoute, Link } from "wouter";
 import { ChevronLeft, ChevronRight, MapPin, Home, Calendar, DollarSign, Hammer, Heart, Share2, Phone, Mail } from "lucide-react";
 import { useMlsProperty } from "@/hooks/useMlsProperty";
+import { useComps } from "@/hooks/useComps";
 import { buyerService } from "@/services/buyer.service";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { MapContainer, TileLayer, Marker } from "react-leaflet";
 import L from "leaflet";
@@ -32,6 +32,9 @@ export default function Property() {
   const [, params] = useRoute("/property/:id");
   const id = params?.id;
   const { listing, photos: apiPhotos, isLoading, isError, error } = useMlsProperty(id);
+  // Warm up the comps cache on page load so the Deal Calculator and Run Comps
+  // dialogs open with data ready (or with a loader instead of no fetch at all).
+  useComps(id);
   const [photoIdx, setPhotoIdx] = useState(0);
   const { isFavorite, toggleFavorite } = useFavorites();
   // Property-page save button is wired to the shared favorites store so the
@@ -50,7 +53,6 @@ export default function Property() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [message, setMessage] = useState("");
-  const [isMilitary, setIsMilitary] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -97,9 +99,25 @@ export default function Property() {
       ? sourcePhotos
       : Array.from({ length: 4 }, (_, i) => sourcePhotos[i % sourcePhotos.length]);
 
-  const pricePerSqft = Math.round(listing.price / listing.sqft);
   const monthlyEst = Math.round((listing.price * 0.0065)); // rough P&I + tax/ins ballpark
-  const age = new Date().getFullYear() - listing.yearBuilt;
+
+  // Guard against MLS fields that arrive as 0/null on Land / new listings —
+  // otherwise the UI shows "$Infinity/sqft" (0-sqft divisor), "0 (2026 yrs)"
+  // (year_built = 0 → current year age), and a misleading "0 days" for
+  // listings whose list_date is today.
+  const hasSqft = Number.isFinite(listing.sqft) && listing.sqft > 0;
+  const pricePerSqft = hasSqft ? Math.round(listing.price / listing.sqft) : null;
+  const pricePerSqftLabel = pricePerSqft != null ? `$${pricePerSqft.toLocaleString()}` : "—";
+
+  const currentYear = new Date().getFullYear();
+  const hasYearBuilt =
+    Number.isFinite(listing.yearBuilt) &&
+    listing.yearBuilt >= 1800 &&
+    listing.yearBuilt <= currentYear;
+  const age = hasYearBuilt ? currentYear - listing.yearBuilt : null;
+
+  const hasDom = Number.isFinite(listing.daysOnMarket) && listing.daysOnMarket > 0;
+  const domLabel = hasDom ? `${listing.daysOnMarket} days` : "New";
 
   const statusLabel = listing.status === "Pending" ? "Contingent" : listing.status;
   const statusDot =
@@ -122,12 +140,11 @@ export default function Property() {
         email,
         phone,
         message,
-        isMilitary,
       });
       toast.success("Request sent!", {
         description: `A ${companyName} agent will reach out within 1 business day.`,
       });
-      setName(""); setEmail(""); setPhone(""); setMessage(""); setShowMessage(false); setIsMilitary(false);
+      setName(""); setEmail(""); setPhone(""); setMessage(""); setShowMessage(false);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not send. Try again.");
     } finally {
@@ -335,22 +352,26 @@ export default function Property() {
               <div className="flex items-start gap-2">
                 <Calendar className="w-5 h-5 text-primary mt-0.5" />
                 <div>
-                  <div className="font-bold text-foreground">{listing.daysOnMarket} days</div>
+                  <div className="font-bold text-foreground">{domLabel}</div>
                   <div className="text-xs text-muted-foreground">{listing.status === "Just Sold" ? "Sold" : "Days on market"}</div>
                 </div>
               </div>
               <div className="flex items-start gap-2">
                 <DollarSign className="w-5 h-5 text-primary mt-0.5" />
                 <div>
-                  <div className="font-bold text-foreground">${pricePerSqft}</div>
+                  <div className="font-bold text-foreground">{pricePerSqftLabel}</div>
                   <div className="text-xs text-muted-foreground">Price per sqft</div>
                 </div>
               </div>
               <div className="flex items-start gap-2">
                 <Hammer className="w-5 h-5 text-primary mt-0.5" />
                 <div>
-                  <div className="font-bold text-foreground">{listing.yearBuilt}</div>
-                  <div className="text-xs text-muted-foreground">Year built ({age} yrs)</div>
+                  <div className="font-bold text-foreground">
+                    {hasYearBuilt ? listing.yearBuilt : "—"}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {hasYearBuilt ? `Year built (${age} yrs)` : "Year built"}
+                  </div>
                 </div>
               </div>
             </div>
@@ -363,8 +384,19 @@ export default function Property() {
               <p className="text-foreground/90 leading-relaxed mb-6">
                 {listing.description ?? `Off-market opportunity sourced direct by the ${companyName} team.`}
                 {" "}This {listing.propertyType.toLowerCase()} sits on a {listing.lotSqft.toLocaleString()} sqft lot in {listing.city}.
-                Built in {listing.yearBuilt}, offering {listing.beds} bedrooms and {listing.baths} bathrooms across {listing.sqft.toLocaleString()} sqft of living space.
-                {" "}Priced at ${listing.price.toLocaleString()} (${pricePerSqft}/sqft) — investor-grade upside for the right buyer.
+                {hasYearBuilt && (listing.beds > 0 || listing.baths > 0 || hasSqft) && (
+                  <>
+                    {" "}Built in {listing.yearBuilt}
+                    {(listing.beds > 0 || listing.baths > 0) && (
+                      <>, offering {listing.beds} bedrooms and {listing.baths} bathrooms</>
+                    )}
+                    {hasSqft && <> across {listing.sqft.toLocaleString()} sqft of living space</>}
+                    .
+                  </>
+                )}
+                {" "}Priced at ${listing.price.toLocaleString()}
+                {pricePerSqft != null && <> (${pricePerSqft.toLocaleString()}/sqft)</>}
+                {" "}— investor-grade upside for the right buyer.
               </p>
 
               {/* Interior — only values we actually get from MLS. Do NOT
@@ -416,11 +448,11 @@ export default function Property() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-5">
                   <ul className="text-sm text-foreground/80 space-y-1 list-disc list-inside">
                     <li>List price: ${listing.price.toLocaleString()}</li>
-                    <li>Price per sqft: ${pricePerSqft}</li>
+                    <li>Price per sqft: {pricePerSqftLabel}</li>
                     <li>Est. monthly: ${monthlyEst.toLocaleString()}/mo</li>
                   </ul>
                   <ul className="text-sm text-foreground/80 space-y-1 list-disc list-inside">
-                    <li>Days on market: {listing.daysOnMarket}</li>
+                    <li>Days on market: {domLabel}</li>
                     <li>Status: {statusLabel}</li>
                     <li>Deal type: {listing.dealType}</li>
                   </ul>
@@ -515,14 +547,6 @@ export default function Property() {
                     />
                   </div>
                 )}
-
-                <label className="flex items-center gap-2 text-sm pt-1">
-                  <Checkbox
-                    checked={isMilitary}
-                    onCheckedChange={(v) => setIsMilitary(v === true)}
-                  />{" "}
-                  I've served in the U.S. military
-                </label>
 
                 <Button
                   type="submit"

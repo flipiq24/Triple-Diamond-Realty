@@ -40,7 +40,6 @@ const bodySchema = z.object({
   email: z.string().email(),
   phone: z.string().min(1),
   message: z.string().optional(),
-  is_military: z.boolean().optional(),
 });
 
 const TABLE = process.env.PREFERENCES_TABLE ?? "sys.buyer_preferences";
@@ -112,7 +111,6 @@ function renderEmailBody(payload: {
   email: string;
   phone: string;
   message?: string;
-  is_military?: boolean;
   tenant: string;
   origin?: string;
 }) {
@@ -129,7 +127,6 @@ function renderEmailBody(payload: {
 Buyer: ${payload.name}
 Email: ${payload.email}
 Phone: ${payload.phone}
-Military status: ${payload.is_military ? "Yes" : "No"}
 Tenant: ${payload.tenant}
 Listing: ${listingUrl}${messageBlock}
 `;
@@ -144,7 +141,6 @@ Listing: ${listingUrl}${messageBlock}
         <tr><td style="padding:4px 0;"><strong>Name:</strong></td><td>${escapeHtml(payload.name)}</td></tr>
         <tr><td style="padding:4px 0;"><strong>Email:</strong></td><td><a href="mailto:${escapeHtml(payload.email)}">${escapeHtml(payload.email)}</a></td></tr>
         <tr><td style="padding:4px 0;"><strong>Phone:</strong></td><td><a href="tel:${escapeHtml(payload.phone)}">${escapeHtml(payload.phone)}</a></td></tr>
-        <tr><td style="padding:4px 0;"><strong>Military:</strong></td><td>${payload.is_military ? "Yes" : "No"}</td></tr>
         <tr><td style="padding:4px 0;"><strong>Tenant:</strong></td><td>${escapeHtml(payload.tenant)}</td></tr>
         <tr><td style="padding:4px 0;"><strong>Listing:</strong></td><td><a href="${escapeHtml(listingUrl)}">${escapeHtml(listingUrl)}</a></td></tr>
       </table>
@@ -199,7 +195,6 @@ async function writeSupabaseAudit(payload: {
   email: string;
   phone: string;
   message?: string;
-  is_military?: boolean;
   tenant: string;
 }): Promise<{ ok: boolean; error?: string }> {
   const url = process.env.SUPABASE_URL;
@@ -225,7 +220,6 @@ async function writeSupabaseAudit(payload: {
           email: payload.email,
           phone: payload.phone,
           message: payload.message ?? null,
-          is_military: payload.is_military ?? false,
           tenant: payload.tenant,
         }),
       },

@@ -19,10 +19,11 @@ import { useBuyerVerified } from "@/hooks/useBuyerVerified";
 import { useTenantBranding } from "@/hooks/useTenantBranding";
 
 /**
- * "My Ads" — buyer's own submitted sell-property listings. Readonly view
- * (per client meeting decision — editing goes through the tenant admin's
- * moderation queue in Command) with a delete button so a buyer can withdraw
- * a listing they no longer want to sell.
+ * "My Listings" — buyer's own submitted sell-property listings (labelled
+ * per the 2026-07-14 client call — used to be "My Ads"; route path kept as
+ * /account/my-ads for git-history and existing-link stability). Readonly
+ * view with a delete button so a buyer can withdraw a listing they no
+ * longer want to sell.
  */
 export default function MyAdsPage() {
   const [, setLocation] = useLocation();
@@ -80,14 +81,14 @@ export default function MyAdsPage() {
   return (
     <>
       <SeoHead
-        title={`My Ads — ${companyName}`}
+        title={`My Listings — ${companyName}`}
         description="Manage the off-market properties you've submitted."
       />
       <div className="max-w-6xl mx-auto px-4 py-10">
         <header className="mb-8 flex items-start justify-between gap-4 flex-wrap">
           <div>
             <h1 className="text-3xl font-extrabold text-primary flex items-center gap-2">
-              <ListOrdered className="w-7 h-7 text-accent" /> My Ads
+              <ListOrdered className="w-7 h-7 text-accent" /> My Listings
             </h1>
             <p className="text-muted-foreground text-sm mt-1">
               Properties you've submitted through Sell a Property.
@@ -113,7 +114,7 @@ export default function MyAdsPage() {
           </Link>
           <Link href="/account/my-ads">
             <Button variant="default" className="bg-primary text-white">
-              <ListOrdered className="w-4 h-4 mr-2" /> My Ads
+              <ListOrdered className="w-4 h-4 mr-2" /> My Listings
             </Button>
           </Link>
         </nav>

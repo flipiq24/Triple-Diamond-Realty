@@ -185,6 +185,15 @@ export interface CompsQueryParams {
   bed_tolerance?: number;
   bath_tolerance?: number;
   sqft_tolerance_pct?: number;
+  // Rolling recency window for CLOSED comps. API default is 12 months so
+  // callers get sensible sold-recency by default (ARV IQ style). Pass 0 to
+  // disable the recency clause entirely.
+  sold_within_months?: number;
+  // Explicit close-date window (YYYY-MM-DD). Wins over sold_within_months
+  // when either is set. Non-closed statuses (Active/Pending/Hold/BackUpOffer)
+  // always pass through — the recency clause only gates CLOSED rows.
+  minclosingdate?: string;
+  maxclosingdate?: string;
 }
 
 export const mlsService = {
@@ -229,6 +238,12 @@ export const mlsService = {
       qs.append("bath_tolerance", String(params.bath_tolerance));
     if (params.sqft_tolerance_pct !== undefined)
       qs.append("sqft_tolerance_pct", String(params.sqft_tolerance_pct));
+    if (params.sold_within_months !== undefined)
+      qs.append("sold_within_months", String(params.sold_within_months));
+    if (params.minclosingdate !== undefined)
+      qs.append("minclosingdate", params.minclosingdate);
+    if (params.maxclosingdate !== undefined)
+      qs.append("maxclosingdate", params.maxclosingdate);
     const suffix = qs.toString() ? `?${qs.toString()}` : "";
     const response = await http.get(`/comps/${subjectId}${suffix}`);
     if (!response.ok) {

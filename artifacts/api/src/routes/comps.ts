@@ -4,12 +4,27 @@ import { propertyDataPool } from "../db/property-data.js";
 
 const router = Router({ mergeParams: true });
 
+// YYYY-MM-DD only. Rejects '2024-13-01', '2024-2-30', etc. — Postgres will
+// still complain if given a bad date, but we catch obvious garbage up front.
+const isoDate = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, "Expected YYYY-MM-DD");
+
 const querySchema = z.object({
   radius_miles: z.coerce.number().min(0.1).max(10).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(30),
   bed_tolerance: z.coerce.number().min(0).max(3).default(1),
   bath_tolerance: z.coerce.number().min(0).max(3).default(1),
   sqft_tolerance_pct: z.coerce.number().min(0).max(100).default(30),
+  // Recency window for CLOSED comps. Follows Command's DAO pattern:
+  //   - Non-closed statuses (Active/Pending/Hold/BackUpOffer) always pass
+  //     through — their close_date is null and can't be date-filtered.
+  //   - CLOSED rows only pass through the [min,max] window.
+  // Default is 12 months, which stops the "24 years ago" comps that were
+  // showing up before the filter was wired in. Caller can pass 0 to disable.
+  sold_within_months: z.coerce.number().int().min(0).max(240).default(12),
+  minclosingdate: isoDate.optional(),
+  maxclosingdate: isoDate.optional(),
 });
 
 // GET /:tenant/comps/:id
@@ -95,6 +110,38 @@ router.get("/:id", async (req, res, next) => {
                   $3)`,
     ];
 
+    // Recency filter — Command's Brackets pattern in raw SQL.
+    // Explicit min/maxclosingdate wins; otherwise sold_within_months=N puts a
+    // rolling window at [today - N months, today]. sold_within_months=0
+    // disables the recency clause entirely.
+    let minClose: string | null = null;
+    let maxClose: string | null = null;
+    if (q.minclosingdate || q.maxclosingdate) {
+      minClose = q.minclosingdate ?? null;
+      maxClose = q.maxclosingdate ?? null;
+    } else if (q.sold_within_months > 0) {
+      const from = new Date();
+      from.setUTCMonth(from.getUTCMonth() - q.sold_within_months);
+      minClose = from.toISOString().slice(0, 10);
+    }
+    if (minClose || maxClose) {
+      const closedParts: string[] = [`status IN ('CLOSED','SOLD')`];
+      if (minClose) {
+        paramValues.push(minClose);
+        closedParts.push(`close_date >= $${paramValues.length}`);
+      }
+      if (maxClose) {
+        paramValues.push(maxClose);
+        closedParts.push(`close_date <= $${paramValues.length}`);
+      }
+      // Non-closed rows bypass the date gate (close_date is null for
+      // Active/Pending/Hold/BackUpOffer, so a naïve AND would drop all of
+      // them). Mirrors Command's Brackets(qb).where(...).orWhere('status != Closed').
+      whereClauses.push(
+        `((${closedParts.join(" AND ")}) OR status NOT IN ('CLOSED','SOLD'))`,
+      );
+    }
+
     if (hasBeds) {
       paramValues.push(beds - q.bed_tolerance, beds + q.bed_tolerance);
       whereClauses.push(
@@ -164,6 +211,9 @@ router.get("/:id", async (req, res, next) => {
         bed_tolerance: hasBeds ? q.bed_tolerance : null,
         bath_tolerance: hasBaths ? q.bath_tolerance : null,
         sqft_tolerance_pct: hasSqft ? q.sqft_tolerance_pct : null,
+        sold_within_months: q.sold_within_months,
+        minclosingdate: minClose,
+        maxclosingdate: maxClose,
         limit: q.limit,
       },
       comps: compsResult.rows,
