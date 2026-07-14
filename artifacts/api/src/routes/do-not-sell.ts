@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { getTenantPool } from "../db/tenant.js";
+import { wrapEmail, escapeHtml } from "../email/template.js";
 
 /**
  * Minimal shape we consume off `fetch()`. Same shim used in agent-contact.ts
@@ -80,15 +81,6 @@ async function readTenantCustomField(
   }
 }
 
-function escapeHtml(str: string): string {
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
-
 const REQUEST_TYPE_LABELS: Record<
   z.infer<typeof bodySchema>["request_type"],
   string
@@ -106,52 +98,56 @@ function renderEmailBody(payload: z.infer<typeof bodySchema> & { tenant: string 
     ? `\n\nAdditional details:\n${payload.details.trim()}`
     : "";
 
-  const text = `New CCPA / CPRA privacy request — ${label}
+  const contentText = `${label}
 
 Name: ${payload.name}
 Email: ${payload.email}
 Phone: ${payload.phone ?? "(not provided)"}
-State: ${payload.state ?? "(not provided)"}
-Request type: ${label}
-Tenant: ${payload.tenant}${detailsText}
+State: ${payload.state ?? "(not provided)"}${detailsText}
 
-You must respond to the requester within 45 days as required by
-California law (CCPA/CPRA, Cal. Civ. Code § 1798.130).
-`;
+You must respond to this requester within 45 days per California law (CCPA / CPRA, Cal. Civ. Code § 1798.130). The requester has attested under penalty of perjury.`;
 
   const detailsBlock = payload.details?.trim()
-    ? `<p style="margin:16px 0 4px;font-size:14px;color:#0F2C4B;"><strong>Additional details:</strong></p>
-       <p style="margin:0;font-size:14px;color:#4a5568;white-space:pre-wrap;">${escapeHtml(payload.details.trim())}</p>`
+    ? `<p style="margin:0 0 8px;font-size:12px;font-weight:700;color:#0F1F3B;text-transform:uppercase;letter-spacing:.5px;">Additional details</p>
+       <div style="background:#F9FAFB;border:1px solid #E5E7EB;padding:14px 16px;border-radius:8px;font-size:14px;color:#374151;line-height:1.55;white-space:pre-wrap;margin:0 0 20px;">${escapeHtml(payload.details.trim())}</div>`
     : "";
 
-  const html = `<!doctype html>
-<html><body style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;background:#f7f7f9;padding:24px;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.08);">
-    <tr><td style="background:#0F2C4B;color:#fff;padding:20px 24px;font-size:18px;font-weight:700;">New CCPA / CPRA privacy request</td></tr>
-    <tr><td style="padding:20px 24px;">
-      <p style="margin:0 0 12px;font-size:16px;color:#0F2C4B;"><strong>${escapeHtml(label)}</strong></p>
+  const contentHtml = `
+    <div style="display:inline-block;background:#FFF7ED;border:1px solid #FDBA74;color:#C2410C;padding:6px 12px;border-radius:999px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin:0 0 16px;">
+      ${escapeHtml(label)}
+    </div>
 
-      <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;font-size:14px;color:#4a5568;">
-        <tr><td style="padding:4px 0;width:120px;"><strong>Name:</strong></td><td>${escapeHtml(payload.name)}</td></tr>
-        <tr><td style="padding:4px 0;"><strong>Email:</strong></td><td><a href="mailto:${escapeHtml(payload.email)}">${escapeHtml(payload.email)}</a></td></tr>
-        <tr><td style="padding:4px 0;"><strong>Phone:</strong></td><td>${payload.phone ? `<a href="tel:${escapeHtml(payload.phone)}">${escapeHtml(payload.phone)}</a>` : "(not provided)"}</td></tr>
-        <tr><td style="padding:4px 0;"><strong>State:</strong></td><td>${escapeHtml(payload.state ?? "(not provided)")}</td></tr>
-        <tr><td style="padding:4px 0;"><strong>Tenant:</strong></td><td>${escapeHtml(payload.tenant)}</td></tr>
-      </table>
+    <p style="margin:0 0 20px;font-size:15px;color:#374151;line-height:1.55;">
+      A California resident has submitted a privacy request under CCPA / CPRA. You have <strong style="color:#0F1F3B;">45 days</strong> to respond.
+    </p>
 
-      ${detailsBlock}
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:10px;margin:0 0 20px;">
+      <tr>
+        <td style="padding:16px 18px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="font-size:14px;color:#4B5563;">
+            <tr><td style="padding:5px 0;width:80px;font-weight:600;color:#6B7280;text-transform:uppercase;font-size:11px;letter-spacing:.5px;">Name</td><td style="padding:5px 0;color:#0F1F3B;font-weight:600;">${escapeHtml(payload.name)}</td></tr>
+            <tr><td style="padding:5px 0;font-weight:600;color:#6B7280;text-transform:uppercase;font-size:11px;letter-spacing:.5px;">Email</td><td style="padding:5px 0;"><a href="mailto:${escapeHtml(payload.email)}" style="color:#FF6600;text-decoration:none;">${escapeHtml(payload.email)}</a></td></tr>
+            <tr><td style="padding:5px 0;font-weight:600;color:#6B7280;text-transform:uppercase;font-size:11px;letter-spacing:.5px;">Phone</td><td style="padding:5px 0;">${payload.phone ? `<a href="tel:${escapeHtml(payload.phone)}" style="color:#FF6600;text-decoration:none;">${escapeHtml(payload.phone)}</a>` : `<span style="color:#9CA3AF;">(not provided)</span>`}</td></tr>
+            <tr><td style="padding:5px 0;font-weight:600;color:#6B7280;text-transform:uppercase;font-size:11px;letter-spacing:.5px;">State</td><td style="padding:5px 0;color:#4B5563;">${escapeHtml(payload.state ?? "(not provided)")}</td></tr>
+          </table>
+        </td>
+      </tr>
+    </table>
 
-      <hr style="border:0;border-top:1px solid #e5e7eb;margin:20px 0;" />
-      <p style="margin:0;font-size:12px;color:#9ca3af;">
-        You must respond to this requester within 45 days as required by
-        California law (CCPA / CPRA, Cal. Civ. Code § 1798.130). The requester
-        has attested under penalty of perjury.
-      </p>
-    </td></tr>
-  </table>
-</body></html>`;
+    ${detailsBlock}
 
-  return { text, html };
+    <p style="margin:24px 0 0;font-size:11px;color:#9CA3AF;line-height:1.5;">
+      The requester has attested under penalty of perjury. Track your response in Command &middot; Compliance &middot; Privacy Requests.
+    </p>
+  `;
+
+  return wrapEmail({
+    preheader: `${payload.name} — ${label}`,
+    title: "New CCPA / CPRA privacy request",
+    tenant: payload.tenant,
+    contentHtml,
+    contentText,
+  });
 }
 
 async function sendResendEmail(opts: {

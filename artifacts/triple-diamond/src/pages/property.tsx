@@ -12,6 +12,7 @@ import { MapContainer, TileLayer, Marker } from "react-leaflet";
 import L from "leaflet";
 import SeoHead from "@/components/SeoHead";
 import RegisterDialog from "@/components/RegisterDialog";
+import PropertyImage from "@/components/PropertyImage";
 import { useBuyerVerified } from "@/hooks/useBuyerVerified";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useTenantCustomFields } from "@/hooks/useTenantCustomField";
@@ -31,7 +32,7 @@ const pin = L.divIcon({
 export default function Property() {
   const [, params] = useRoute("/property/:id");
   const id = params?.id;
-  const { listing, photos: apiPhotos, isLoading, isError, error } = useMlsProperty(id);
+  const { listing, photos: apiPhotos, isLoading, photosLoading, isError, error } = useMlsProperty(id);
   // Warm up the comps cache on page load so the Deal Calculator and Run Comps
   // dialogs open with data ready (or with a loader instead of no fetch at all).
   useComps(id);
@@ -91,13 +92,11 @@ export default function Property() {
     );
   }
 
-  // Use API photos if available; otherwise fall back to the cover image.
-  // Pad to at least 4 so the gallery thumbnails always render.
-  const sourcePhotos = apiPhotos.length > 0 ? apiPhotos : [listing.image];
-  const photos =
-    sourcePhotos.length >= 4
-      ? sourcePhotos
-      : Array.from({ length: 4 }, (_, i) => sourcePhotos[i % sourcePhotos.length]);
+  // Real photos only — never pad by cycling; empty slots render as skeletons
+  // (during load) or "No photo available" (once photosLoading resolves).
+  const photos = apiPhotos;
+  const activePhoto = photos.length > 0 ? photos[photoIdx % photos.length] : null;
+  const [thumb1, thumb2, thumb3] = [photos[1], photos[2], photos[3]];
 
   const monthlyEst = Math.round((listing.price * 0.0065)); // rough P&I + tax/ins ballpark
 
@@ -187,31 +186,47 @@ export default function Property() {
 
         {/* Gallery */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-2 rounded-xl overflow-hidden mb-6 bg-muted">
-          <div className="md:col-span-2 relative aspect-[4/3] md:aspect-auto md:h-[500px]">
-            <img src={photos[photoIdx]} alt={listing.street} className="w-full h-full object-cover" />
-            <button
-              onClick={() => setPhotoIdx((i) => (i - 1 + photos.length) % photos.length)}
-              aria-label="Previous photo"
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-black/70"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-            <button
-              onClick={() => setPhotoIdx((i) => (i + 1) % photos.length)}
-              aria-label="Next photo"
-              className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-black/70"
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
-            <div className="absolute bottom-3 right-3 bg-black/70 text-white text-xs font-semibold px-2 py-1 rounded">
-              {photoIdx + 1}/{photos.length}
-            </div>
+          <div className="md:col-span-2 relative aspect-4/3 md:aspect-auto md:h-[500px]">
+            <PropertyImage
+              src={activePhoto}
+              alt={listing.street || "Property photo"}
+              className="w-full h-full"
+              remountOnSrcChange
+              isLoading={photosLoading}
+            />
+            {photos.length > 1 && (
+              <>
+                <button
+                  onClick={() => setPhotoIdx((i) => (i - 1 + photos.length) % photos.length)}
+                  aria-label="Previous photo"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-black/70 z-20"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => setPhotoIdx((i) => (i + 1) % photos.length)}
+                  aria-label="Next photo"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-black/70 z-20"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </>
+            )}
+            {photos.length > 0 && (
+              <div className="absolute bottom-3 right-3 bg-black/70 text-white text-xs font-semibold px-2 py-1 rounded z-20">
+                {(photoIdx % photos.length) + 1}/{photos.length}
+              </div>
+            )}
           </div>
           <div className="hidden md:flex flex-col gap-2 h-[500px]">
-            {[photos[1], photos[2], photos[3]].map((src, i) => (
-              <div key={i} className="relative flex-1 overflow-hidden">
-                <img src={src} alt="" className="w-full h-full object-cover" />
-              </div>
+            {[thumb1, thumb2, thumb3].map((src, i) => (
+              <PropertyImage
+                key={i}
+                src={src}
+                alt=""
+                className="flex-1"
+                isLoading={photosLoading}
+              />
             ))}
           </div>
         </div>

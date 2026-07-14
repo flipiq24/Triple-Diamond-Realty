@@ -7,6 +7,13 @@ export interface UseMlsPropertyResult {
   listing: Listing | null;
   photos: string[];
   isLoading: boolean;
+  /**
+   * True while the `/photos` request is in flight. Kept separate from
+   * `isLoading` (detail query) so the gallery skeleton stays visible until
+   * we truly know whether the property has photos — otherwise the empty
+   * state flashes for the gap between detail and photos responses.
+   */
+  photosLoading: boolean;
   isError: boolean;
   error: Error | null;
 }
@@ -36,6 +43,7 @@ export function useMlsProperty(rId: string | undefined): UseMlsPropertyResult {
     listing: detail.data ? mapMlsItemToListing(detail.data) : null,
     photos: photoUrls,
     isLoading: detail.isLoading,
+    photosLoading: photos.isPending && !photos.data,
     isError: detail.isError,
     error: (detail.error as Error) ?? null,
   };

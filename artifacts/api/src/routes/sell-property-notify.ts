@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { getTenantPool } from "../db/tenant.js";
+import { wrapEmail, escapeHtml } from "../email/template.js";
 
 /**
  * Minimal shape we consume off `fetch()`. Mirrors the shim used in
@@ -84,15 +85,6 @@ async function readTenantCustomField(
   }
 }
 
-function escapeHtml(str: string): string {
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
-
 function formatMoney(n: number | null | undefined): string {
   if (n == null || Number.isNaN(n)) return "(not provided)";
   try {
@@ -105,76 +97,96 @@ function formatMoney(n: number | null | undefined): string {
 function renderEmailBody(payload: z.infer<typeof bodySchema> & { tenant: string }) {
   const priceLine = formatMoney(payload.asking_price ?? null);
   const photosCount = payload.photo_urls?.length ?? 0;
+
   const photosBlock =
     photosCount > 0
-      ? `<p style="margin:20px 0 6px;font-size:14px;color:#0F2C4B;"><strong>Uploaded photos (${photosCount}):</strong></p>
-         <ul style="margin:0;padding-left:18px;font-size:13px;">
+      ? `<p style="margin:0 0 8px;font-size:12px;font-weight:700;color:#0F1F3B;text-transform:uppercase;letter-spacing:.5px;">Uploaded photos (${photosCount})</p>
+         <ul style="margin:0 0 20px;padding-left:20px;font-size:13px;line-height:1.5;">
            ${payload
              .photo_urls!.map(
                (u) =>
-                 `<li><a href="${escapeHtml(u)}" style="color:#0F2C4B;">${escapeHtml(u)}</a></li>`,
+                 `<li style="margin:2px 0;"><a href="${escapeHtml(u)}" style="color:#FF6600;text-decoration:none;word-break:break-all;">${escapeHtml(u)}</a></li>`,
              )
              .join("")}
          </ul>`
       : "";
+
   const linkBlock = payload.photo_link
-    ? `<p style="margin:16px 0 0;font-size:14px;color:#0F2C4B;"><strong>Photos link:</strong> <a href="${escapeHtml(payload.photo_link)}">${escapeHtml(payload.photo_link)}</a></p>`
+    ? `<p style="margin:0 0 20px;font-size:14px;color:#374151;"><strong style="color:#0F1F3B;">Photos link:</strong> <a href="${escapeHtml(payload.photo_link)}" style="color:#FF6600;text-decoration:none;word-break:break-all;">${escapeHtml(payload.photo_link)}</a></p>`
     : "";
+
   const descBlock = payload.description?.trim()
-    ? `<p style="margin:16px 0 4px;font-size:14px;color:#0F2C4B;"><strong>Description:</strong></p><p style="margin:0;font-size:14px;color:#4a5568;white-space:pre-wrap;">${escapeHtml(payload.description.trim())}</p>`
+    ? `<p style="margin:0 0 8px;font-size:12px;font-weight:700;color:#0F1F3B;text-transform:uppercase;letter-spacing:.5px;">Description</p>
+       <div style="background:#F9FAFB;border:1px solid #E5E7EB;padding:14px 16px;border-radius:8px;font-size:14px;color:#374151;line-height:1.55;white-space:pre-wrap;margin:0 0 20px;">${escapeHtml(payload.description.trim())}</div>`
     : "";
+
   const showBlock = payload.showing_instructions?.trim()
-    ? `<p style="margin:16px 0 4px;font-size:14px;color:#0F2C4B;"><strong>Showing instructions:</strong></p><p style="margin:0;font-size:14px;color:#4a5568;white-space:pre-wrap;">${escapeHtml(payload.showing_instructions.trim())}</p>`
+    ? `<p style="margin:0 0 8px;font-size:12px;font-weight:700;color:#0F1F3B;text-transform:uppercase;letter-spacing:.5px;">Showing instructions</p>
+       <div style="background:#FFF7ED;border-left:3px solid #FF6600;padding:14px 16px;border-radius:6px;font-size:14px;color:#374151;line-height:1.55;white-space:pre-wrap;margin:0 0 20px;">${escapeHtml(payload.showing_instructions.trim())}</div>`
     : "";
 
-  const text = `New off-market property submission
+  const contentText = `${payload.address}
 
-Address: ${payload.address}
 Asking price: ${priceLine}
 Role: ${payload.seller_role}${payload.has_contract ? ` (has contract: ${payload.has_contract})` : ""}
-Tenant: ${payload.tenant}
 
 Seller:
-  Name: ${payload.name}
+  Name:  ${payload.name}
   Email: ${payload.email}
   Phone: ${payload.phone}
 
-${payload.description ? `Description:\n${payload.description}\n\n` : ""}${payload.showing_instructions ? `Showing:\n${payload.showing_instructions}\n\n` : ""}${photosCount > 0 ? `Photos (${photosCount}):\n${payload.photo_urls!.join("\n")}\n` : ""}${payload.photo_link ? `Photos link: ${payload.photo_link}\n` : ""}
-Listing id: ${payload.listing_id}
-`;
+${payload.description ? `Description:\n${payload.description}\n\n` : ""}${payload.showing_instructions ? `Showing:\n${payload.showing_instructions}\n\n` : ""}${photosCount > 0 ? `Photos (${photosCount}):\n${payload.photo_urls!.join("\n")}\n\n` : ""}${payload.photo_link ? `Photos link: ${payload.photo_link}\n\n` : ""}Listing id: ${payload.listing_id}`;
 
-  const html = `<!doctype html>
-<html><body style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;background:#f7f7f9;padding:24px;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:640px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.08);">
-    <tr><td style="background:#0F2C4B;color:#fff;padding:20px 24px;font-size:18px;font-weight:700;">New off-market property submission</td></tr>
-    <tr><td style="padding:20px 24px;">
-      <p style="margin:0 0 12px;font-size:16px;color:#0F2C4B;"><strong>${escapeHtml(payload.address)}</strong></p>
-      <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;font-size:14px;color:#4a5568;">
-        <tr><td style="padding:4px 0;width:140px;"><strong>Asking price:</strong></td><td>${escapeHtml(priceLine)}</td></tr>
-        <tr><td style="padding:4px 0;"><strong>Seller role:</strong></td><td>${escapeHtml(payload.seller_role)}${payload.has_contract ? ` (has contract: ${escapeHtml(payload.has_contract)})` : ""}</td></tr>
-        <tr><td style="padding:4px 0;"><strong>Tenant:</strong></td><td>${escapeHtml(payload.tenant)}</td></tr>
-      </table>
+  const contentHtml = `
+    <p style="margin:0 0 16px;font-size:18px;font-weight:700;color:#0F1F3B;line-height:1.35;">
+      ${escapeHtml(payload.address)}
+    </p>
 
-      <hr style="border:0;border-top:1px solid #e5e7eb;margin:16px 0;" />
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:10px;margin:0 0 20px;">
+      <tr>
+        <td style="padding:16px 18px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="font-size:14px;color:#4B5563;">
+            <tr>
+              <td style="padding:5px 0;width:110px;font-weight:600;color:#6B7280;text-transform:uppercase;font-size:11px;letter-spacing:.5px;">Asking price</td>
+              <td style="padding:5px 0;color:#0F1F3B;font-weight:700;font-size:16px;">${escapeHtml(priceLine)}</td>
+            </tr>
+            <tr>
+              <td style="padding:5px 0;font-weight:600;color:#6B7280;text-transform:uppercase;font-size:11px;letter-spacing:.5px;">Seller role</td>
+              <td style="padding:5px 0;color:#4B5563;text-transform:capitalize;">${escapeHtml(payload.seller_role)}${payload.has_contract ? ` &middot; <span style="color:#6B7280;">contract: ${escapeHtml(payload.has_contract)}</span>` : ""}</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
 
-      <p style="margin:0 0 4px;font-size:14px;color:#0F2C4B;"><strong>Seller contact</strong></p>
-      <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;font-size:14px;color:#4a5568;">
-        <tr><td style="padding:4px 0;width:80px;">Name:</td><td>${escapeHtml(payload.name)}</td></tr>
-        <tr><td style="padding:4px 0;">Email:</td><td><a href="mailto:${escapeHtml(payload.email)}">${escapeHtml(payload.email)}</a></td></tr>
-        <tr><td style="padding:4px 0;">Phone:</td><td><a href="tel:${escapeHtml(payload.phone)}">${escapeHtml(payload.phone)}</a></td></tr>
-      </table>
+    <p style="margin:0 0 8px;font-size:12px;font-weight:700;color:#0F1F3B;text-transform:uppercase;letter-spacing:.5px;">Seller contact</p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:10px;margin:0 0 20px;">
+      <tr>
+        <td style="padding:16px 18px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="font-size:14px;color:#4B5563;">
+            <tr><td style="padding:4px 0;width:70px;color:#6B7280;font-weight:600;">Name</td><td style="padding:4px 0;color:#0F1F3B;font-weight:600;">${escapeHtml(payload.name)}</td></tr>
+            <tr><td style="padding:4px 0;color:#6B7280;font-weight:600;">Email</td><td style="padding:4px 0;"><a href="mailto:${escapeHtml(payload.email)}" style="color:#FF6600;text-decoration:none;">${escapeHtml(payload.email)}</a></td></tr>
+            <tr><td style="padding:4px 0;color:#6B7280;font-weight:600;">Phone</td><td style="padding:4px 0;"><a href="tel:${escapeHtml(payload.phone)}" style="color:#FF6600;text-decoration:none;">${escapeHtml(payload.phone)}</a></td></tr>
+          </table>
+        </td>
+      </tr>
+    </table>
 
-      ${descBlock}
-      ${showBlock}
-      ${photosBlock}
-      ${linkBlock}
+    ${descBlock}
+    ${showBlock}
+    ${photosBlock}
+    ${linkBlock}
 
-      <p style="margin:20px 0 0;font-size:12px;color:#9ca3af;">Listing id: ${escapeHtml(payload.listing_id)}</p>
-    </td></tr>
-  </table>
-</body></html>`;
+    <p style="margin:24px 0 0;font-size:10px;color:#9CA3AF;">Listing id: <code style="font-family:'SF Mono',Consolas,Monaco,monospace;">${escapeHtml(payload.listing_id)}</code></p>
+  `;
 
-  return { text, html };
+  return wrapEmail({
+    preheader: `${payload.address} — ${priceLine}`,
+    title: "New off-market property submission",
+    tenant: payload.tenant,
+    contentHtml,
+    contentText,
+  });
 }
 
 async function sendResendEmail(opts: {

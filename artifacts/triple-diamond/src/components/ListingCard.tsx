@@ -4,6 +4,7 @@ import { Heart, MapPin, BedDouble, Bath, Square, Lock } from "lucide-react";
 import { type Listing } from "@/data/listings";
 import { Button } from "@/components/ui/button";
 import RegisterDialog from "@/components/RegisterDialog";
+import PropertyImage from "@/components/PropertyImage";
 import { useBuyerVerified } from "@/hooks/useBuyerVerified";
 import { useFavorites } from "@/hooks/useFavorites";
 import { toast } from "sonner";
@@ -53,12 +54,12 @@ export default function ListingCard({ listing }: { listing: Listing }) {
     <div className="group bg-white rounded-xl border border-border shadow-sm overflow-hidden hover:shadow-md transition-all duration-300 flex flex-col h-full">
       {/* Image Container */}
       <Link href={href} className="relative aspect-4/3 overflow-hidden bg-muted block">
-        <img
+        <PropertyImage
           src={listing.image}
-          alt={listing.street}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          alt={listing.street || "Property photo"}
+          className="w-full h-full transition-transform duration-500 group-hover:scale-105"
         />
-        
+
         {/* Status Pill */}
         <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
           <span className={`px-2.5 py-1 text-xs font-bold rounded-full shadow-sm ${getStatusColor(listing.dealType)}`}>

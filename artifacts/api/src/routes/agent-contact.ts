@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { getTenantPool } from "../db/tenant.js";
+import { wrapEmail, escapeHtml } from "../email/template.js";
 
 /**
  * Minimal shape we consume off `fetch()`. Named to avoid resolving to
@@ -94,16 +95,7 @@ async function readTenantCustomField(
   }
 }
 
-function escapeHtml(str: string): string {
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
-
-/** Build the inquiry email — plaintext + HTML. */
+/** Build the inquiry email using the shared FlipIQ shell. */
 function renderEmailBody(payload: {
   listing_id: string;
   property_address?: string;
@@ -122,34 +114,53 @@ function renderEmailBody(payload: {
     ? `${payload.origin.replace(/\/$/, "")}/property/${payload.listing_id}`
     : `/property/${payload.listing_id}`;
 
-  const text = `New buyer inquiry — ${address}
+  const contentText = `A buyer just reached out about ${address}.
 
 Buyer: ${payload.name}
 Email: ${payload.email}
 Phone: ${payload.phone}
-Tenant: ${payload.tenant}
-Listing: ${listingUrl}${messageBlock}
-`;
+Listing: ${listingUrl}${messageBlock}`;
 
-  const html = `<!doctype html>
-<html><body style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;background:#f7f7f9;padding:24px;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.08);">
-    <tr><td style="background:#0F2C4B;color:#fff;padding:20px 24px;font-size:18px;font-weight:700;">New buyer inquiry</td></tr>
-    <tr><td style="padding:20px 24px;">
-      <p style="margin:0 0 16px;font-size:15px;color:#0F2C4B;"><strong>Property:</strong> ${escapeHtml(address)}</p>
-      <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;font-size:14px;color:#4a5568;">
-        <tr><td style="padding:4px 0;"><strong>Name:</strong></td><td>${escapeHtml(payload.name)}</td></tr>
-        <tr><td style="padding:4px 0;"><strong>Email:</strong></td><td><a href="mailto:${escapeHtml(payload.email)}">${escapeHtml(payload.email)}</a></td></tr>
-        <tr><td style="padding:4px 0;"><strong>Phone:</strong></td><td><a href="tel:${escapeHtml(payload.phone)}">${escapeHtml(payload.phone)}</a></td></tr>
-        <tr><td style="padding:4px 0;"><strong>Tenant:</strong></td><td>${escapeHtml(payload.tenant)}</td></tr>
-        <tr><td style="padding:4px 0;"><strong>Listing:</strong></td><td><a href="${escapeHtml(listingUrl)}">${escapeHtml(listingUrl)}</a></td></tr>
-      </table>
-      ${payload.message?.trim() ? `<p style="margin:20px 0 0;font-size:14px;color:#0F2C4B;"><strong>Message:</strong></p><p style="margin:6px 0 0;font-size:14px;color:#4a5568;white-space:pre-wrap;">${escapeHtml(payload.message.trim())}</p>` : ""}
-    </td></tr>
-  </table>
-</body></html>`;
+  const contentHtml = `
+    <p style="margin:0 0 20px;font-size:15px;color:#374151;line-height:1.55;">
+      A buyer just reached out about <strong style="color:#0F1F3B;">${escapeHtml(address)}</strong>. Details below — reply directly to this email to reach them.
+    </p>
 
-  return { text, html };
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:10px;margin:0 0 20px;">
+      <tr>
+        <td style="padding:16px 18px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="font-size:14px;color:#4B5563;">
+            <tr><td style="padding:5px 0;width:80px;font-weight:600;color:#6B7280;text-transform:uppercase;font-size:11px;letter-spacing:.5px;">Name</td><td style="padding:5px 0;color:#0F1F3B;font-weight:600;">${escapeHtml(payload.name)}</td></tr>
+            <tr><td style="padding:5px 0;font-weight:600;color:#6B7280;text-transform:uppercase;font-size:11px;letter-spacing:.5px;">Email</td><td style="padding:5px 0;"><a href="mailto:${escapeHtml(payload.email)}" style="color:#FF6600;text-decoration:none;">${escapeHtml(payload.email)}</a></td></tr>
+            <tr><td style="padding:5px 0;font-weight:600;color:#6B7280;text-transform:uppercase;font-size:11px;letter-spacing:.5px;">Phone</td><td style="padding:5px 0;"><a href="tel:${escapeHtml(payload.phone)}" style="color:#FF6600;text-decoration:none;">${escapeHtml(payload.phone)}</a></td></tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+
+    ${
+      payload.message?.trim()
+        ? `<p style="margin:0 0 8px;font-size:12px;font-weight:700;color:#0F1F3B;text-transform:uppercase;letter-spacing:.5px;">Message from buyer</p>
+           <div style="background:#FFF7ED;border-left:3px solid #FF6600;padding:14px 16px;border-radius:6px;font-size:14px;color:#374151;line-height:1.55;white-space:pre-wrap;margin:0 0 20px;">${escapeHtml(payload.message.trim())}</div>`
+        : ""
+    }
+
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:24px 0 4px;">
+      <tr>
+        <td style="background:#FF6600;border-radius:8px;">
+          <a href="${escapeHtml(listingUrl)}" style="display:inline-block;padding:12px 22px;font-size:14px;font-weight:700;color:#ffffff;text-decoration:none;">View listing &rarr;</a>
+        </td>
+      </tr>
+    </table>
+  `;
+
+  return wrapEmail({
+    preheader: `${payload.name} asked about ${address}`,
+    title: "New buyer inquiry",
+    tenant: payload.tenant,
+    contentHtml,
+    contentText,
+  });
 }
 
 async function sendResendEmail(opts: {

@@ -1,8 +1,15 @@
 import { Router } from "express";
 import { z } from "zod";
 import { propertyDataPool } from "../db/property-data.js";
+import {
+  buildAddressString,
+  buildStreetViewProxyUrl,
+} from "../lib/street-view.js";
 
-const router = Router();
+// mergeParams so req.params.tenant (set by the parent `/:tenant/mls` mount)
+// is visible inside these handlers — needed to build the Street View proxy
+// URL that goes into each row's cover_url.
+const router = Router({ mergeParams: true });
 
 const querySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
@@ -251,12 +258,38 @@ router.get("/", async (req, res, next) => {
       propertyDataPool.query(countSql, params),
     ]);
 
+    // Attach a Street View proxy URL as `cover_url` on every row so cards
+    // render real exterior imagery. See lib/street-view.ts for why we route
+    // via our own proxy instead of Google directly.
+    const { tenant } = req.params as { tenant: string };
+    interface ListingRow {
+      street_address: string | null;
+      city: string | null;
+      state: string | null;
+      postal_code: string | null;
+      cover_url?: string | null;
+      [k: string]: unknown;
+    }
+    const results = (rows.rows as ListingRow[]).map((r) => {
+      const address = buildAddressString({
+        street: r.street_address,
+        city: r.city,
+        state: r.state,
+        zip: r.postal_code,
+      });
+      if (!address) return r;
+      return {
+        ...r,
+        cover_url: buildStreetViewProxyUrl(req, tenant, address, "640x480"),
+      };
+    });
+
     return res.json({
       total: total.rows[0].n,
       page: q.page,
       pageSize: q.pageSize,
       totalPages: Math.ceil(total.rows[0].n / q.pageSize),
-      results: rows.rows,
+      results,
     });
   } catch (err) {
     next(err);

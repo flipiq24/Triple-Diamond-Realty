@@ -1,127 +1,160 @@
 import { Router } from "express";
 import { propertyDataPool } from "../db/property-data.js";
 import { getTenantPool } from "../db/tenant.js";
+import {
+  buildAddressString,
+  buildStreetViewProxyUrl,
+} from "../lib/street-view.js";
+import {
+  loadDataFeedPhotos,
+  loadRawDataPhotos,
+  loadUploadedPhotos,
+  stripUnreachable,
+  type PhotoItem,
+} from "../lib/property-photos.js";
 
 const router = Router({ mergeParams: true });
+
+const DETAIL_SQL = `
+  SELECT
+    id, listing_id, mls_code, status,
+    list_price, original_list_price, close_price,
+    beds_count, baths_count, baths_full, baths_half,
+    sqft, lot_size_sqft, lot_size_acres, year_built, garage_size,
+    street_address, city, state, postal_code, county, unit,
+    property_type, raw_property_type, raw_property_sub_type,
+    days_on_market, cumulative_days_on_market,
+    list_date, close_date, pending_date, active_date,
+    off_market_date, expiration_date, last_modified,
+    description, private_remarks, showing_instructions,
+    listing_agent, buyer_agent, features,
+    subdivision_name, school_district,
+    elementary_school, middle_school, high_school,
+    tax_annual_amount, association_fee,
+    ST_X(location::geometry) AS longitude,
+    ST_Y(location::geometry) AS latitude
+  FROM mls.listings
+  WHERE id = $1
+  LIMIT 1
+`;
 
 // GET /:tenant/property-details/:id
 router.get("/:id", async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const detailSql = `
-      SELECT
-        id,
-        listing_id,
-        mls_code,
-        status,
-        list_price,
-        original_list_price,
-        close_price,
-        beds_count,
-        baths_count,
-        baths_full,
-        baths_half,
-        sqft,
-        lot_size_sqft,
-        lot_size_acres,
-        year_built,
-        garage_size,
-        street_address,
-        city,
-        state,
-        postal_code,
-        county,
-        unit,
-        property_type,
-        raw_property_type,
-        raw_property_sub_type,
-        days_on_market,
-        cumulative_days_on_market,
-        list_date,
-        close_date,
-        pending_date,
-        active_date,
-        off_market_date,
-        expiration_date,
-        last_modified,
-        description,
-        private_remarks,
-        showing_instructions,
-        listing_agent,
-        buyer_agent,
-        features,
-        subdivision_name,
-        school_district,
-        elementary_school,
-        middle_school,
-        high_school,
-        tax_annual_amount,
-        association_fee,
-        ST_X(location::geometry) AS longitude,
-        ST_Y(location::geometry) AS latitude
-      FROM mls.listings
-      WHERE id = $1
-      LIMIT 1
-    `;
-    const result = await propertyDataPool.query(detailSql, [id]);
+    const { id, tenant } = req.params as { id: string; tenant: string };
+    const result = await propertyDataPool.query(DETAIL_SQL, [id]);
     if (result.rowCount === 0) {
       return res.status(404).json({ error: "Property not found" });
     }
-    return res.json(result.rows[0]);
+    const row = result.rows[0] as {
+      street_address: string | null;
+      city: string | null;
+      state: string | null;
+      postal_code: string | null;
+      cover_url?: string | null;
+      [k: string]: unknown;
+    };
+    const address = buildAddressString({
+      street: row.street_address,
+      city: row.city,
+      state: row.state,
+      zip: row.postal_code,
+    });
+    if (address) {
+      row.cover_url = buildStreetViewProxyUrl(req, tenant, address, "640x480");
+    }
+    return res.json(row);
   } catch (err) {
     next(err);
   }
 });
 
-// GET /:tenant/property-details/:id/photos
+/**
+ * GET /:tenant/property-details/:id/photos
+ *
+ * Four-tier photo ladder — first non-empty tier wins:
+ *   1. DataFeed API — live gallery pointers
+ *   2. `idx.raw_data_photos` — Command's ingest-time cache
+ *   3. `idx.uploadimages` — legacy FDW rows
+ *   4. Street View via our proxy — always terminal, never empty when the
+ *      property has a usable address
+ *
+ * URLs that resolve to `media.crmls.org` are stripped after tiers 1-3 so the
+ * ladder falls through to Street View rather than shipping 403-guaranteed
+ * URLs to the browser.
+ */
 router.get("/:id/photos", async (req, res, next) => {
   try {
     const { tenant, id } = req.params as { tenant: string; id: string };
 
-    // 1. Look up the listing in shared property-data to get listing_id + mls_code
     const listingLookup = await propertyDataPool.query(
-      `SELECT listing_id, mls_code FROM mls.listings WHERE id = $1 LIMIT 1`,
+      `SELECT listing_id FROM mls.listings WHERE id = $1 LIMIT 1`,
       [id],
     );
     if (listingLookup.rowCount === 0) {
       return res.status(404).json({ cover_url: null, photo_urls: [] });
     }
-    const { listing_id: mlsListingId } = listingLookup.rows[0] as {
-      listing_id: string;
-      mls_code: string;
-    };
+    const mlsListingId = String(
+      (listingLookup.rows[0] as { listing_id: string }).listing_id,
+    );
 
-    // 2. Look up photos in the per-tenant DB via idx.raw_data + idx.uploadimages
     const tenantPool = getTenantPool(tenant);
     if (!tenantPool) {
       return res.json({ cover_url: null, photo_urls: [] });
     }
 
-    const photosSql = `
-      SELECT ui.r_id, ui.filename, ui.seq
-      FROM idx.raw_data rd
-      JOIN idx.uploadimages ui ON ui.r_id = rd.r_id
-      WHERE rd.listingid = $1
-      ORDER BY ui.seq ASC
-      LIMIT 30
-    `;
-    const photos = await tenantPool.query(photosSql, [mlsListingId]);
-
-    const baseUrl = (process.env.UPLOAD_PICTURES_URL || "").replace(/\/$/, "");
-    const toUrl = (filename: string): string => {
-      if (!filename) return "";
-      if (/^https?:\/\//i.test(filename)) return filename;
-      return `${baseUrl}/${filename.replace(/^\//, "")}`;
+    // One tenant-DB round trip for everything the ladder needs.
+    const subject = await tenantPool.query(
+      `SELECT r_id, idxtype, idxsubtype, idxkey,
+              fullstreetaddress, city, state, zipcode
+       FROM idx.raw_data
+       WHERE listingid = $1
+       LIMIT 1`,
+      [mlsListingId],
+    );
+    if (subject.rowCount === 0) {
+      return res.json({ cover_url: null, photo_urls: [] });
+    }
+    const rawData = subject.rows[0] as {
+      r_id: number;
+      idxtype: string | null;
+      idxsubtype: string | null;
+      idxkey: string | null;
+      fullstreetaddress: string | null;
+      city: string | null;
+      state: string | null;
+      zipcode: string | null;
     };
 
-    const photoUrls = photos.rows
-      .map((r) => ({ objectId: Number(r.seq), url: toUrl(String(r.filename)) }))
-      .filter((p) => !!p.url);
+    let photos: PhotoItem[] = await loadDataFeedPhotos(rawData);
+    if (photos.length === 0) photos = await loadRawDataPhotos(tenantPool, rawData.r_id);
+    if (photos.length === 0) photos = await loadUploadedPhotos(tenantPool, rawData.r_id);
+    photos = stripUnreachable(photos);
 
-    return res.json({
-      cover_url: photoUrls[0]?.url ?? null,
-      photo_urls: photoUrls,
-    });
+    if (photos.length === 0) {
+      const address = buildAddressString({
+        street: rawData.fullstreetaddress,
+        city: rawData.city,
+        state: rawData.state,
+        zip: rawData.zipcode,
+      });
+      if (address) {
+        photos = [
+          {
+            objectId: 1,
+            url: buildStreetViewProxyUrl(req, tenant, address, "800x600"),
+          },
+        ];
+      }
+    }
+
+    // Dedupe the cover from the rest so the frontend doesn't render it twice.
+    const coverUrl = photos[0]?.url ?? null;
+    const gallery = coverUrl
+      ? photos.filter((p) => p.url !== coverUrl || p.objectId === 1)
+      : photos;
+
+    return res.json({ cover_url: coverUrl, photo_urls: gallery });
   } catch (err) {
     next(err);
   }

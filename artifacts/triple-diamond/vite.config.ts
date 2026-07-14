@@ -23,8 +23,8 @@ export default defineConfig({
     emptyOutDir: true,
   },
   server: {
-    port: 3000,
-    strictPort: false,
+    port: 4001,
+    strictPort: true,
     host: "0.0.0.0",
     allowedHosts: true,
   },

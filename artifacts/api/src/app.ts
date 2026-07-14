@@ -8,6 +8,7 @@ import preferencesRouter from "./routes/preferences.js";
 import agentContactRouter from "./routes/agent-contact.js";
 import sellPropertyNotifyRouter from "./routes/sell-property-notify.js";
 import doNotSellRouter from "./routes/do-not-sell.js";
+import streetviewRouter from "./routes/streetview.js";
 
 export function createApp(): Express {
   const app = express();
@@ -30,6 +31,7 @@ export function createApp(): Express {
   app.use("/:tenant/agent-contact", tenantGuard, agentContactRouter);
   app.use("/:tenant/sell-property-notify", tenantGuard, sellPropertyNotifyRouter);
   app.use("/:tenant/do-not-sell", tenantGuard, doNotSellRouter);
+  app.use("/:tenant/streetview", tenantGuard, streetviewRouter);
 
   // 404 fallback
   app.use((req: Request, res: Response) => {
