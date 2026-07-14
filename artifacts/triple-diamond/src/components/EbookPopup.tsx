@@ -98,9 +98,9 @@ export default function EbookPopup() {
   };
 
   return (
-    <Dialog open={open} onOpenChange={(o) => { if (!o) dismiss(); }}>
+    <Dialog open={open} onOpenChange={(o) => { if (!o) setOpen(false); }}>
       <DialogContent className="max-w-3xl p-0 overflow-hidden">
-        <div className="grid grid-cols-1 md:grid-cols-2">
+        <div className="grid grid-cols-1 md:grid-cols-2   z-50">
           {/* Book cover */}
           <div className="bg-black flex items-center justify-center p-6 md:p-8">
             <img

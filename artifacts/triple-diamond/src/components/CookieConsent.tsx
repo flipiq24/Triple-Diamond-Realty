@@ -38,7 +38,7 @@ export default function CookieConsent() {
       role="dialog"
       aria-live="polite"
       aria-label="Cookie and privacy preferences"
-      className="fixed bottom-4 left-4 right-4 md:left-auto md:right-6 md:bottom-6 z-[9999] max-w-md bg-white border border-border rounded-2xl shadow-2xl p-5"
+      className="fixed bottom-4 left-4 right-4 md:left-auto md:right-6 md:bottom-6 z-[49] max-w-md bg-white border border-border rounded-2xl shadow-2xl p-5"
     >
       <div className="flex items-start gap-3">
         <div className="flex-1">
