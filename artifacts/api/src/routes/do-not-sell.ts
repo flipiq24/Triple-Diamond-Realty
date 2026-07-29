@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { getTenantPool } from "../db/tenant.js";
-import { wrapEmail, escapeHtml } from "../email/template.js";
+import { wrapEmail, escapeHtml, buyersBrandName } from "../email/template.js";
 
 /**
  * Minimal shape we consume off `fetch()`. Same shim used in agent-contact.ts
@@ -92,7 +92,7 @@ const REQUEST_TYPE_LABELS: Record<
   limit: "Limit use of sensitive information",
 };
 
-function renderEmailBody(payload: z.infer<typeof bodySchema> & { tenant: string }) {
+function renderEmailBody(payload: z.infer<typeof bodySchema> & { tenant: string; companyName?: string }) {
   const label = REQUEST_TYPE_LABELS[payload.request_type];
   const detailsText = payload.details?.trim()
     ? `\n\nAdditional details:\n${payload.details.trim()}`
@@ -145,6 +145,7 @@ You must respond to this requester within 45 days per California law (CCPA / CPR
     preheader: `${payload.name} — ${label}`,
     title: "New CCPA / CPRA privacy request",
     tenant: payload.tenant,
+    companyName: payload.companyName,
     contentHtml,
     contentText,
   });
@@ -204,13 +205,19 @@ router.post("/", async (req, res, next) => {
     const catchAllRecipient = process.env.AGENT_CONTACT_FALLBACK_EMAIL;
     const to = agentRecipient || catchAllRecipient || "";
 
-    const from = process.env.AGENT_CONTACT_FROM_EMAIL;
-    if (!from) {
+    const companyName =
+      (await readTenantCustomField(tenant, "company_name")) ?? undefined;
+    const brandName = buyersBrandName(companyName);
+
+    const fromEmail = process.env.AGENT_CONTACT_FROM_EMAIL;
+    if (!fromEmail) {
       return res.status(500).json({
         error: "missing_from",
         message: "AGENT_CONTACT_FROM_EMAIL not configured on the API",
       });
     }
+    const from = `${brandName} <${fromEmail}>`;
+
     if (!to) {
       return res.status(202).json({
         emailed: false,
@@ -218,7 +225,7 @@ router.post("/", async (req, res, next) => {
       });
     }
 
-    const { text, html } = renderEmailBody({ ...body, tenant });
+    const { text, html } = renderEmailBody({ ...body, tenant, companyName });
     const subject = `CCPA / CPRA privacy request — ${REQUEST_TYPE_LABELS[body.request_type]}`;
     const emailResult = await sendResendEmail({
       to,

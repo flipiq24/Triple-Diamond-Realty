@@ -22,6 +22,17 @@ export function useMlsListings(
     queryKey: ["mls-hot-deals", params],
     queryFn: () => mlsService.getHotDeals(params),
     staleTime: 60_000,
+    // Cap retries at 3 (default is same but explicit — plus we want the
+    // exponential backoff to hit its ceiling fast, not drag on for minutes).
+    retry: 3,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 8000),
+    // Once the query errors out, don't retry every time a new consumer
+    // mounts. Without this, ListingCard / Search / Home each remounting
+    // triggers a fresh 3-retry cycle → dozens of requests over minutes.
+    retryOnMount: false,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   return {

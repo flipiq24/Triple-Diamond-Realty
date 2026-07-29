@@ -1,17 +1,22 @@
 /**
- * FlipIQ-branded email shell used by every Resend send from this API.
+ * Tenant-branded email shell used by every Resend send from this API.
  *
- * Header: navy background, "FlipIQ" wordmark with orange "IQ" accent,
- * tenant slug pinned right. Orange stripe underneath. Body: white card
- * on soft-gray page. Footer: subtle FlipIQ · Buyers Hub · tenant line.
+ * Header wordmark: "<CompanyName> <span style=orange>Buyers</span>" — the
+ * company name comes from Buyers Hook `company_name` preference, orange
+ * "Buyers" suffix stays consistent across tenants. Falls back to just
+ * "Buyers" when company_name isn't available (fresh tenant with no
+ * preferences seeded yet).
+ *
+ * Body: white card on soft-gray page, orange 4px accent stripe under
+ * the header. Footer says "Sent by <CompanyName> Buyers".
  *
  * Every route (agent-contact, do-not-sell, sell-property-notify) hands
- * over just its content and gets a fully-branded shell back — one place
- * to change the look for the whole suite.
+ * over just its content plus the tenant's companyName — one place to
+ * change the look for the whole suite.
  *
- * Colors match Command's brand:
- *   - Deep navy #0F1F3B (page/header dark)
- *   - FlipIQ orange #FF6600 (accent)
+ * Colors:
+ *   - Deep navy #0F1F3B (header background)
+ *   - FlipIQ orange #FF6600 (accent, "Buyers" suffix, stripe)
  *   - Neutral grays for text hierarchy
  *
  * Table-based layout for maximum email-client compatibility (Outlook,
@@ -28,13 +33,24 @@ export function escapeHtml(str: string): string {
     .replace(/'/g, "&#39;");
 }
 
+/**
+ * Build the "<CompanyName> Buyers" display name used for both the FROM
+ * header and the visible wordmark. Trims + falls back cleanly.
+ */
+export function buyersBrandName(companyName?: string | null): string {
+  const trimmed = (companyName ?? "").trim();
+  return trimmed ? `${trimmed} Buyers` : "Buyers";
+}
+
 export interface EmailShellOpts {
   /** Hidden inbox-preview text shown in the mail-list row. */
   preheader?: string;
   /** Big title inside the body card. */
   title: string;
-  /** Tenant slug pinned in the header (e.g. "devcommand"). */
+  /** Tenant slug pinned in the header (e.g. "devcommand"). Optional. */
   tenant?: string;
+  /** Company name from Buyers Hook preferences — drives brand display. */
+  companyName?: string;
   /** Inner HTML inside the body card, below the title. */
   contentHtml: string;
   /** Plain-text equivalent for the multipart alternative. */
@@ -48,6 +64,13 @@ export function wrapEmail(opts: EmailShellOpts): { html: string; text: string } 
   const tenantFooter = opts.tenant
     ? ` &middot; Tenant: <span style="color:#6B7280;">${escapeHtml(opts.tenant)}</span>`
     : "";
+
+  // Split the wordmark into "<Company>" + "Buyers" so the orange accent
+  // stays on the fixed "Buyers" suffix regardless of what the company
+  // name is. Escape company name because it's admin-controlled string.
+  const companyEscaped = escapeHtml((opts.companyName ?? "").trim());
+  const companyBlock = companyEscaped ? `${companyEscaped} ` : "";
+  const brandNameText = buyersBrandName(opts.companyName);
 
   const html = `<!doctype html>
 <html lang="en">
@@ -72,7 +95,7 @@ export function wrapEmail(opts: EmailShellOpts): { html: string; text: string } 
                 <tr>
                   <td valign="middle">
                     <span style="font-size:22px;font-weight:800;letter-spacing:-.5px;color:#ffffff;line-height:1;">
-                      Flip<span style="color:#FF6600;">IQ</span>
+                      ${companyBlock}<span style="color:#FF6600;">Buyers</span>
                     </span>
                   </td>
                   <td valign="middle" align="right" style="font-size:10px;color:rgba(255,255,255,0.55);text-transform:uppercase;letter-spacing:1.5px;font-weight:700;">
@@ -95,17 +118,17 @@ export function wrapEmail(opts: EmailShellOpts): { html: string; text: string } 
           <tr>
             <td style="padding:24px 28px 28px;border-top:1px solid #E5E7EB;">
               <p style="margin:0;font-size:11px;color:#9CA3AF;line-height:1.5;">
-                Sent by <strong style="color:#6B7280;">FlipIQ</strong> &middot; Buyers Hub${tenantFooter}
+                Sent by <strong style="color:#6B7280;">${escapeHtml(brandNameText)}</strong>${tenantFooter}
               </p>
               <p style="margin:6px 0 0;font-size:11px;color:#9CA3AF;line-height:1.5;">
-                You are receiving this because your account is configured to receive buyer notifications on FlipIQ. Manage preferences in your Command dashboard.
+                You are receiving this because your account is configured to receive buyer notifications. Manage preferences in your Command dashboard.
               </p>
             </td>
           </tr>
 
         </table>
 
-        <p style="margin:16px 0 0;font-size:10px;color:#9CA3AF;">FlipIQ &middot; buyers.flipiq.com</p>
+        <p style="margin:16px 0 0;font-size:10px;color:#9CA3AF;">${escapeHtml(brandNameText)} &middot; buyers.flipiq.com</p>
       </td>
     </tr>
   </table>
@@ -120,7 +143,7 @@ ${rule}
 ${opts.contentText}
 
 —
-FlipIQ · Buyers Hub
+${brandNameText}
 ${tenantTextLine}buyers.flipiq.com
 `;
 

@@ -21,6 +21,15 @@ export function useComps(
     queryFn: () => mlsService.getComps(subjectId!, params),
     enabled: subjectId !== undefined && subjectId !== null && subjectId !== "",
     staleTime: 60_000,
+    // Cap retries so a downed API doesn't drown the property page + Deal
+    // Calculator + Run Comps (all three subscribe to this same query key)
+    // in dozens of failing requests as each mounts.
+    retry: 3,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 8000),
+    retryOnMount: false,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   return {

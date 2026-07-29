@@ -46,7 +46,7 @@ export default function LoginPage() {
     setSubmitting(true);
     try {
       const redirectTo = `${window.location.origin}${next}`;
-      await buyerService.startLogin(email.trim(), redirectTo);
+      await buyerService.startLogin(email.trim(), redirectTo, companyName);
       setStep("sent");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not send magic link");

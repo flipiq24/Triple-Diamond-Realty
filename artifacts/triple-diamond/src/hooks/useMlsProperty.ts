@@ -18,12 +18,24 @@ export interface UseMlsPropertyResult {
   error: Error | null;
 }
 
+// Bounded retry config shared by both queries in this hook. Prevents an API
+// outage from producing dozens of failing requests as components remount.
+const RETRY_OPTS = {
+  retry: 3,
+  retryDelay: (attempt: number) => Math.min(1000 * 2 ** attempt, 8000),
+  retryOnMount: false,
+  refetchOnMount: false,
+  refetchOnWindowFocus: false,
+  refetchOnReconnect: false,
+} as const;
+
 export function useMlsProperty(rId: string | undefined): UseMlsPropertyResult {
   const detail = useQuery({
     queryKey: ["mls-property", rId],
     queryFn: () => mlsService.getById(rId!),
     enabled: !!rId,
     staleTime: 60_000,
+    ...RETRY_OPTS,
   });
 
   const photos = useQuery({
@@ -31,6 +43,7 @@ export function useMlsProperty(rId: string | undefined): UseMlsPropertyResult {
     queryFn: () => mlsService.getPhotos(rId!),
     enabled: !!rId,
     staleTime: 60_000,
+    ...RETRY_OPTS,
   });
 
   const photoUrls: string[] = [];

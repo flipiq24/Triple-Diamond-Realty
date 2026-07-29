@@ -523,13 +523,39 @@ export default function Search() {
               ))}
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center py-32 text-center">
-              <h3 className="text-2xl font-bold text-primary mb-2">No deals match your filters</h3>
-              <p className="text-muted-foreground mb-6">Try widening your criteria.</p>
-              <Button onClick={resetAll} className="bg-primary text-white rounded-full">
-                Clear Filters
-              </Button>
-            </div>
+            (() => {
+              // If nothing is filtering the list — no search text, no favorites
+              // toggle, and every filter still equals its default — then "no
+              // results" isn't a user-fixable state. Don't blame the user's
+              // filters or offer a Clear Filters button.
+              const hasActiveFilters =
+                query.trim() !== "" ||
+                favoritesOnly ||
+                JSON.stringify(filters) !== JSON.stringify(defaultFilters);
+
+              if (!hasActiveFilters) {
+                return (
+                  <div className="flex flex-col items-center justify-center py-32 text-center">
+                    <h3 className="text-2xl font-bold text-primary mb-2">
+                      No weekly deals available
+                    </h3>
+                    <p className="text-muted-foreground">
+                      Please browse any property from the map or check back soon.
+                    </p>
+                  </div>
+                );
+              }
+
+              return (
+                <div className="flex flex-col items-center justify-center py-32 text-center">
+                  <h3 className="text-2xl font-bold text-primary mb-2">No deals match your filters</h3>
+                  <p className="text-muted-foreground mb-6">Try widening your criteria.</p>
+                  <Button onClick={resetAll} className="bg-primary text-white rounded-full">
+                    Clear Filters
+                  </Button>
+                </div>
+              );
+            })()
           )}
         </div>
       ) : (

@@ -51,6 +51,7 @@ export default function RegisterDialog({
         { name, email, phone, consent },
         // Return them to the same page they were on
         window.location.href,
+        companyName,
       );
       setStep("sent");
     } catch (err) {

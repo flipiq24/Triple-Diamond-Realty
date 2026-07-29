@@ -18,7 +18,7 @@ export default function VariantHome({ config, cityName }: { config: VariantConfi
   // "This Week's Top Deals" — real MLS from the past 7 days, newest first,
   // capped at 3 for the strip. Replaces a static mock array that was
   // showing the same three fake listings on every tenant's homepage.
-  const { listings: weekListings } = useMlsListings({
+  const { listings: weekListings, isLoading: weekLoading } = useMlsListings({
     last_week: true,
     pageSize: 3,
     sortColumn: "list_date",
@@ -203,7 +203,22 @@ export default function VariantHome({ config, cityName }: { config: VariantConfi
               See All Deals <ArrowRight className="ml-2 w-4 h-4" />
             </Button>
           </div>
-          {featuredListings.length > 0 ? (
+          {weekLoading ? (
+            <div className="flex items-center justify-center py-16">
+              <div
+                aria-hidden="true"
+                style={{
+                  width: 40,
+                  height: 40,
+                  border: "3px solid rgba(249, 115, 22, 0.18)",
+                  borderTopColor: "#F97316",
+                  borderRadius: "50%",
+                  animation: "top-deals-spin 1s linear infinite",
+                }}
+              />
+              <style>{`@keyframes top-deals-spin { to { transform: rotate(360deg); } }`}</style>
+            </div>
+          ) : featuredListings.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {featuredListings.map((listing, i) => (
                 <motion.div key={listing.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}>

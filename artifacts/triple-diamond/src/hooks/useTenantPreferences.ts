@@ -71,7 +71,14 @@ export function useTenantPreferences(): UseTenantPreferencesResult {
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
-    retry: 1,
+    // Cap retries at 3 with a bounded backoff.
+    retry: 3,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 8000),
+    // Once the query errors out, don't rerun the retry cycle every time a
+    // consumer (SiteHeader, SiteFooter, TenantThemeProvider, EbookPopup…)
+    // remounts. Otherwise a downed API produces dozens of failing requests
+    // over the course of a session.
+    retryOnMount: false,
     initialData: cached?.data,
     initialDataUpdatedAt: cached?.timestamp,
   });

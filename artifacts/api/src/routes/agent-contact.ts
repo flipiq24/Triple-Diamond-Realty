@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { getTenantPool } from "../db/tenant.js";
-import { wrapEmail, escapeHtml } from "../email/template.js";
+import { wrapEmail, escapeHtml, buyersBrandName } from "../email/template.js";
 
 /**
  * Minimal shape we consume off `fetch()`. Named to avoid resolving to
@@ -104,6 +104,7 @@ function renderEmailBody(payload: {
   phone: string;
   message?: string;
   tenant: string;
+  companyName?: string;
   origin?: string;
 }) {
   const address = payload.property_address ?? "(address unknown)";
@@ -158,6 +159,7 @@ Listing: ${listingUrl}${messageBlock}`;
     preheader: `${payload.name} asked about ${address}`,
     title: "New buyer inquiry",
     tenant: payload.tenant,
+    companyName: payload.companyName,
     contentHtml,
     contentText,
   });
@@ -275,13 +277,20 @@ router.post("/", async (req, res, next) => {
     const to =
       configuredRecipient || fallbackRecipient || catchAllRecipient || "";
 
-    const from = process.env.AGENT_CONTACT_FROM_EMAIL;
-    if (!from) {
+    // Company name drives the "<Company> Buyers" display in both the FROM
+    // header and the email body wordmark. Falls back to just "Buyers".
+    const companyName =
+      (await readTenantCustomField(tenant, "company_name")) ?? undefined;
+    const brandName = buyersBrandName(companyName);
+
+    const fromEmail = process.env.AGENT_CONTACT_FROM_EMAIL;
+    if (!fromEmail) {
       return res.status(500).json({
         error: "missing_from",
         message: "AGENT_CONTACT_FROM_EMAIL not configured on the API",
       });
     }
+    const from = `${brandName} <${fromEmail}>`;
 
     if (!to) {
       // Still audit the write so the tenant isn't losing the lead entirely.
@@ -295,7 +304,7 @@ router.post("/", async (req, res, next) => {
 
     const origin =
       typeof req.headers.origin === "string" ? req.headers.origin : undefined;
-    const { text, html } = renderEmailBody({ ...body, tenant, origin });
+    const { text, html } = renderEmailBody({ ...body, tenant, companyName, origin });
     const subject = `New buyer inquiry — ${body.property_address ?? body.listing_id}`;
 
     const [emailResult, auditResult] = await Promise.all([

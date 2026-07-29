@@ -6,10 +6,11 @@ import {
   DialogTitle,
   DialogTrigger,
   DialogDescription,
+  DialogClose,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Calculator, DollarSign, Loader2 } from "lucide-react";
+import { Calculator, DollarSign, Loader2, X } from "lucide-react";
 import { type Listing } from "@/data/listings";
 import { useComps } from "@/hooks/useComps";
 import type { CompRecord } from "@/services/mls.service";
@@ -23,8 +24,8 @@ const CONFIG = {
   year_buckets: [
     { key: "min_paint_carpet", label: "Min Paint/Carpet (Use Poor)", rate_sqft: 25, force_poor_display: true, range: null as [number, number | null] | null },
     { key: "1991_plus", label: "1991 or newer", rate_sqft: 40, force_poor_display: false, range: [1991, null] as [number, number | null] },
-    { key: "1971_1990", label: "1971\u20131990", rate_sqft: 47, force_poor_display: false, range: [1971, 1990] as [number, number | null] },
-    { key: "1961_1970", label: "1961\u20131970", rate_sqft: 70, force_poor_display: false, range: [1961, 1970] as [number, number | null] },
+    { key: "1971_1990", label: "1971–1990", rate_sqft: 47, force_poor_display: false, range: [1971, 1990] as [number, number | null] },
+    { key: "1961_1970", label: "1961–1970", rate_sqft: 70, force_poor_display: false, range: [1961, 1970] as [number, number | null] },
     { key: "1960_older", label: "1960 or older", rate_sqft: 90, force_poor_display: false, range: [null, 1960] as [number | null, number | null] },
   ],
   condition_pct: { Excellent: 0.4, Good: 0.5, Fair: 0.8, Poor: 1.0 } as Record<string, number>,
@@ -62,26 +63,13 @@ function formatMoney(n: number): string {
 
 /* ─── ROI rows ─── */
 const roiRows = [
-  { roi: 8, msg: "Thin deal \u2013 tight margins" },
-  { roi: 10, msg: "Borderline \u2013 limited upside" },
-  { roi: 12, msg: "Market sweet spot \u2013 easy to move" },
+  { roi: 8, msg: "Thin deal – tight margins" },
+  { roi: 10, msg: "Borderline – limited upside" },
+  { roi: 12, msg: "Sweet spot" },
   { roi: 14, msg: "Preferred investor zone" },
-  { roi: 15, msg: "Strong deal \u2013 high confidence" },
+  { roi: 15, msg: "Strong deal – high confidence" },
   { roi: 18, msg: "Home Run!" },
 ];
-
-function getMarketHint(rehabType: string): string {
-  switch (rehabType) {
-    case "Light":
-      return "Investors expect at least 10\u201312% ROI on light rehabs. Below 10% is thin; 14%+ is a Home Run.";
-    case "Moderate":
-      return "Most investors aim for 12\u201314% ROI on moderate rehabs; 15%+ is a Home Run.";
-    case "Heavy":
-      return "Heavy rehabs require 15%+ ROI to move; 18%+ is a Home Run.";
-    default:
-      return "";
-  }
-}
 
 /* ─── ARV from comps (blended formula ported from ARV IQ) ───
  * final = (subjectSqft × avgCompPricePerSqft + avgCompPrice) / 2
@@ -146,7 +134,6 @@ export default function DealCalculatorDialog({
   /* ─── State ─── */
   const [arvInput, setArvInput] = useState(compsArv ?? listing.price);
   const [repairCost, setRepairCost] = useState(0);
-  const [assignmentFee, setAssignmentFee] = useState(15_000);
   const [selectedRoi, setSelectedRoi] = useState(12);
 
   const [userQuality, setUserQuality] = useState(() =>
@@ -154,7 +141,6 @@ export default function DealCalculatorDialog({
   );
   const [userBucket, setUserBucket] = useState(() => bucketFromYear(listing.yearBuilt));
   const [selectedCondition, setSelectedCondition] = useState("Fair");
-  const [rehabType, setRehabType] = useState("Moderate");
 
   // Track whether the user has manually edited ARV; if they haven't, we keep
   // syncing ARV with the comps-derived value as it becomes available.
@@ -188,20 +174,7 @@ export default function DealCalculatorDialog({
   useEffect(() => {
     const next = estimates[selectedCondition] ?? 0;
     setRepairCost(Math.round(next));
-
-    const map: Record<string, string> = {
-      Excellent: "Light",
-      Good: "Light",
-      Fair: "Moderate",
-      Poor: "Heavy",
-    };
-    setRehabType(map[selectedCondition] || "Moderate");
   }, [estimates, selectedCondition]);
-
-  /* ─── Derived calculations ─── */
-  const selectedRow = roiRows.find((r) => r.roi === selectedRoi);
-  const buyerPrice = selectedRow ? arvInput / (1 + selectedRow.roi / 100) - repairCost : 0;
-  const sellerPrice = buyerPrice - assignmentFee;
 
   const bucketOptions = CONFIG.year_buckets.map((b) => ({ key: b.key, label: b.label }));
   const qualityOptions = ["A", "B", "C"];
@@ -210,22 +183,29 @@ export default function DealCalculatorDialog({
     <Dialog>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="max-w-5xl p-0 overflow-hidden max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="bg-primary text-primary-foreground px-6 py-4">
+        {/* Header — prominent close button lives here so buyers can dismiss
+            without hunting for the tiny default X. */}
+        <div className="bg-primary text-primary-foreground px-6 py-4 relative">
           <DialogHeader>
-            <DialogTitle className="text-xl font-extrabold text-primary-foreground flex items-center gap-2">
+            <DialogTitle className="text-xl font-extrabold text-primary-foreground flex items-center gap-2 pr-10">
               <Calculator className="w-5 h-5" /> Deal Calculator
             </DialogTitle>
-            <DialogDescription className="text-primary-foreground/80 text-sm">
-              Wholesale deal analysis &mdash; investor ROI-based pricing
+            <DialogDescription className="text-primary-foreground/80 text-sm pr-10">
+              Investor ROI-based pricing
             </DialogDescription>
           </DialogHeader>
+          <DialogClose
+            aria-label="Close"
+            className="absolute right-4 top-4 rounded-full bg-white/10 hover:bg-white/25 text-white w-9 h-9 flex items-center justify-center transition-colors focus:outline-none focus:ring-2 focus:ring-white/60"
+          >
+            <X className="w-5 h-5" />
+          </DialogClose>
         </div>
 
         <div className="px-6 py-5 space-y-5">
           {/* ── Two-column grid: ARV + Repair Estimator ── */}
           <div className="grid gap-4 md:grid-cols-5">
-            {/* LEFT — ARV & Assignment Fee */}
+            {/* LEFT — ARV & Finished Quality */}
             <div className="rounded-lg border p-4 col-span-2 space-y-3">
               <div>
                 <Label className="text-sm font-medium">After Repair Value (ARV)</Label>
@@ -275,25 +255,6 @@ export default function DealCalculatorDialog({
                 <p className="mt-1 text-[11px] text-muted-foreground">
                   Auto from ARV &bull; A: &gt;$1M &bull; B: $500k&ndash;$1M &bull; C: &lt;$500k
                 </p>
-              </div>
-
-              {/* Assignment Fee */}
-              <div>
-                <Label className="text-sm font-medium">Wholesale assignment fee</Label>
-                <div className="relative mt-1">
-                  <span className="pointer-events-none absolute inset-y-0 left-2 flex items-center text-muted-foreground">
-                    <DollarSign className="h-4 w-4" />
-                  </span>
-                  <Input
-                    type="number"
-                    value={assignmentFee || ""}
-                    placeholder="Enter Custom Assignment Fee"
-                    onChange={(e) =>
-                      setAssignmentFee(Number(e.target.value) > 0 ? Number(e.target.value) : 0)
-                    }
-                    className="pl-7"
-                  />
-                </div>
               </div>
             </div>
 
@@ -405,14 +366,12 @@ export default function DealCalculatorDialog({
                     <th className="py-2 font-semibold">Select</th>
                     <th className="py-2 font-semibold">Target ROI %</th>
                     <th className="py-2 font-semibold">Max Buyer Price</th>
-                    <th className="py-2 font-semibold">Max Offer to Seller</th>
                     <th className="py-2 font-semibold">Market Message</th>
                   </tr>
                 </thead>
                 <tbody>
                   {roiRows.map((row) => {
                     const buyer = arvInput / (1 + row.roi / 100) - repairCost;
-                    const seller = buyer - assignmentFee;
                     const isSelected = selectedRoi === row.roi;
                     const highlight = [12, 14, 15, 18].includes(row.roi);
                     return (
@@ -438,9 +397,6 @@ export default function DealCalculatorDialog({
                           ${formatMoney(buyer)}
                         </td>
                         <td className={`py-1.5 ${highlight ? "font-semibold" : ""}`}>
-                          ${formatMoney(seller)}
-                        </td>
-                        <td className={`py-1.5 ${highlight ? "font-semibold" : ""}`}>
                           {row.msg}
                         </td>
                       </tr>
@@ -448,34 +404,6 @@ export default function DealCalculatorDialog({
                   })}
                 </tbody>
               </table>
-            </div>
-          </div>
-
-          {/* ── Investor Summary ── */}
-          <div className="rounded-lg border border-accent/30 bg-accent/5 p-4">
-            <h4 className="text-base font-semibold text-primary mb-2">Investor Summary</h4>
-            {selectedRow ? (
-              <div className="mb-3">
-                <p className="text-sm font-medium text-primary">Target ROI Selected: {selectedRoi}%</p>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Your maximum buyer price is{" "}
-                  <span className="font-semibold text-primary">
-                    ${formatMoney(buyerPrice)}
-                  </span>{" "}
-                  and your maximum offer to seller is{" "}
-                  <span className="font-semibold text-primary">
-                    ${formatMoney(sellerPrice)}
-                  </span>
-                  .
-                </p>
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground italic">
-                Select a ROI row to see detailed breakdown.
-              </p>
-            )}
-            <div className="border-t pt-3 text-sm leading-relaxed">
-              {getMarketHint(rehabType)}
             </div>
           </div>
 

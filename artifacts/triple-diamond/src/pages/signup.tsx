@@ -60,6 +60,7 @@ export default function SignupPage() {
           consent,
         },
         redirectTo,
+        companyName,
       );
       setStep("sent");
     } catch (err) {

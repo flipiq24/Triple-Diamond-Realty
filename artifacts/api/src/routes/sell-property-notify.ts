@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { getTenantPool } from "../db/tenant.js";
-import { wrapEmail, escapeHtml } from "../email/template.js";
+import { wrapEmail, escapeHtml, buyersBrandName } from "../email/template.js";
 
 /**
  * Minimal shape we consume off `fetch()`. Mirrors the shim used in
@@ -94,7 +94,7 @@ function formatMoney(n: number | null | undefined): string {
   }
 }
 
-function renderEmailBody(payload: z.infer<typeof bodySchema> & { tenant: string }) {
+function renderEmailBody(payload: z.infer<typeof bodySchema> & { tenant: string; companyName?: string }) {
   const priceLine = formatMoney(payload.asking_price ?? null);
   const photosCount = payload.photo_urls?.length ?? 0;
 
@@ -184,6 +184,7 @@ ${payload.description ? `Description:\n${payload.description}\n\n` : ""}${payloa
     preheader: `${payload.address} — ${priceLine}`,
     title: "New off-market property submission",
     tenant: payload.tenant,
+    companyName: payload.companyName,
     contentHtml,
     contentText,
   });
@@ -245,13 +246,19 @@ router.post("/", async (req, res, next) => {
     const catchAllRecipient = process.env.AGENT_CONTACT_FALLBACK_EMAIL;
     const to = configuredRecipient || fallbackRecipient || catchAllRecipient || "";
 
-    const from = process.env.AGENT_CONTACT_FROM_EMAIL;
-    if (!from) {
+    const companyName =
+      (await readTenantCustomField(tenant, "company_name")) ?? undefined;
+    const brandName = buyersBrandName(companyName);
+
+    const fromEmail = process.env.AGENT_CONTACT_FROM_EMAIL;
+    if (!fromEmail) {
       return res.status(500).json({
         error: "missing_from",
         message: "AGENT_CONTACT_FROM_EMAIL not configured on the API",
       });
     }
+    const from = `${brandName} <${fromEmail}>`;
+
     if (!to) {
       return res.status(202).json({
         emailed: false,
@@ -259,7 +266,7 @@ router.post("/", async (req, res, next) => {
       });
     }
 
-    const { text, html } = renderEmailBody({ ...body, tenant });
+    const { text, html } = renderEmailBody({ ...body, tenant, companyName });
     const subject = `New off-market property submission — ${body.address}`;
     const emailResult = await sendResendEmail({
       to,

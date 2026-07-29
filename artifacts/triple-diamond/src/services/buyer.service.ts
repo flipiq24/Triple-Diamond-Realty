@@ -58,13 +58,16 @@ export interface SellPropertyListingRow {
 
 export const buyerService = {
   /**
-   * Send a magic link to the buyer. Their name/phone/consent + tenant ride
-   * along in user_metadata so we can persist them when the session callback
-   * lands. emailRedirectTo brings them back to the page they were on.
+   * Send a magic link to the buyer. Their name/phone/consent + tenant +
+   * company name ride along in user_metadata so Supabase's email templates
+   * can render "<Company> Buyers" via `{{ .Data.company_name }}` and we can
+   * persist the profile on session callback. `emailRedirectTo` brings them
+   * back to the page they were on.
    */
   async startRegistration(
     payload: BuyerRegistrationPayload,
     redirectTo: string,
+    companyName?: string,
   ): Promise<void> {
     const { error } = await supabase.auth.signInWithOtp({
       email: payload.email,
@@ -74,6 +77,7 @@ export const buyerService = {
           phone: payload.phone,
           consent: payload.consent,
           tenant: TENANT_NAME,
+          company_name: (companyName ?? "").trim(),
         },
         emailRedirectTo: redirectTo,
       },
@@ -83,15 +87,23 @@ export const buyerService = {
 
   /**
    * Login-flavored magic link — no profile fields are attached to
-   * user_metadata, so an existing buyer's stored name/phone/consent aren't
-   * overwritten with blanks when they sign back in. The tenant slug still
-   * rides along because verification is tenant-scoped.
+   * user_metadata (so an existing buyer's stored name/phone/consent aren't
+   * overwritten with blanks). The tenant slug and current company name DO
+   * ride along so verification is tenant-scoped AND Supabase's email
+   * templates always render the current tenant's brand.
    */
-  async startLogin(email: string, redirectTo: string): Promise<void> {
+  async startLogin(
+    email: string,
+    redirectTo: string,
+    companyName?: string,
+  ): Promise<void> {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        data: { tenant: TENANT_NAME },
+        data: {
+          tenant: TENANT_NAME,
+          company_name: (companyName ?? "").trim(),
+        },
         emailRedirectTo: redirectTo,
       },
     });
@@ -101,36 +113,70 @@ export const buyerService = {
   /**
    * Called once the buyer has clicked the magic link and a session exists.
    * Persists their profile (idempotent — safe to call on every session start).
+   *
+   * Two things happen in order:
+   *
+   * 1. **Refresh user_metadata** (`tenant` + `company_name`) via updateUser.
+   *    `signInWithOtp` only writes options.data on user creation, so for a
+   *    buyer who signed up on tenant A and now clicks a magic link from
+   *    tenant B's domain, `user_metadata.tenant` stays "A" and
+   *    `useBuyerVerified` (which compares user_metadata.tenant to the
+   *    current deployment's slug) returns false → login page keeps looping.
+   *    Clicking a magic link that landed on B's domain is a clear signal
+   *    the buyer intends to be on B now; we sync user_metadata to match.
+   *
+   * 2. **Upsert buyer_registrations** — one row per auth_user_id, tenant
+   *    column tracks the currently-active tenant (single-tenant-per-buyer
+   *    for now; multi-tenant support would need a composite key).
    */
-  async upsertRegistrationFromSession(): Promise<void> {
+  async upsertRegistrationFromSession(companyName?: string): Promise<void> {
     const { data } = await supabase.auth.getSession();
     const user = data.session?.user;
     if (!user?.email) return;
 
     const meta = (user.user_metadata ?? {}) as Record<string, unknown>;
+    const trimmedCompany = (companyName ?? "").trim();
+    const currentCompany =
+      typeof meta.company_name === "string" ? meta.company_name : "";
+    const currentTenant =
+      typeof meta.tenant === "string" ? meta.tenant : "";
 
-    // Skip the upsert when the current deployment's tenant doesn't match
-    // the tenant the session was created on. Supabase is shared across every
-    // buyer site (buyers.<tenant>.flipiq.com), so a buyer who signed in on
-    // tenant A and later opens tenant B would otherwise overwrite the
-    // `tenant` column on their buyer_registrations row with B — quietly
-    // remapping them to a brokerage they never opted in to. Also keeps
-    // buyer_registrations honest for downstream analytics.
-    const sessionTenant =
-      typeof meta.tenant === "string" ? meta.tenant.toLowerCase() : null;
-    if (!sessionTenant || sessionTenant !== TENANT_NAME.toLowerCase()) {
-      return;
+    const tenantOutOfDate =
+      currentTenant.toLowerCase() !== TENANT_NAME.toLowerCase();
+    const companyOutOfDate =
+      trimmedCompany.length > 0 && trimmedCompany !== currentCompany;
+
+    if (tenantOutOfDate || companyOutOfDate) {
+      // Supabase merges `data` into user_metadata, so only send the keys we
+      // actually want to write. Sending `company_name: ""` when the tenant
+      // branding hasn't resolved yet would nuke a previously-good value.
+      const patch: Record<string, string> = {};
+      if (tenantOutOfDate) patch.tenant = TENANT_NAME;
+      if (companyOutOfDate) patch.company_name = trimmedCompany;
+      try {
+        await supabase.auth.updateUser({ data: patch });
+      } catch {
+        /* non-fatal — the buyer_registrations upsert below still lands */
+      }
     }
 
     const nameVal = String(meta.name ?? "").trim();
     const phoneVal = String(meta.phone ?? "").trim();
     const consentPresent = Object.prototype.hasOwnProperty.call(meta, "consent");
 
-    // Skip when the session callback carries no profile fields — that's a
-    // login (startLogin only stamps `tenant`), and the existing row's
-    // name/phone/consent should NOT be nuked back to empty just because
-    // the buyer signed back in.
-    if (!nameVal && !phoneVal && !consentPresent) return;
+    // Skip the buyer_registrations upsert when there's nothing to write
+    // besides tenant. That's a login (startLogin doesn't carry
+    // name/phone/consent) — the existing row keeps those values while the
+    // tenant column is refreshed by the direct update below.
+    if (!nameVal && !phoneVal && !consentPresent) {
+      if (tenantOutOfDate) {
+        await supabase
+          .from("buyer_registrations")
+          .update({ tenant: TENANT_NAME })
+          .eq("auth_user_id", user.id);
+      }
+      return;
+    }
 
     const row = {
       auth_user_id: user.id,

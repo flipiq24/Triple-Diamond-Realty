@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HelmetProvider, Helmet } from "react-helmet-async";
@@ -32,6 +32,7 @@ import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import { buyerService } from "@/services/buyer.service";
 import { TenantThemeProvider } from "@/components/TenantThemeProvider";
 import GlobalJsonLd from "@/components/GlobalJsonLd";
+import { useTenantBranding } from "@/hooks/useTenantBranding";
 
 const queryClient = new QueryClient();
 
@@ -164,6 +165,15 @@ function AuthBootstrap() {
   // by tracking the last user id we've already written, so re-signing in
   // as the same buyer is a no-op while a genuine account switch still
   // triggers a fresh upsert.
+  // Pull the current tenant's company name so we can force-refresh the
+  // user_metadata on Supabase — otherwise buyers who signed up before we
+  // started stamping company_name never get branded auth emails.
+  const { companyName } = useTenantBranding();
+  const companyNameRef = useRef(companyName);
+  useEffect(() => {
+    companyNameRef.current = companyName;
+  }, [companyName]);
+
   useEffect(() => {
     if (!isSupabaseConfigured) return;
     let lastUpsertedUserId: string | null = null;
@@ -174,7 +184,7 @@ function AuthBootstrap() {
       if (!uid || uid === lastUpsertedUserId) return;
       lastUpsertedUserId = uid;
       try {
-        await buyerService.upsertRegistrationFromSession();
+        await buyerService.upsertRegistrationFromSession(companyNameRef.current);
       } catch {
         // Roll back the guard so a transient failure can retry on the
         // next real auth event instead of silently skipping forever.
